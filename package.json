@@ -1,0 +1,37 @@
+{
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "cls-hooked": "^4.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "fast-glob": "^3.3.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.24",
+    "uuid": "^11.1.0"
+  },
+  "scripts": {
+    "start": "node ./dist/app.js",
+    "build": "tsc",
+    "migrate:dev": "npx typeorm-ts-node-commonjs migration:run -d src/AppDataSource.ts",
+    "migrate:prod": "npx typeorm migration:run -d dist/AppDataSource.js",
+    "start:dev": "nodemon ./src/app.ts",
+    "seed:dev": "ts-node src/seed.ts",
+    "seed:prod": "node dist/seed.js",
+    "build:old": "tsc -p .",
+    "start:prod": "npm run migrate:prod && node ./dist/app.js"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cls-hooked": "^4.3.9",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.0.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  }
+}
