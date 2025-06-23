@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import UserTracking from "../../common/models/UserTracking.entity";
+import { Events } from "../../events/entity/Events.entity";
 
 @Entity()
 export class Category extends UserTracking{
@@ -9,5 +10,6 @@ export class Category extends UserTracking{
     @Column({nullable: false, unique: true})
     name!:string;
 
-    @ManyToMany()
+    @ManyToMany(() => Events, (event) => event.categories, {nullable: false})
+    event!: Event[];
 }

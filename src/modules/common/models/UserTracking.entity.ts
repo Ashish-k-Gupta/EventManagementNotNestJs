@@ -3,6 +3,9 @@ import { currentSession } from "../../../helper/sessions";
 
 @Entity()
 export default class UserTracking{
+ @PrimaryGeneratedColumn()
+ id!: number;
+
  @Column({type: 'integer', name: 'created_by', nullable: true, select: false})
  created_by!: number;
 
