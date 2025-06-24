@@ -3,3 +3,5 @@ export enum UserRoles {
     ORGANIZER = 'organizer',
     ATTENDEE = 'attendee'
 }
+
+export const UserRolesArray = ['admin', 'organizer', 'attendee'] as const;

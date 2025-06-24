@@ -8,11 +8,13 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.3",
+    "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.0",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.24",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.25.67"
   },
   "scripts": {
     "start": "node ./dist/app.js",

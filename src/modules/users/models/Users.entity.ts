@@ -4,6 +4,8 @@ import { UserRoles } from "../enums/UserRole.enum";
 import { Events } from "../../events/entity/Events.entity";
 import * as bcrypt from 'bcrypt'
 
+import { UserRolesArray } from "../enums/UserRole.enum";
+
 @Entity()
 export class Users extends UserTracking{
     @PrimaryGeneratedColumn()
@@ -20,43 +22,43 @@ export class Users extends UserTracking{
 
     @Column({
         type: 'enum',
-        enum: UserRoles,
-        default: UserRoles.ATTENDEE
+        enum: UserRolesArray,
+        default: 'attendee'
         })
-    role!: UserRoles;
+    role!: typeof UserRolesArray[number];
 
     @OneToMany(() => Events, (events) => events.user)
     events?: Events[];
 
 
-    private _tempPassword: string | undefined;
+    // private _tempPassword: string | undefined;
 
-    public setPassword(newPassword: string){
-        this._tempPassword = newPassword;
-        this._tempPassword = undefined;
-    }
+    // public setPassword(newPassword: string){
+    //     this._tempPassword = newPassword;
+    //     this._tempPassword = undefined;
+    // }
 
-    @BeforeInsert()
-    async HashBeforeInsert(){
-        if(this._tempPassword){
-            const salt = await bcrypt.genSalt(10)
-            this.password = await bcrypt.hash(this._tempPassword, salt)
-            this._tempPassword = undefined;
-        }
-    }
+    // @BeforeInsert()
+    // async HashBeforeInsert(){
+    //     if(this._tempPassword){
+    //         const salt = await bcrypt.genSalt(10)
+    //         this.password = await bcrypt.hash(this._tempPassword, salt)
+    //         this._tempPassword = undefined;
+    //     }
+    // }
 
-    @BeforeUpdate()
-    async HashBeforeUpdate(newPassword: string){
-        if(this.password){
-            const salt = await bcrypt.genSalt(10);
-            this.password = await bcrypt.hash(newPassword, salt)
-        }
-    }
+    // @BeforeUpdate()
+    // async HashBeforeUpdate(newPassword: string){
+    //     if(this.password){
+    //         const salt = await bcrypt.genSalt(10);
+    //         this.password = await bcrypt.hash(newPassword, salt)
+    //     }
+    // }
 
-    public comparePassword(userPassword: string):Promise<boolean | null>{
-        if(!userPassword){
-            return Promise.resolve(false);
-        }
-        return bcrypt.compare(userPassword, this.password)
-    }
+    // public comparePassword(userPassword: string):Promise<boolean | null>{
+    //     if(!userPassword){
+    //         return Promise.resolve(false);
+    //     }
+    //     return bcrypt.compare(userPassword, this.password)
+    // }
 }

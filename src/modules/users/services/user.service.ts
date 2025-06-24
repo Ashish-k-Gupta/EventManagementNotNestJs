@@ -1,9 +1,15 @@
 import { DataSource, Repository } from "typeorm";
 import { Users } from "../models/Users.entity";
-import { AppDataSource } from "../../../AppDataSource";
 import { ConflictException, NotFoundException } from "../../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
-import { CreateUserDto } from "../dto/create-user.dto";
+import {z} from "zod";
+import { createUserSchema, updateUserSchema, updatePasswordSchema } from "../validators/user.validators";
+
+
+type CreateUserInput = z.infer<typeof createUserSchema>
+type UpdateUserInput = z.infer<typeof updateUserSchema>
+type updatePasswordInput = z.infer<typeof updatePasswordSchema>
+
 
 export class UserService{
     private userRepository: Repository<Users>;
@@ -16,17 +22,17 @@ export class UserService{
         return bcrypt.hash(password, salt);
     }
 
-    async createUser(createUserDto: CreateUserDto):Promise<Users>{
-        const existingMail =await this.userRepository.findOne({where: {email: createUserDto.email}})
+    async createUser(createUserData: CreateUserInput):Promise<Users>{
+        const existingMail =await this.userRepository.findOne({where: {email: createUserData.email}})
         if(existingMail){
             throw new ConflictException(`Eamil already exists.`)
         }
-        const hashPassword = await this.hashPassword(createUserDto.password)
+        const hashPassword = await this.hashPassword(createUserData.password)
         const newUser = this.userRepository.create({
-            username: createUserDto.username,
-            email: createUserDto.email,
+            username: createUserData.username,
+            email: createUserData.email,
             password: hashPassword,
-            role: createUserDto.role,
+            role: createUserData.role,
         })
         return await this.userRepository.save(newUser);
     }
@@ -39,8 +45,8 @@ export class UserService{
         return existingUserByEmail;
     }
 
-    async findOneById(id: number): Promise<Users | null>{
-        const user = this.userRepository.findOne({where: {id}})
+    async findOneById(id: number): Promise<Users>{
+        const user = await this.userRepository.findOne({where: {id}})
         if(!user){
             throw new NotFoundException(`User with ID "${id}" not found`);
         }
@@ -57,5 +63,40 @@ export class UserService{
             throw new NotFoundException('User not found')
         }
         await this.userRepository.softRemove(existingUser)
+    }
+
+    async updateUser(id: number, updateUserData: UpdateUserInput):Promise<Users>{
+        const user = await this.findOneById(id);
+        if(updateUserData.email && updateUserData.email !== user.email){
+            const existingUserWithEmail = await this.userRepository.findOne({
+                where: {email: updateUserData.email}
+            })
+            if(existingUserWithEmail &&  existingUserWithEmail.id !== user?.id){
+                throw new ConflictException('Email already in use by another user.');
+            }
+        }
+        Object.assign(user, updateUserData)
+        return this.userRepository.save(user)
+    }
+
+    async updatePassword(id: number, updatePasswordData: updatePasswordInput): Promise<boolean>{
+        const user = await this.userRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .where('user.id = :id', {id})
+        .getOne();
+
+        if(!user){
+            throw new NotFoundException(`User with ID "${id}" not found.`);
+        }
+
+        const isPasswordValid = await bcrypt.compare(updatePasswordData.oldPassword, user.password);
+        if(!isPasswordValid){
+            throw new ConflictException("Old password does not match.")
+        }
+
+        user.password = await this.hashPassword(updatePasswordData.newPassword)
+        await this.userRepository.save(user);
+        return true;
     }
 }
