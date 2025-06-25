@@ -12,6 +12,7 @@ type updatePasswordInput = z.infer<typeof updatePasswordSchema>
 
 
 export class UserService{
+
     private userRepository: Repository<Users>;
     constructor(private dataSource: DataSource){
         this.userRepository = dataSource.getRepository(Users)
@@ -29,7 +30,8 @@ export class UserService{
         }
         const hashPassword = await this.hashPassword(createUserData.password)
         const newUser = this.userRepository.create({
-            username: createUserData.username,
+            firstName: createUserData.firstName,
+            lastName: createUserData.lastName,
             email: createUserData.email,
             password: hashPassword,
             role: createUserData.role,

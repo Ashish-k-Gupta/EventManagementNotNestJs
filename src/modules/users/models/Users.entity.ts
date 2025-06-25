@@ -12,7 +12,10 @@ export class Users extends UserTracking{
     id!: number;
 
     @Column({nullable: false, unique: true})
-    username!: string;
+    firstName!: string;
+    
+    @Column({nullable: false, unique: true})
+    lastName!: string;
 
     @Column({nullable: false, unique: true})
     email!: string;    

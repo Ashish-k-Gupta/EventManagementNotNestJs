@@ -19,7 +19,7 @@ Then I had to create a validation.middleware file. (I have to see this again, ho
 
 Below I have written the code from LLM, because I didn't wanted to miss on this logic, later I will look into this for reference.
 
-
+```typescript
 
 import { Request, Response, NextFunction } from 'express';
 import { UserService } from '../services/user.service';

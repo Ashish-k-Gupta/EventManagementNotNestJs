@@ -17,6 +17,15 @@ export class UserController{
         }
     }
 
+    findAll = async(req: Request, res: Response, next: NextFunction) =>{
+        try{
+            const allUser = await this.userService.findAll();
+            res.status(StatusCodes.OK).json(allUser)
+        }catch(err){
+            next(err);
+        }
+    }
+
     
     findUserByEmail  = async(req: Request, res: Response, next: NextFunction) =>{
         try{
@@ -62,8 +71,7 @@ export class UserController{
     updatePassword  = async(req: Request, res: Response, next: NextFunction) =>{
         try{
             const {id} = req.params;
-            const validatedData = updatePasswordSchema.parse(req.body);
-            const {oldPassword, newPassword} = validatedData;
+            const {oldPassword, newPassword} = req.body;
             await this.userService.updatePassword(parseInt(id), {oldPassword, newPassword});
             res.status(StatusCodes.OK).json({message: "Password Updated Successfully"});
         }catch(err){
