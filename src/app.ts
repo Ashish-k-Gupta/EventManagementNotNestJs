@@ -25,8 +25,7 @@ async function  bootstrap() {
         app.use('/users', userRouter(dataSource));
 
        app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-            console.error('Global error handler caught:', err); // Log the error for debugging
-
+            console.error('Global error handler caught:', err); 
             let statusCode = 500;
             let message = 'An unexpected error occurred.';
 
