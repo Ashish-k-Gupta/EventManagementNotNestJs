@@ -1,6 +1,6 @@
 import { DataSource, Repository } from "typeorm";
 import { Users } from "../models/Users.entity";
-import { ConflictException, NotFoundException } from "../../common/errors/http.exceptions";
+import { ConflictException, InvalidCredentialsException, NotFoundException } from "../../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import {z} from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "../validators/user.validators";
@@ -92,7 +92,7 @@ export class UserService{
 
         const isPasswordValid = await bcrypt.compare(updatePasswordData.oldPassword, user.password);
         if(!isPasswordValid){
-            throw new ConflictException("Old password does not match.")
+            throw new InvalidCredentialsException("Old password does not match.")
         }
 
         user.password = await this.hashPassword(updatePasswordData.newPassword)

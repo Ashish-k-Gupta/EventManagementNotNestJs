@@ -22,3 +22,9 @@ export class ConflictException extends AppError{
         super(message, 409);
     }
 }
+
+export class InvalidCredentialsException extends AppError{
+    constructor(message: string = "Invalid Credentials"){
+        super(message, 401)
+    }
+}

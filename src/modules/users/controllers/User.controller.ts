@@ -1,7 +1,9 @@
 import { UserService } from "../services/user.service";
 import { Request, Response, NextFunction } from "express";
-import { createUserSchema } from "../validators/user.validators";
+import { createUserSchema, updatePasswordSchema, updateUserSchema } from "../validators/user.validators";
 import { StatusCodes } from "http-status-codes";
+import { NotFoundException } from "../../common/errors/http.exceptions";
+import { INVALID } from "zod";
 export class UserController{
     constructor(private userService: UserService){}
 
@@ -20,15 +22,27 @@ export class UserController{
         try{
             const {email} = req.params;
             const user = await this.userService.findUserByEmail(email)
-            //This is pending, start from here.
+            res.status(StatusCodes.OK).json(user);
         }catch(err){
             next(err);
         }
     }
 
-    softRemove    = async(req: Request, res: Response, next: NextFunction) =>{
+    findOneById = async(req: Request, res: Response, next: NextFunction) =>{
         try{
+            const {id} = req.params;
+            const user = await this.userService.findOneById(parseInt(id));
+            res.status(StatusCodes.OK).json(user)
+        }catch(err){
+            next(err);
+        }
+    }
 
+    softRemove = async(req: Request, res: Response, next: NextFunction) =>{
+        try{
+            const {id} = req.params;
+            await this.userService.softRemove(parseInt(id));
+            res.status(StatusCodes.OK).json({message: "User removed"});
         }catch(err){
             next(err);
         }
@@ -36,7 +50,10 @@ export class UserController{
 
     updateUser  = async(req: Request, res: Response, next: NextFunction) =>{
         try{
-
+            const {id} = req.params;
+            const validatedData = updateUserSchema.parse(req.body)
+            const user = await this.userService.updateUser(parseInt(id), validatedData)
+            res.status(StatusCodes.OK).json(user)
         }catch(err){
             next(err);
         }
@@ -44,8 +61,13 @@ export class UserController{
 
     updatePassword  = async(req: Request, res: Response, next: NextFunction) =>{
         try{
-
+            const {id} = req.params;
+            const validatedData = updatePasswordSchema.parse(req.body);
+            const {oldPassword, newPassword} = validatedData;
+            await this.userService.updatePassword(parseInt(id), {oldPassword, newPassword});
+            res.status(StatusCodes.OK).json({message: "Password Updated Successfully"});
         }catch(err){
+            if(err instanceof NotFoundException)
             next(err);
         }
     }
