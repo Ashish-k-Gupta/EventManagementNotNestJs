@@ -1,14 +1,16 @@
 import { DataSource, Repository } from "typeorm";
-import { Users } from "../models/Users.entity";
-import { ConflictException, InvalidCredentialsException, NotFoundException } from "../../common/errors/http.exceptions";
+import { ConflictException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import {z} from "zod";
-import { createUserSchema, updateUserSchema, updatePasswordSchema } from "../validators/user.validators";
+import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
+import { loginSchema } from "../auth/validator/login.validator";
+import { Users } from "./models/Users.entity";
 
 
 type CreateUserInput = z.infer<typeof createUserSchema>
 type UpdateUserInput = z.infer<typeof updateUserSchema>
 type updatePasswordInput = z.infer<typeof updatePasswordSchema>
+type LoginUserInput = z.infer<typeof loginSchema>
 
 
 export class UserService{
@@ -22,6 +24,8 @@ export class UserService{
         const salt = await bcrypt.genSalt(10);
         return bcrypt.hash(password, salt);
     }
+
+
 
     async createUser(createUserData: CreateUserInput):Promise<Users>{
         const existingMail =await this.userRepository.findOne({where: {email: createUserData.email}})
@@ -39,12 +43,13 @@ export class UserService{
         return await this.userRepository.save(newUser);
     }
 
-    async findUserByEmail(email: string):Promise<Users>{
-        const existingUserByEmail = await this.userRepository.findOne({where: {email}})
-        if(!existingUserByEmail){
-            throw new NotFoundException(`User does not exists.`)
-        }
-        return existingUserByEmail;
+    async findUserByEmail(email: string):Promise<Users | null>{
+        const user = await this.userRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .where('user.email = :email', {email})
+        .getOne()
+        return user || null;
     }
 
     async findOneById(id: number): Promise<Users>{
@@ -101,5 +106,14 @@ export class UserService{
         user.password = await this.hashPassword(updatePasswordData.newPassword)
         await this.userRepository.save(user);
         return true;
+    }
+
+    async validateUser(loginUserInput: LoginUserInput): Promise<Users>{
+        const {email, password} = loginUserInput;
+        const user = await this.findUserByEmail(email);
+        if(!user || !(await bcrypt.compare(password, user.password))){
+            throw new InvalidCredentialsException("Email or password incorrect")
+        }
+        return user;
     }
 }

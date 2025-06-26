@@ -1,11 +1,11 @@
 import 'reflect-metadata';
 import { createAndInitializeDataSource } from "./AppDataSource";
 import { DataSource } from 'typeorm';
-import { UserService } from './modules/users/services/user.service';
 import express, { NextFunction, Request, Response } from 'express';
 import { userRouter } from './modules/users/routes/user.routes';
 import { InvalidCredentialsException, NotFoundException } from './modules/common/errors/http.exceptions';
 import { StatusCodes } from 'http-status-codes';
+import { authRouter } from './modules/auth/routes/auth.routes';
 
 
 const app = express();
@@ -25,6 +25,7 @@ async function  bootstrap() {
             res.send('Hello World!');
         });
         app.use('/users', userRouter(dataSource));
+        app.use('/auth', authRouter(dataSource));
 
        app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
             console.error('Global error handler caught:', err); 
