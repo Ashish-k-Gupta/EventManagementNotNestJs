@@ -1,7 +1,7 @@
 import { UserService } from "../services/user.service";
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { NotFoundException } from "../../common/errors/http.exceptions";
+import { InvalidCredentialsException, NotFoundException } from "../../common/errors/http.exceptions";
 export class UserController{
     constructor(private userService: UserService){}
 
@@ -62,7 +62,10 @@ export class UserController{
             await this.userService.updatePassword(parseInt(id), {oldPassword, newPassword});
             res.status(StatusCodes.OK).json({message: "Password Updated Successfully"});
         }catch(err){
-            if(err instanceof NotFoundException)
+            if(err instanceof NotFoundException || err instanceof InvalidCredentialsException){
+                next(err)
+            }
+             console.error("An unexpected error occurred:", err);
             next(err);
         }
     }
@@ -76,5 +79,4 @@ export class UserController{
             next(err);
         }
     }
-
 }

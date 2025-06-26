@@ -4,6 +4,8 @@ import { DataSource } from 'typeorm';
 import { UserService } from './modules/users/services/user.service';
 import express, { NextFunction, Request, Response } from 'express';
 import { userRouter } from './modules/users/routes/user.routes';
+import { InvalidCredentialsException, NotFoundException } from './modules/common/errors/http.exceptions';
+import { StatusCodes } from 'http-status-codes';
 
 
 const app = express();
@@ -26,15 +28,26 @@ async function  bootstrap() {
 
        app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
             console.error('Global error handler caught:', err); 
-            let statusCode = 500;
+
+            if(err instanceof NotFoundException){
+                res.status(StatusCodes.NOT_FOUND).json({message: err.message})
+                return; 
+            }
+            if(err instanceof InvalidCredentialsException){
+                res.status(StatusCodes.UNAUTHORIZED).json({message: err.message})
+                return;
+            }
+            
             let message = 'An unexpected error occurred.';
 
             // For production, avoid sending sensitive error details.
-            if (process.env.NODE_ENV === 'production' && statusCode === 500) {
+            if (process.env.NODE_ENV === 'production') {
                  message = 'An internal server error occurred.';
+            }else{
+
             }
 
-            res.status(statusCode).json({ message });
+           res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: message });
         });
 
         app.listen(port, () => {
