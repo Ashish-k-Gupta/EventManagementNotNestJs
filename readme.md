@@ -19,111 +19,13 @@ Then I had to create a validation.middleware file. (I have to see this again, ho
 
 Below I have written the code from LLM, because I didn't wanted to miss on this logic, later I will look into this for reference.
 
-```typescript
+26-June-2025
+Link1: ([text](https://g.co/gemini/share/d4aad9afc242))
+Link2: ([text](https://g.co/gemini/share/7e7447351801))
 
-import { Request, Response, NextFunction } from 'express';
-import { UserService } from '../services/user.service';
-import { createUserSchema, updateUserSchema, updatePasswordSchema } from '../validators/user.validators';
-import { z } from 'zod';
+what is the use of express.d.ts file
 
-export class UserController {
-  constructor(private userService: UserService) {}
-
-  createUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const validatedData = createUserSchema.parse(req.body);
-      const user = await this.userService.createUser(validatedData);
-      res.status(201).json(user);
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  findUserByEmail = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { email } = req.params;
-      const user = await this.userService.findUserByEmail(email);
-      res.json(user);
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  findOneById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = Number(req.params.id);
-      const user = await this.userService.findOneById(id);
-      res.json(user);
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  findAll = async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      const users = await this.userService.findAll();
-      res.json(users);
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  softRemove = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = Number(req.params.id);
-      await this.userService.softRemove(id);
-      res.status(204).send();
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  updateUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = Number(req.params.id);
-      const validatedData = updateUserSchema.parse(req.body);
-      const updatedUser = await this.userService.updateUser(id, validatedData);
-      res.json(updatedUser);
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  updatePassword = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = Number(req.params.id);
-      const validatedData = updatePasswordSchema.parse(req.body);
-      const success = await this.userService.updatePassword(id, validatedData);
-      res.json({ success });
-    } catch (err) {
-      next(err);
-    }
-  };
-}
-
-import { Router } from 'express';
-import { UserController } from '../controllers/user.controller';
-import { validateSchema } from '../../../common/middlewares/validateSchema';
-import {
-  createUserSchema,
-  updateUserSchema,
-  updatePasswordSchema,
-} from '../validators/user.validators';
-import { AppDataSource } from '../../../data-source'; // your DB connection
-import { UserService } from '../services/user.service';
-
-const router = Router();
-const userService = new UserService(AppDataSource);
-const userController = new UserController(userService);
-
-// 🔒 Validate inputs using your middleware
-router.post('/', validateSchema(createUserSchema), userController.createUser);
-router.get('/:id', userController.findOneById);
-router.get('/email/:email', userController.findUserByEmail);
-router.get('/', userController.findAll);
-router.delete('/:id', userController.softRemove);
-router.put('/:id', validateSchema(updateUserSchema), userController.updateUser);
-router.patch('/:id/password', validateSchema(updatePasswordSchema), userController.updatePassword);
-
-export default router;
-
+Now the auth is working, still didn't get it fully but everytime I write it the understanding gets better. This time I was able to pul the middleware where it also checks for role. If you have correct role then you can access a particular route. 
+Then there also a function to check for the multiple role in the token. 
+That also worked. 
+But I have read and write it again and again.

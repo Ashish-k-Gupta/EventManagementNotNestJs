@@ -28,3 +28,17 @@ export class InvalidCredentialsException extends AppError{
         super(message, 401)
     }
 }
+
+
+export class UnauthorizedException extends AppError{
+    constructor(message: string = "Not Authorized to access this resource"){
+        super(message, 401)
+    }
+}
+
+export class ForbiddenException extends AppError{
+    
+    constructor(message: string = "You do not have permission to access this resource."){
+        super(message, 403)
+    }
+}

@@ -9,4 +9,5 @@ export const tokenPayloadSchema = z.object({
     role: z.enum(UserRolesArray)
 });
 
+
 export type PayloadForToken = z.infer<typeof tokenPayloadSchema>;
