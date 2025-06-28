@@ -31,29 +31,36 @@ That also worked.
 But I have read and write it again and again.
 
 
-```typescript
+28-June-2025
+working in event service, In my designe a user while creating an event, send the id of categories he want to add to that event.
+ 
+ So I have create a function to check if those id are valid, need to think if I can move it to category service rather then writing it in event service. Need to check if this is the right method and other things as well.
 
-import z from 'zod';
+ will start again.
 
 
-export const UpdateEventSchema = z.object({
- name: z.string().min(3, "Event name must be at least 3 character").optional(),
-    description: z.string().min(3, "Event description must be at least 3 character").optional(),
-    language: z.string().min(2, "Language must be at least 2 character").optional(),
-    ticketPrice: z.number().min(0, "Ticket price cannot be negative").optional(),
-    fromDate: z.string().refine(val => !isNaN(Date.parse(val)),{
-        message: 'Invalid Date Format'
-    }).optional(),
-    tillDate: z.string().refine(val => !isNaN(Date.parse(val)),{
-        message: "Invalid Date format"
-    }).optional(),
-    category: z.array(z.string().min(3, "category name must be at least 3 character")).min(1, "Event must have at least 1 category").optional(),
+```javascript
 
-    isCancelled: z.boolean().optional(),
+const number = [1, 2, 3, 2, 4, 5, 6, 7];
+const uniqueNumber = new Set(number);
+console.log(uniqueNumber);
+console.log(uniqueNumber.has(9));
+console.log(uniqueNumber.has(2));
 
-}).superRefine((data, ctx) =>{
-    const fromDateProvider = typeof data.fromDate === 'string';
-    const toDateProvider = typeof data.toDate === 'string';
+let categories = [
+  { id: 1, categoryName: 'Tech' },
+  { id: 2, categoryName: 'Sports' },
+  { id: 3, categoryName: 'Comics' },
+  { id: 4, categoryName: 'Automobile' },
+  { id: 5, categoryName: 'Bikes' },
+  { id: 6, categoryName: 'Books' },
+  { id: 7, categoryName: 'Manufacturing' },
+];
 
-    let fromDate
-})
+const categoriesInRequest = {if
+  id: [1, 4, 6, 1, 7, 4, 10, 15]
+  
+}
+const validCategoryId = new Set(categories.map(cat => cat.id));
+console.log(categoresFoundInDatabase);
+ 

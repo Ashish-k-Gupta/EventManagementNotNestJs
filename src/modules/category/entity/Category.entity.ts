@@ -10,6 +10,6 @@ export class Category extends UserTracking{
     @Column({nullable: false, unique: true})
     name!:string;
 
-    @ManyToMany(() => Events, (event) => event.categories, {nullable: false})
-    event!: Event[];
+    @ManyToMany(() => Events, (event) => event.categories)
+    events!: Event[];
 }

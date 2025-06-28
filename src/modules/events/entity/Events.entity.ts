@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany
 import UserTracking from "../../common/models/UserTracking.entity";
 import { Users } from "../../users/models/Users.entity";
 import { Category } from "../../category/entity/Category.entity";
+import { IsBoolean } from "class-validator";
 
 @Entity()
 export class Events extends UserTracking{
@@ -26,14 +27,12 @@ export class Events extends UserTracking{
     @Column({type: 'timestamptz', nullable: false, name: "event_till_date"})
     tillDate!: Date;
 
-    // @Column({nullable: false, unique: true})
-    // category!: string;
 
     @ManyToOne(() => Users, (users) => users.events)
     @JoinColumn({name: 'user_id'})
     user!: Users;
 
-    @ManyToMany(() => Category, (category) => category.event)
+    @ManyToMany(() => Category, (category) => category.events)
     @JoinTable({
         name: 'event_categories',
         joinColumn: {
@@ -46,4 +45,8 @@ export class Events extends UserTracking{
         }
     })
     categories!: Category[];
+
+    @Column({nullable: false, default: false})
+    @IsBoolean()
+    isCancelled!: boolean;
 }
