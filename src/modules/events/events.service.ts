@@ -1,58 +1,68 @@
 import { DataSource, Repository } from "typeorm";
-import { CreateEventInput } from "./validators/event.validator";
-import { UserService } from "../users/user.service";
 import { Events } from "./entity/Events.entity";
-import { Category } from "../category/entity/Category.entity";
-import { Users } from "../users/models/Users.entity";
-import { NotFoundException } from "../common/errors/http.exceptions";
+import { CreateEventInput, UpdateEventInput } from "./validators/event.validator";
 import { CategoryService } from "../category/category.service";
+import { NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 
-export class EventsService{
-    private eventsRepository: Repository<Events>;
-    private userRepository: Repository<Users>;
-
-
+export class EventService {
+    private eventRepository: Repository<Events>;
     constructor(
-        private dataSource: DataSource,
-        private userService: UserService,
-        private categoryService: CategoryService
+        private dataSource : DataSource,
+        private categorySerivce: CategoryService,
     ){
-        this.eventsRepository = dataSource.getRepository(Events);
-        this.userRepository = dataSource.getRepository(Users);
+        this.eventRepository = this.dataSource.getRepository(Events);
     }
 
-    
+    async createEvent(userId: number, createEventInput: CreateEventInput): Promise<Events>{
 
-    async createEvent(createEventInput: CreateEventInput, userId: number){
-        const creatingUser = await this.userService.findOneById(userId);
+        const categoriesDatabase =await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds)
+        const uniqueCategoriesDatabase = new Set(categoriesDatabase.map(cat => cat.id))
+        const uniqueReqCategories = new Set(createEventInput.categoryIds)
 
-        if(!creatingUser){
-            throw new NotFoundException(`User with ID "${userId}" not found. Cannot create event.`)
-        }
-
-        const categories = await this.categoryService.findCategoryListByIds(createEventInput.categoryIds)
-        const uniqueCategories = new Set(categories.map(cat => cat.id))
-
-        const uniqueReqCategoryIds = new Set(createEventInput.categoryIds)
-
-        const missingIds = [...uniqueCategories].filter(id => !uniqueReqCategoryIds.has(id))
-
+        const missingIds = [...uniqueReqCategories].filter(id => !uniqueCategoriesDatabase)
         if(missingIds.length > 0){
-            throw new NotFoundException(`Catergories with ID(s) "${missingIds.join(', ')} do not exist"`)
+            throw new NotFoundException(`Category with ID(s) ${missingIds.join(', ')} do not exist in the database`)
         }
 
-        const newEvent = this.eventsRepository.create({
+        const newEvent = this.eventRepository.create({
             name: createEventInput.name,
             description: createEventInput.description,
             language: createEventInput.language,
             ticketPrice: createEventInput.ticketPrice,
             fromDate: createEventInput.fromDate,
             tillDate: createEventInput.tillDate,
-            categories: categories,
-            user: creatingUser,
-        });
-        return await this.eventsRepository.save(newEvent);
+            user: {id: userId},
+            categories: categoriesDatabase,
+            isCancelled: false,
+        })
+        return await this.eventRepository.save(newEvent);
+    }
+
+    async findEventById(eventId: number): Promise<Events>{
+        const event = await this.eventRepository.findOne({where: {id: eventId}})
+        if(!event){
+            throw new NotFoundException(`Event with ID "${eventId}" not found`)
+        }
+        return event;
+    }
+
+    async findAllEvents(): Promise<Events[]>{
+        return this.eventRepository.find();
     }
 
 
+    async updateEvent(userId: number, eventId: number, updateEventInput: UpdateEventInput): Promise<Events>{
+        const event = await this.eventRepository.findOne({
+            where: {id: eventId},
+            relations: ['user', 'categories'],
+        });
+        
+        if (!event) {
+        throw new NotFoundException(`Event with ID "${eventId}" not found`);
+    }
+        if(event.user.id !== userId){
+            throw new UnauthorizedException("You are not authorized to update this event")
+        }
+        
+    }
 }

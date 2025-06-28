@@ -39,28 +39,6 @@ working in event service, In my designe a user while creating an event, send the
  will start again.
 
 
-```javascript
-
-const number = [1, 2, 3, 2, 4, 5, 6, 7];
-const uniqueNumber = new Set(number);
-console.log(uniqueNumber);
-console.log(uniqueNumber.has(9));
-console.log(uniqueNumber.has(2));
-
-let categories = [
-  { id: 1, categoryName: 'Tech' },
-  { id: 2, categoryName: 'Sports' },
-  { id: 3, categoryName: 'Comics' },
-  { id: 4, categoryName: 'Automobile' },
-  { id: 5, categoryName: 'Bikes' },
-  { id: 6, categoryName: 'Books' },
-  { id: 7, categoryName: 'Manufacturing' },
-];
-
-const categoriesInRequest = {if
-  id: [1, 4, 6, 1, 7, 4, 10, 15]
-  
-}
-const validCategoryId = new Set(categories.map(cat => cat.id));
-console.log(categoresFoundInDatabase);
- 
+29th-June
+Working on event Service, there is something I don't feel right about how the updateEvent function not feeling right.
+Also check createEvent one time this is also not looking right in line 22.
