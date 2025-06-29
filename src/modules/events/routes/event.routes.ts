@@ -10,12 +10,8 @@ import { UserRoles } from "../../users/enums/UserRole.enum";
 
 
 
-export const eventRouter = (dataSource: DataSource): Router =>{
+export const eventRouter = (eventController: EventController): Router =>{
     const router = Router();
-    const categoryService = new CategoryService(dataSource);
-    const eventService = new EventService(dataSource, categoryService);
-    const eventController = new EventController(eventService);
-
     router.post('/',validateSchema(CreateEventSchema), eventController.createEvent);
     router.get('/:id', eventController.findEventById);
     router.get('/', eventController.findAllEvents);

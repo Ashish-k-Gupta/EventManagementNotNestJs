@@ -43,39 +43,7 @@ working in event service, In my designe a user while creating an event, send the
 Working on event Service, there is something I don't feel right about how the updateEvent function not feeling right.
 Also check createEvent one time this is also not looking right in line 22.
 
-
-```ts
-   const event = await this.eventRepository.findOne({
-            where: { id: eventId },
-            relations: ['user', 'categories'],
-        });
-        if (!event) {
-            throw new NotFoundException(`Event with ID "${eventId}" not found`);
-        }
-        if (event.user.id !== userId) {
-            throw new UnauthorizedException('You are not authorized to update this event');
-        }
-
-        if (updateEventInput.categoryIds) {
-            const categories = await this.categorySerivce.findCategoryListByIds(updateEventInput.categoryIds);
-            const uniqueCategoriesDatabase = new Set(categories.map(cat => cat.id));
-            const uniqueReqCategories = new Set(updateEventInput.categoryIds);
-            const missingIds = [...uniqueReqCategories].filter(id => !uniqueCategoriesDatabase.has(id));
-            if (missingIds.length > 0) {
-                throw new NotFoundException(`Category with ID(s) ${missingIds.join(', ')} do not exist in the database`);
-            }
-            event.categories = categories;
-        }
-
-        Object.assign(event, {
-            name: updateEventInput.name ?? event.name,
-            description: updateEventInput.description ?? event.description,
-            language: updateEventInput.language ?? event.language,
-            ticketPrice: updateEventInput.ticketPrice ?? event.ticketPrice,
-            fromDate: updateEventInput.fromDate ?? event.fromDate,
-            tillDate: updateEventInput.tillDate ?? event.tillDate,
-            isCancelled: updateEventInput.isCancelled ?? event.isCancelled,
-        });
-
-        return await this.eventRepository.save(event);
-    }
+30-June-2025
+#### Done with all the CRUD of user, event, category, 
+testing is still pending of these all modules in the postman.
+Will check it think about the edge cases of the application.

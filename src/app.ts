@@ -8,6 +8,13 @@ import { StatusCodes } from 'http-status-codes';
 import { authRouter } from './modules/auth/routes/auth.routes';
 import { authenticateJWT } from './modules/common/middlewares/auth.middleware';
 import { eventRouter } from './modules/events/routes/event.routes';
+import { catergoryRouter } from './modules/category/routes/catergory.routes';
+import { UserController } from './modules/users/User.controller';
+import { UserService } from './modules/users/user.service';
+import { CategoryService } from './modules/category/category.service';
+import { CatergoryController } from './modules/category/category.controller';
+import { EventController } from './modules/events/events.controller';
+import { EventService } from './modules/events/events.service';
 
 
 const app = express();
@@ -18,6 +25,15 @@ const port = process.env.SERVER_PORT || 3001;
 async function  bootstrap() {
     try{
         const dataSource: DataSource = await createAndInitializeDataSource()
+        const userService = new UserService(dataSource);
+        const userController = new UserController(userService);
+
+        const categorySerivce = new CategoryService(dataSource);
+        const catergoryController = new CatergoryController(categorySerivce);
+
+        const eventService = new EventService( dataSource, categorySerivce);
+        const eventController = new EventController(eventService);
+
         console.log('Database initialized successfully')
 
         app.use(express.json())
@@ -29,8 +45,9 @@ async function  bootstrap() {
         app.use('/auth', authRouter(dataSource));
         app.use(authenticateJWT);
         
-        app.use('/users', userRouter(dataSource));
-        app.use('/events', eventRouter(dataSource));
+        app.use('/users', userRouter(userController));
+        app.use('/category', catergoryRouter(catergoryController));
+        app.use('/events', eventRouter(eventController));
 
     //    app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     //         console.error('Global error handler caught:', err); 

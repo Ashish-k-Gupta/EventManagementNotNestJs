@@ -7,11 +7,8 @@ import { createUserSchema, updatePasswordSchema, updateUserSchema } from "../val
 import { authenticateJWT, checkAdmin } from "../../common/middlewares/auth.middleware";
 import { UserRoles } from "../enums/UserRole.enum";
 
-export const userRouter = (dataSource: DataSource): Router => {
-
+export const userRouter = (userController: UserController): Router => {
     const router = Router();
-    const userService = new UserService(dataSource)
-    const userController = new UserController(userService)
 
     // router.post('/', validateSchema(createUserSchema), userController.createUser)
     router.get('/',authenticateJWT, checkAdmin(UserRoles.ADMIN), userController.findAll);
