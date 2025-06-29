@@ -47,3 +47,7 @@ Also check createEvent one time this is also not looking right in line 22.
 #### Done with all the CRUD of user, event, category, 
 testing is still pending of these all modules in the postman.
 Will check it think about the edge cases of the application.
+
+
+[Link]='https://youtu.be/7uUl_aTbOzQ?si=LoDkne8QHmDvkmhr'
+[Link]='https://youtu.be/i7kh8pNRWOo?si=Y8mnlqzLivs9zlmp'
