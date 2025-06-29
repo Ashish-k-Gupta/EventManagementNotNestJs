@@ -42,3 +42,9 @@ export class ForbiddenException extends AppError{
         super(message, 403)
     }
 }
+
+export class BadRequestException extends AppError{
+    constructor(message: string = "You cannot remove all data here"){
+        super(message, 400)
+    }
+}
