@@ -26,10 +26,19 @@ export class CategoryService {
     }
 
     async findCategoryListByIds(ids: number[]): Promise<Category[]>{
-        const categoryList = this.categoryRepository.find({
+        if(ids.length === 0){
+            return [];
+        }
+        const categories = await this.categoryRepository.find({
             where: {id: In(ids)}
         })
-        return categoryList;
+
+        if(categories.length !== ids.length){
+            const foundIds = new Set(categories.map(val => val.id));
+            const missingIds = ids.filter(id =>  !foundIds.has(id));
+            throw new NotFoundException(`One or more categories with ID(s) ${missingIds.join(', ')} do not exist.`);
+        }
+        return categories;
     }
 
     async findAllCategory():Promise<Category[]>{

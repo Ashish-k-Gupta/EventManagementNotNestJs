@@ -7,15 +7,15 @@ import { BadRequestException, NotFoundException, UnauthorizedException } from ".
 export class EventService {
     private eventRepository: Repository<Events>;
     constructor(
-        private dataSource : DataSource,
+        private dataSource: DataSource,
         private categorySerivce: CategoryService,
     ){
-        this.eventRepository = this.dataSource.getRepository(Events);
+        this.eventRepository = dataSource.getRepository(Events);
     }
 
     async createEvent(userId: number, createEventInput: CreateEventInput): Promise<Events>{
 
-        const categoriesDatabase =await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds)
+        const categoriesDatabase = await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds)
         const uniqueCategoriesDatabase = new Set(categoriesDatabase.map(cat => cat.id))
         const uniqueReqCategories = new Set(createEventInput.categoryIds)
 

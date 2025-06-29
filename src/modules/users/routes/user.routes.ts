@@ -13,7 +13,7 @@ export const userRouter = (dataSource: DataSource): Router => {
     const userService = new UserService(dataSource)
     const userController = new UserController(userService)
 
-    router.post('/', validateSchema(createUserSchema), userController.createUser)
+    // router.post('/', validateSchema(createUserSchema), userController.createUser)
     router.get('/',authenticateJWT, checkAdmin(UserRoles.ADMIN), userController.findAll);
     router.get('/:id', userController.findOneById);
     router.get('/:email', userController.findUserByEmail);

@@ -2,14 +2,12 @@ import { UserService } from "../users/user.service";
 import dotenv from 'dotenv';
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { NotFoundException } from "../common/errors/http.exceptions";
-import { createUserSchema } from "../users/validators/user.validators";
+import { CreateUserInput, createUserSchema, LoginUserInput } from "../users/validators/user.validators";
 import {z} from 'zod';
 import { Users } from "../users/models/Users.entity";
 import { PayloadForToken } from "./validator/payload.validator";
 
 
-type CreateUserInput = z.infer<typeof createUserSchema>;
-type LoginUserInput = z.infer<typeof createUserSchema>;
 dotenv.config();
 const secretKey = process.env.JWT_SECRET as string;
 const jwtExpiresIn = parseInt(process.env.JWT_EXPIRES_IN!) || 3600;

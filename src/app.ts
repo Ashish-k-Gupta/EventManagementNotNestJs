@@ -3,13 +3,15 @@ import { createAndInitializeDataSource } from "./AppDataSource";
 import { DataSource } from 'typeorm';
 import express, { NextFunction, Request, Response } from 'express';
 import { userRouter } from './modules/users/routes/user.routes';
-import { InvalidCredentialsException, NotFoundException } from './modules/common/errors/http.exceptions';
+import { AppError, InvalidCredentialsException, NotFoundException } from './modules/common/errors/http.exceptions';
 import { StatusCodes } from 'http-status-codes';
 import { authRouter } from './modules/auth/routes/auth.routes';
+import { authenticateJWT } from './modules/common/middlewares/auth.middleware';
+import { eventRouter } from './modules/events/routes/event.routes';
 
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.SERVER_PORT || 3001;
 // let userService: UserService;
 
 
@@ -24,32 +26,53 @@ async function  bootstrap() {
         app.get('/', (req, res) => {
             res.send('Hello World!');
         });
-        app.use('/users', userRouter(dataSource));
         app.use('/auth', authRouter(dataSource));
+        app.use(authenticateJWT);
+        
+        app.use('/users', userRouter(dataSource));
+        app.use('/events', eventRouter(dataSource));
 
-       app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-            console.error('Global error handler caught:', err); 
+    //    app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    //         console.error('Global error handler caught:', err); 
 
-            if(err instanceof NotFoundException){
-                res.status(StatusCodes.NOT_FOUND).json({message: err.message})
-                return; 
-            }
-            if(err instanceof InvalidCredentialsException){
-                res.status(StatusCodes.UNAUTHORIZED).json({message: err.message})
-                return;
-            }
+    //         if(err instanceof NotFoundException){
+    //             res.status(StatusCodes.NOT_FOUND).json({message: err.message})
+    //             return; 
+    //         }
+    //         if(err instanceof InvalidCredentialsException){
+    //             res.status(StatusCodes.UNAUTHORIZED).json({message: err.message})
+    //             return;
+    //         }
             
-            let message = 'An unexpected error occurred.';
+    //         let message = 'An unexpected error occurred.';
 
-            // For production, avoid sending sensitive error details.
-            if (process.env.NODE_ENV === 'production') {
-                 message = 'An internal server error occurred.';
+    //         if (process.env.NODE_ENV === 'production') {
+    //              message = 'An internal server error occurred.';
+    //         }else{
+
+    //         }
+
+    //        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: message });
+    //     });
+
+        app.use((err: Error, req: Request, res: Response, next: NextFunction) =>{
+            console.error('Caught by global error handler', err);
+
+            if(err instanceof AppError){
+                res.status(err.statusCode).json({
+                    message: err.message,
+                    statusCode: err.statusCode,
+                    isOperational: err.isOperational,
+                    name: err.name,
+                })
             }else{
-
+                let message = "An unexpected server error occured.";
+                if(process.env.NODE_ENV !== 'production'){
+                    message: `Internal Server Error: ${err.message}`;
+                }
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message})
             }
-
-           res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: message });
-        });
+        })
 
         app.listen(port, () => {
             console.log(`Server running on http://localhost:${port}`);
