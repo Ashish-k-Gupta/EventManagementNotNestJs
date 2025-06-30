@@ -23,14 +23,21 @@ findAllCategory = async (req: Request, res: Response, next: NextFunction) =>{
         next(err)
     }
 }
+quickList =  async (req: Request, res: Response, next: NextFunction) =>{
+    try{
+        const allCategory = await this.categoryService.quickList()
+        res.status(StatusCodes.OK).json(allCategory)
+    }catch(err){
+        next(err)
+    }
+}
 
 findCategoryById = async(req: Request, res: Response, next: NextFunction) =>{
     try{
-        const idsString = req.query.ids as string;
-            if (!idsString) {
-                throw new BadRequestException('Category IDs are required as a comma-separated list in query parameters (e.g., ?ids=1,2,3).');
+       const id = parseInt(req.params.id, 10);
+            if (!id) {
+                throw new BadRequestException(`Invlid category IDs ${id}.`);
             }
-        const id = parseInt(req.params.ids, 10);
         const category =await this.categoryService.findCategoryById(id);
         res.status(StatusCodes.OK).json(category);
 
@@ -51,7 +58,8 @@ findCategoryListByIds = async(req: Request, res: Response, next: NextFunction) =
         if(isNaN(parseId)){
             throw new BadRequestException('')
         }
-        throw parseId;
+        console.log("ParsedId", parseId)
+        return parseId;
        })
 
         const categoryList =await this.categoryService.findCategoryListByIds(ids);
@@ -75,8 +83,8 @@ updateCategory = async (req: Request, res: Response, next: NextFunction) =>{
 softRemove = async (req: Request, res: Response, next: NextFunction) =>{
     try{
         const id = parseInt(req.params.id, 10);
-        await this.categoryService.softRemoveCategory(id)
-        res.status(StatusCodes.NO_CONTENT).send()
+        const removeCategory = await this.categoryService.softRemoveCategory(id);
+        res.status(StatusCodes.OK).json(removeCategory);
 
     }catch(err){
         next(err)

@@ -51,3 +51,20 @@ Will check it think about the edge cases of the application.
 
 [Link]='https://youtu.be/7uUl_aTbOzQ?si=LoDkne8QHmDvkmhr'
 [Link]='https://youtu.be/i7kh8pNRWOo?si=Y8mnlqzLivs9zlmp'
+
+
+30-June
+I got to know that the order in which you define you route matters.
+If you have two same type of req and going to same path it will create problem. They'll collide and maybe behave unexpectedly.
+Example:
+    router.get("/list-by-ids", catergoryController.findCategoryListByIds)
+    router.get("/:id", catergoryController.findCategoryById)
+
+    These two routes has created problem, because earlier I had the "findCategoryById" was before "findCategoryListByIds".
+    And the problem was that When Express processes requests, it tries to match them in the order they are defined.
+
+    When you make a request to /list-by-ids, Express processes your routes in order:
+
+    [1.] It first encounters router.get("/:id", ...).
+    [2.] It sees that /list-by-ids matches the pattern /:id, and it extracts "list-by-ids" as the id parameter.
+    [3.] Therefore, catergoryController.findCategoryById is called, and req.params.id will be "list-by-ids".

@@ -9,10 +9,11 @@ export const catergoryRouter = (catergoryController: CatergoryController): Route
     const router = Router();
 
     router.post("/", checkAdmin(UserRoles.ADMIN),validateSchema(createCategorySchema), catergoryController.createCategory)
-    router.get("/:id", catergoryController.findCategoryById)
-    router.get("/:ids", catergoryController.findCategoryListByIds)
     router.get("/", catergoryController.findAllCategory)
-    router.put("/", checkAdmin(UserRoles.ADMIN),validateSchema(updateCategorySchema), catergoryController.updateCategory)
+    router.get("/quick-list/", catergoryController.quickList)
+    router.get("/filter/", catergoryController.findCategoryListByIds)
+    router.get("/:id", catergoryController.findCategoryById)
+    router.put("/:id", checkAdmin(UserRoles.ADMIN),validateSchema(updateCategorySchema), catergoryController.updateCategory)
     router.delete("/:id",checkAdmin(UserRoles.ADMIN), catergoryController.softRemove)
     return router;
 }

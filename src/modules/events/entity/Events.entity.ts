@@ -18,7 +18,7 @@ export class Events extends UserTracking{
     @Column({nullable: false})
     language!: string;
 
-    @Column({nullable: false})
+    @Column({nullable: false, type: 'decimal', precision: 10, scale: 2})
     ticketPrice!: number;
 
     @Column({type: 'timestamptz', nullable: false, name: "event_from_date"})

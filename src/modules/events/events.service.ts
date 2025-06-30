@@ -47,7 +47,38 @@ export class EventService {
     }
 
     async findAllEvents(): Promise<Events[]>{
-        return this.eventRepository.find();
+        return this.eventRepository.find({
+            relations: ['user', 'categories'],
+            select:{
+                user:{
+                    id: true,
+                    firstName: true,
+                },
+                categories:{
+                    id: true,
+                    name: true
+                }
+            }
+        });
+    }
+
+    async quickListEvent(): Promise<Events[]>{
+        return this.eventRepository.find({
+            relations: ['user'],
+            select:{
+                id: true,
+                name: true,
+                fromDate: true,
+                tillDate: true,
+                language: true,
+                ticketPrice: true,
+                user:{
+                    id: true,
+                    firstName: true,
+                },
+                categories:false  
+            }
+        });
     }
 
 
@@ -79,8 +110,12 @@ export class EventService {
             }
             eventToUpdate.categories = newCategories;
         }
+        console.log("Eventtttttt Before", eventToUpdate)
         Object.assign(eventToUpdate, updateEventInput)
-        return await this.eventRepository.save(eventToUpdate);
+        console.log("Eventtttttt After", eventToUpdate)
+        const res =await this.eventRepository.save(eventToUpdate); 
+        console.log("Response", res)
+        return res;
     }
 
     async softRemove(eventId: number): Promise<Events>{

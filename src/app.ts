@@ -49,28 +49,6 @@ async function  bootstrap() {
         app.use('/category', catergoryRouter(catergoryController));
         app.use('/events', eventRouter(eventController));
 
-    //    app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    //         console.error('Global error handler caught:', err); 
-
-    //         if(err instanceof NotFoundException){
-    //             res.status(StatusCodes.NOT_FOUND).json({message: err.message})
-    //             return; 
-    //         }
-    //         if(err instanceof InvalidCredentialsException){
-    //             res.status(StatusCodes.UNAUTHORIZED).json({message: err.message})
-    //             return;
-    //         }
-            
-    //         let message = 'An unexpected error occurred.';
-
-    //         if (process.env.NODE_ENV === 'production') {
-    //              message = 'An internal server error occurred.';
-    //         }else{
-
-    //         }
-
-    //        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: message });
-    //     });
 
         app.use((err: Error, req: Request, res: Response, next: NextFunction) =>{
             console.error('Caught by global error handler', err);

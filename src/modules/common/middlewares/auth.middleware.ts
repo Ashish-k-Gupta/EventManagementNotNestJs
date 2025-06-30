@@ -4,7 +4,6 @@ import { ForbiddenException, UnauthorizedException } from "../errors/http.except
 import Jwt, {TokenExpiredError, JsonWebTokenError}  from "jsonwebtoken"
 import dotenv from 'dotenv'
 import { PayloadForToken } from "../../auth/validator/payload.validator"
-import { Users } from "../../users/models/Users.entity"
 
 
 declare module 'express' {

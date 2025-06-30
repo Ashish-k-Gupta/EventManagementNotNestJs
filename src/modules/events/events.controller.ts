@@ -34,6 +34,15 @@ export class EventController{
         }
     }
 
+    quickListEvent = async (req: Request, res: Response, next: NextFunction) =>{
+        try{
+            const allEvents =await this.eventService.quickListEvent();
+            res.status(StatusCodes.OK).json(allEvents);
+        }catch(err){
+            next(err)
+        }
+    }
+
     updateEvent = async(req: Request, res: Response, next: NextFunction) =>{
         try{
             const userId = (req as any).user.id;

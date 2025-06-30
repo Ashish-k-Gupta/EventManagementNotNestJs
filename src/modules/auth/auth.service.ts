@@ -2,8 +2,7 @@ import { UserService } from "../users/user.service";
 import dotenv from 'dotenv';
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { NotFoundException } from "../common/errors/http.exceptions";
-import { CreateUserInput, createUserSchema, LoginUserInput } from "../users/validators/user.validators";
-import {z} from 'zod';
+import { CreateUserInput, LoginUserInput } from "../users/validators/user.validators";
 import { Users } from "../users/models/Users.entity";
 import { PayloadForToken } from "./validator/payload.validator";
 

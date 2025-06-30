@@ -30,7 +30,8 @@ export class CategoryService {
             return [];
         }
         const categories = await this.categoryRepository.find({
-            where: {id: In(ids)}
+            where: {id: In(ids)},
+            select: ['id', 'name', 'created_by', 'updated_by','created_at', 'updated_at']
         })
 
         if(categories.length !== ids.length){
@@ -44,6 +45,12 @@ export class CategoryService {
     async findAllCategory():Promise<Category[]>{
         return await this.categoryRepository.find();
     }
+    
+    async quickList():Promise<Category[]>{
+        return await this.categoryRepository.find({
+            select: ['id', 'name']
+        });
+    }
 
     async updateCategory(id: number, updateCategoryInput : UpdateCategoryInput): Promise<Category>{
         const categoryToUpdate = await this.findCategoryById(id);
@@ -53,10 +60,10 @@ export class CategoryService {
         return await this.categoryRepository.save(categoryToUpdate);
     }
 
-    async softRemoveCategory(categoryId: number): Promise<void>{
+    async softRemoveCategory(categoryId: number): Promise<{message: string}>{
         const categoryToRemove  = await this.findCategoryById(categoryId);
         await this.categoryRepository.softRemove(categoryToRemove);
-        return;
+        return {message: `Category removed.`}
     }
 
 }

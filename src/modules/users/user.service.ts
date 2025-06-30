@@ -1,5 +1,5 @@
 import { DataSource, Repository } from "typeorm";
-import { ConflictException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
+import { BadRequestException, ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import {z} from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
@@ -29,6 +29,9 @@ export class UserService{
 
     async createUser(createUserData: CreateUserInput):Promise<Users>{
         const existingMail =await this.userRepository.findOne({where: {email: createUserData.email}})
+        if(createUserData.role === "admin"){
+            throw new ForbiddenException("Admin role is not allowed")
+        }
         if(existingMail){
             throw new ConflictException(`Eamil already exists.`)
         }
