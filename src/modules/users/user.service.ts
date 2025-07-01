@@ -1,5 +1,5 @@
 import { DataSource, Repository } from "typeorm";
-import { BadRequestException, ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
+import { ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import {z} from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
