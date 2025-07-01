@@ -27,7 +27,7 @@ export class UserService{
 
 
 
-    async createUser(createUserData: CreateUserInput):Promise<Users>{
+    async createUser(createUserData: CreateUserInput):Promise<Partial<Users>>{
         const existingMail =await this.userRepository.findOne({where: {email: createUserData.email}})
         if(createUserData.role === "admin"){
             throw new ForbiddenException("Admin role is not allowed")
@@ -35,7 +35,12 @@ export class UserService{
         if(existingMail){
             throw new ConflictException(`Eamil already exists.`)
         }
+
+        if(createUserData.role === 'admin'){
+            throw new ForbiddenException('Admin roles are not allowed')
+        }
         const hashPassword = await this.hashPassword(createUserData.password)
+        
         const newUser = this.userRepository.create({
             firstName: createUserData.firstName,
             lastName: createUserData.lastName,
@@ -43,7 +48,9 @@ export class UserService{
             password: hashPassword,
             role: createUserData.role,
         })
-        return await this.userRepository.save(newUser);
+        const savedUser = await this.userRepository.save(newUser);
+        const {password, deleted_at, updated_at, created_by, ...safeUser} = savedUser;
+        return safeUser;
     }
 
     async findUserByEmail(email: string):Promise<Users | null>{
