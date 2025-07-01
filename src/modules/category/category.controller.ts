@@ -58,7 +58,6 @@ findCategoryListByIds = async(req: Request, res: Response, next: NextFunction) =
         if(isNaN(parseId)){
             throw new BadRequestException('')
         }
-        console.log("ParsedId", parseId)
         return parseId;
        })
 

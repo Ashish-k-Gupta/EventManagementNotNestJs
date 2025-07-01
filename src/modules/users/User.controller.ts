@@ -65,7 +65,6 @@ export class UserController {
             if (err instanceof NotFoundException || err instanceof InvalidCredentialsException) {
                 next(err)
             }
-            console.error("An unexpected error occurred:", err);
             next(err);
         }
     }

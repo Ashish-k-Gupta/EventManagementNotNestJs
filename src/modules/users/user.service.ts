@@ -106,7 +106,6 @@ export class UserService{
 
         const isPasswordValid = await bcrypt.compare(updatePasswordData.oldPassword, user.password);
         if(!isPasswordValid){
-            console.log("Invalid Password")
             throw new InvalidCredentialsException("Old password does not match.")
         }
 

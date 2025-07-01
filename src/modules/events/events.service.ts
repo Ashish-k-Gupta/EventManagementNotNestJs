@@ -2,7 +2,7 @@ import { DataSource, Repository } from "typeorm";
 import { Events } from "./entity/Events.entity";
 import { CreateEventInput, UpdateEventInput } from "./validators/event.validator";
 import { CategoryService } from "../category/category.service";
-import { BadRequestException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
+import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 
 export class EventService {
     private eventRepository: Repository<Events>;
@@ -14,6 +14,10 @@ export class EventService {
     }
 
     async createEvent(userId: number, createEventInput: CreateEventInput): Promise<Events>{
+        const existingEvent = await this.eventRepository.findOne({where: {name: createEventInput.name}})
+        if(existingEvent){
+            throw new ConflictException(`An event named "${createEventInput.name}" already exists. Please choose a different name.`);
+        }
 
         const categoriesDatabase = await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds)
         const uniqueCategoriesDatabase = new Set(categoriesDatabase.map(cat => cat.id))
@@ -34,7 +38,7 @@ export class EventService {
             user: {id: userId},
             categories: categoriesDatabase,
             isCancelled: false,
-        })
+        });
         return await this.eventRepository.save(newEvent);
     }
 
