@@ -36,9 +36,6 @@ export class UserService{
             throw new ConflictException(`Eamil already exists.`)
         }
 
-        if(createUserData.role === 'admin'){
-            throw new ForbiddenException('Admin roles are not allowed')
-        }
         const hashPassword = await this.hashPassword(createUserData.password)
         
         const newUser = this.userRepository.create({
