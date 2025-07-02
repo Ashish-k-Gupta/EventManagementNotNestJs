@@ -122,7 +122,7 @@ export class EventService {
         return res;
     }
 
-    async softRemoveAndCancelled(eventId: number): Promise<Events>{
+    async softRemoveAndCancelled(eventId: number): Promise<{message: string}>{
         
         const eventToSoftDelete = await this.eventRepository.findOne({where: {id: eventId}});
 
@@ -136,7 +136,9 @@ export class EventService {
         eventToSoftDelete.isCancelled = true;
         eventToSoftDelete.deleted_at = new Date();
 
-        return this.eventRepository.save(eventToSoftDelete);
+        const removedEvent =await this.eventRepository.save(eventToSoftDelete);
+        const res = `Event ${removedEvent.name} removed successfully`;
+        return{message: res}
     }
 
 }
