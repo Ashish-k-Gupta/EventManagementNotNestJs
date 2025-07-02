@@ -82,3 +82,4 @@ Example:
     June/2/2025
     Didn't do much as I'm not good at sql queries. This month I will spend time writing those queries and learning about it.
     Got know about few of them but still long way to go
+    The file in the queryBuilder was way out of my digestion. I have decided that it's better to learn sql then push it under the rug.
