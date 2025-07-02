@@ -77,3 +77,8 @@ Example:
     APIs are working need to see what is the next task that we have work on.
     Just test the Event API, I have tested the for create rest are pending.
     Bye Good nigth
+
+
+    June/2/2025
+    Didn't do much as I'm not good at sql queries. This month I will spend time writing those queries and learning about it.
+    Got know about few of them but still long way to go
