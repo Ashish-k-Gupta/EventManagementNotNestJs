@@ -13,7 +13,7 @@ export const eventRouter = (eventController: EventController): Router =>{
     router.get('/', eventController.findAllEvents);
     router.get('/quick-list/', eventController.quickListEvent);
     router.get('/:id', eventController.findEventById);
+    router.put('/delete/:id',checkAdmin(UserRoles.ADMIN), eventController.softRemove)
     router.put('/:id',validateSchema(updateEventSchema), eventController.updateEvent)
-    router.delete('/:id',checkAdmin(UserRoles.ADMIN), eventController.softRemove)
     return router;
 }

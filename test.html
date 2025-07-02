@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Application Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Container for the form */
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Headings */
+        h1, h3 {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #444;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        h3 i {
+            color: #007bff;
+        }
+
+        /* Form Layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+
+        .form-col {
+            flex: 1;
+            min-width: 250px; /* Minimum width for columns before wrapping */
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-sizing: border-box; /* Include padding in width */
+        }
+
+        .form-control:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Required Field Indicator */
+        .required-field::after {
+            content: '*';
+            color: #dc3545;
+            margin-left: 4px;
+        }
+
+        /* Checkbox and Radio Groups */
+        .checkbox-group, .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item, .radio-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .checkbox-item input[type="checkbox"],
+        .radio-item input[type="radio"] {
+            margin-right: 8px;
+            transform: scale(1.1);
+        }
+
+        .checkbox-item label,
+        .radio-item label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+            text-decoration: none;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .btn-light {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 1px solid #ced4da;
+        }
+
+        .btn-light:hover {
+            background-color: #e2e6ea;
+            border-color: #dae0e5;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+        }
+
+        /* Text Utilities */
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Tabs Styling */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 25px;
+            overflow-x: auto; /* Enable horizontal scrolling for many tabs */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-button {
+            background-color: #f0f0f0;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            white-space: nowrap; /* Prevent text wrapping inside buttons */
+            margin-right: 5px; /* Space between tabs */
+            border: 1px solid #ddd;
+            border-bottom: none;
+        }
+
+        .tab-button:hover {
+            background-color: #e9ecef;
+            color: #333;
+        }
+
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            box-shadow: 0 -2px 10px rgba(0, 123, 255, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab-button.active i {
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 25px 0;
+            border-top: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Employment History */
+        .employment-history-item {
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #fdfdfd;
+            position: relative;
+        }
+
+        .employment-history-item .remove-history {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .add-history-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 15px;
+            border: 2px dashed #007bff;
+            color: #007bff;
+            background-color: #eaf5ff;
+            transition: all 0.3s ease;
+        }
+
+        .add-history-btn:hover {
+            background-color: #d0e7ff;
+            color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        /* File Upload */
+        .file-upload {
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #eaf5ff;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .file-upload:hover {
+            background-color: #d0e7ff;
+            border-color: #0056b3;
+        }
+
+        .file-upload i {
+            font-size: 3rem;
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+
+        .file-upload p {
+            margin: 0 0 15px 0;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        /* Document Checklist */
+        .document-checklist {
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #fdfdfd;
+        }
+
+        .document-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .document-item:last-child {
+            border-bottom: none;
+        }
+
+        .document-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .document-item label {
+            flex-grow: 1;
+            margin-bottom: 0;
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+        }
+
+        .document-expiration {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-left: 10px;
+            font-weight: 400;
+        }
+
+        .document-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 15px;
+        }
+
+        .document-status.valid {
+            background-color: #28a745; /* Green for valid */
+        }
+
+        .document-status.missing {
+            background-color: #ffc107; /* Yellow for missing */
+        }
+
+        /* File List for additional documents */
+        .file-list {
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #fdfdfd;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .file-name i {
+            color: #007bff;
+        }
+
+        .file-actions .btn {
+            margin-left: 8px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-col {
+                min-width: 100%;
+            }
+
+            .tabs {
+                flex-wrap: nowrap;
+            }
+
+            .tab-button {
+                flex-shrink: 0; /* Prevent tabs from shrinking */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Driver Application</h1>
+
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-button active" data-tab="personal-tab"><i class="fas fa-user"></i> Personal Information</button>
+                <button class="tab-button" data-tab="employment-tab"><i class="fas fa-history"></i> Employment History</button>
+                <button class="tab-button" data-tab="driving-tab"><i class="fas fa-car-crash"></i> Driving Record</button>
+                <button class="tab-button" data-tab="drug-tab"><i class="fas fa-flask"></i> Drug & Alcohol</button>
+                <button class="tab-button" data-tab="medical-tab"><i class="fas fa-heartbeat"></i> Medical</button>
+                <button class="tab-button" data-tab="documents-tab"><i class="fas fa-file-contract"></i> Documents</button>
+            </div>
+            
+            <div class="tab-content active" id="personal-tab">
+                <h3><i class="fas fa-user"></i> Personal Information</h3>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="first-name" class="required-field">First Name</label>
+                            <input type="text" id="first-name" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="middle-initial">Middle Initial</label>
+                            <input type="text" id="middle-initial" class="form-control" maxlength="1">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="last-name" class="required-field">Last Name</label>
+                            <input type="text" id="last-name" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="alias">Alias or Other Names Used</label>
+                            <input type="text" id="alias" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="dob" class="required-field">Date of Birth</label>
+                            <input type="date" id="dob" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="ssn" class="required-field">Social Security Number</label>
+                            <input type="text" id="ssn" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="license-number" class="required-field">Driver License Number</label>
+                            <input type="text" id="license-number" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="license-state" class="required-field">Driver License State</label>
+                            <select id="license-state" class="form-control" required>
+                                <option value="">Select State</option>
+                                <option value="AL">Alabama</option>
+                                <option value="AK">Alaska</option>
+                                <option value="AZ">Arizona</option>
+                                <option value="AR">Arkansas</option>
+                                <option value="CA">California</option>
+                                <option value="CO">Colorado</option>
+                                <option value="CT">Connecticut</option>
+                                <option value="DE">Delaware</option>
+                                <option value="FL">Florida</option>
+                                <option value="GA">Georgia</option>
+                                <option value="HI">Hawaii</option>
+                                <option value="ID">Idaho</option>
+                                <option value="IL">Illinois</option>
+                                <option value="IN">Indiana</option>
+                                <option value="IA">Iowa</option>
+                                <option value="KS">Kansas</option>
+                                <option value="KY">Kentucky</option>
+                                <option value="LA">Louisiana</option>
+                                <option value="ME">Maine</option>
+                                <option value="MD">Maryland</option>
+                                <option value="MA">Massachusetts</option>
+                                <option value="MI">Michigan</option>
+                                <option value="MN">Minnesota</option>
+                                <option value="MS">Mississippi</option>
+                                <option value="MO">Missouri</option>
+                                <option value="MT">Montana</option>
+                                <option value="NE">Nebraska</option>
+                                <option value="NV">Nevada</option>
+                                <option value="NH">New Hampshire</option>
+                                <option value="NJ">New Jersey</option>
+                                <option value="NM">New Mexico</option>
+                                <option value="NY">New York</option>
+                                <option value="NC">North Carolina</option>
+                                <option value="ND">North Dakota</option>
+                                <option value="OH">Ohio</option>
+                                <option value="OK">Oklahoma</option>
+                                <option value="OR">Oregon</option>
+                                <option value="PA">Pennsylvania</option>
+                                <option value="RI">Rhode Island</option>
+                                <option value="SC">South Carolina</option>
+                                <option value="SD">South Dakota</option>
+                                <option value="TN">Tennessee</option>
+                                <option value="TX">Texas</option>
+                                <option value="UT">Utah</option>
+                                <option value="VT">Vermont</option>
+                                <option value="VA">Virginia</option>
+                                <option value="WA">Washington</option>
+                                <option value="WV">West Virginia</option>
+                                <option value="WI">Wisconsin</option>
+                                <option value="WY">Wyoming</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="license-expiry" class="required-field">License Expiration Date</label>
+                            <input type="date" id="license-expiry" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="cdl-class" class="required-field">CDL Class</label>
+                            <select id="cdl-class" class="form-control" required>
+                                <option value="">Select Class</option>
+                                <option value="A">Class A</option>
+                                <option value="B">Class B</option>
+                                <option value="C">Class C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="endorsements">Endorsements</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="hazmat" name="endorsements">
+                                    <label for="hazmat">Hazmat (H)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="tanker" name="endorsements">
+                                    <label for="tanker">Tanker (N)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="passenger" name="endorsements">
+                                    <label for="passenger">Passenger (P)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="school-bus" name="endorsements">
+                                    <label for="school-bus">School Bus (S)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="doubles-triples" name="endorsements">
+                                    <label for="doubles-triples">Doubles/Triples (T)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="restrictions">Restrictions</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="corrective-lenses" name="restrictions">
+                                    <label for="corrective-lenses">Corrective Lenses (E)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="full-air-brake" name="restrictions">
+                                    <label for="full-air-brake">Full Air Brake (L)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="air-brake" name="restrictions">
+                                    <label for="air-brake">Air Brake (Z)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="manual-transmission" name="restrictions">
+                                    <label for="manual-transmission">Manual Transmission (M)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address" class="required-field">Current Address</label>
+                    <input type="text" id="address" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address-history" class="required-field">5-Year Address History</label>
+                    <textarea id="address-history" class="form-control" rows="3" required placeholder="List all addresses where you've lived in the past 5 years with dates"></textarea>
+                    <small class="text-muted">List all addresses where you've lived in the past 5 years with dates</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="phone" class="required-field">Phone Number</label>
+                            <input type="tel" id="phone" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="required-field">Emergency Contact</label>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <input type="text" class="form-control" placeholder="Name" required>
+                        </div>
+                        <div class="form-col">
+                            <input type="text" class="form-control" placeholder="Relationship" required>
+                        </div>
+                        <div class="form-col">
+                            <input type="tel" class="form-control" placeholder="Phone Number" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="employment-tab">
+                <h3><i class="fas fa-history"></i> 10-Year Commercial Driving Employment History</h3>
+                <p class="text-muted">List all employment for the past 10 years, starting with the most recent. Include all commercial driving jobs.</p>
+                
+                <div id="employment-history-container">
+                    <div class="employment-history-item">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="required-field">Company Name</label>
+                                    <input type="text" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label>Phone</label>
+                                    <input type="tel" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label>Contact Person</label>
+                                    <input type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label>Position Held</label>
+                                    <input type="text" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="required-field">From Date</label>
+                                    <input type="date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="required-field">To Date</label>
+                                    <input type="date" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="required-field">Reason for Leaving</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        
+                        <button type="button" class="btn btn-danger btn-sm remove-history">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-light add-history-btn" id="add-employment">
+                    <i class="fas fa-plus"></i> Add Employment
+                </button>
+                
+                <div class="form-group">
+                    <label for="employment-gaps">Explanation of Any Gaps in Employment</label>
+                    <textarea id="employment-gaps" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="non-commercial-jobs">Non-commercial Jobs in the Past 3 Years</label>
+                    <textarea id="non-commercial-jobs" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="driving-tab">
+                <h3><i class="fas fa-car-crash"></i> Driving Record & Safety</h3>
+                
+                <div class="form-group">
+                    <label for="traffic-convictions">List of Traffic Convictions and Forfeitures in the Past 3 Years</label>
+                    <textarea id="traffic-convictions" class="form-control" rows="3" placeholder="Location, Date, Charge, Penalty"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="accidents">List of Accidents in the Past 3 Years</label>
+                    <textarea id="accidents" class="form-control" rows="3" placeholder="Date, Nature of Accident, Fatalities/Injuries, Hazardous Material Spills"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="license-suspensions">Any License Suspensions or Revocations</label>
+                    <textarea id="license-suspensions" class="form-control" rows="3" placeholder="Date, Reason"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="mvr-consent" required>
+                        <label for="mvr-consent" class="required-field">I consent to the release of my motor vehicle record (MVR)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="drug-tab">
+                <h3><i class="fas fa-flask"></i> Drug & Alcohol Clearinghouse</h3>
+                
+                <div class="form-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="clearinghouse-consent" required>
+                        <label for="clearinghouse-consent" class="required-field">Drug & Alcohol Clearinghouse Query Authorization</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="testing-program" required>
+                        <label for="testing-program" class="required-field">Acknowledgment of Drug & Alcohol Testing Program Enrollment</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="release-info" required>
+                        <label for="release-info" class="required-field">Drug & Alcohol Release of Information</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="past-testing">Past Drug & Alcohol Testing Results (Last 3 Years, if applicable)</label>
+                    <textarea id="past-testing" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sap-treatment">SAP (Substance Abuse Professional) Treatment Record, if any</label>
+                    <textarea id="sap-treatment" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="medical-tab">
+                <h3><i class="fas fa-heartbeat"></i> Medical & Physical Qualification</h3>
+                
+                <div class="form-group">
+                    <label for="medical-certificate" class="required-field">DOT Medical Examiner's Certificate</label>
+                    <div class="file-upload" id="medical-certificate-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or click to browse</p>
+                        <input type="file" id="medical-certificate" style="display: none;" accept=".pdf,.jpg,.png">
+                        <button class="btn btn-light">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="medical-expiry" class="required-field">Medical Certificate Expiration Date</label>
+                            <input type="date" id="medical-expiry" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="medical-long-form">Medical Long Form (optional)</label>
+                    <div class="file-upload" id="medical-long-form-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or click to browse</p>
+                        <input type="file" id="medical-long-form" style="display: none;" accept=".pdf,.jpg,.png">
+                        <button class="btn btn-light">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exemption-docs">Exemption Documentation (e.g., vision/hearing waivers, if applicable)</label>
+                    <div class="file-upload" id="exemption-docs-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or click to browse</p>
+                        <input type="file" id="exemption-docs" style="display: none;" accept=".pdf,.jpg,.png">
+                        <button class="btn btn-light">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fmcsa-exemption">FMCSA Diabetes/Insulin/TBI/Seizure Exemption Documents if needed</label>
+                    <div class="file-upload" id="fmcsa-exemption-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or click to browse</p>
+                        <input type="file" id="fmcsa-exemption" style="display: none;" accept=".pdf,.jpg,.png">
+                        <button class="btn btn-light">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hearing-test">Certificate of Hearing Test, if separate</label>
+                    <div class="file-upload" id="hearing-test-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or click to browse</p>
+                        <input type="file" id="hearing-test" style="display: none;" accept=".pdf,.jpg,.png">
+                        <button class="btn btn-light">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vision-test">Certificate of Vision Test, if separate</label>
+                    <div class="file-upload" id="vision-test-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or click to browse</p>
+                        <input type="file" id="vision-test" style="display: none;" accept=".pdf,.jpg,.png">
+                        <button class="btn btn-light">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="documents-tab">
+                <h3><i class="fas fa-file-contract"></i> Documents Checklist</h3>
+                <p class="text-muted">Upload and track all required documents with expiration dates</p>
+                
+                <div class="document-checklist">
+                    <div class="document-item">
+                        <input type="checkbox" id="cdl-license" checked>
+                        <label for="cdl-license">CDL License <span class="document-expiration">Exp: 05/10/2025</span></label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="medical-cert" checked>
+                        <label for="medical-cert">Medical Examiner's Certificate <span class="document-expiration">Exp: 06/15/2024</span></label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="psp-consent" checked>
+                        <label for="psp-consent">PSP Consent Form</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="clearinghouse-query" checked>
+                        <label for="clearinghouse-query">Clearinghouse Query Consent</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="drug-test" checked>
+                        <label for="drug-test">Pre-employment Drug Test Results</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="mvr-report" checked>
+                        <label for="mvr-report">MVR (Motor Vehicle Report)</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="background-check" checked>
+                        <label for="background-check">Background Check Report</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="i9-docs" checked>
+                        <label for="i9-docs">I-9 Documents</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="ssa-card" checked>
+                        <label for="ssa-card">SSA Card</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="twic-card">
+                        <label for="twic-card">TWIC Card (if applicable)</label>
+                        <div class="document-status missing"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="hazmat-cert">
+                        <label for="hazmat-cert">Hazmat Endorsement Certificate (if applicable)</label>
+                        <div class="document-status missing"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="exemption-docs-checklist">
+                        <label for="exemption-docs-checklist">Exemption Documents</label>
+                        <div class="document-status missing"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="driver-application" checked>
+                        <label for="driver-application">Driver Application (signed, dated)</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="driver-contract" checked>
+                        <label for="driver-contract">Driver Contract / Independent Contractor Agreement</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="orientation-cert" checked>
+                        <label for="orientation-cert">Orientation Completion Certificate</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="safety-ack" checked>
+                        <label for="safety-ack">Safety Policy Acknowledgment</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="handbook-ack" checked>
+                        <label for="handbook-ack">Handbook Acknowledgment</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="drug-policy-ack" checked>
+                        <label for="drug-policy-ack">Drug & Alcohol Policy Acknowledgment</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="fuel-card-agreement">
+                        <label for="fuel-card-agreement">Company-issued Fuel Card Agreement (if any)</label>
+                        <div class="document-status missing"></div>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="eld-agreement" checked>
+                        <label for="eld-agreement">Company-issued ELD Device Agreement</label>
+                        <div class="document-status valid"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>Additional Documents</label>
+                    <div class="file-upload" id="additional-docs-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or click to browse</p>
+                        <input type="file" id="additional-docs" style="display: none;" multiple accept=".pdf,.jpg,.png,.doc,.docx">
+                        <button class="btn btn-light">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+                    
+                    <div class="file-list">
+                        <div class="file-item">
+                            <div class="file-name">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>health_insurance_enrollment.pdf</span>
+                            </div>
+                            <div class="file-actions">
+                                <button class="btn btn-light btn-sm view-file">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-light btn-sm delete-file">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-name">
+                                <i class="fas fa-file-word"></i>
+                                <span>workers_comp_waiver.docx</span>
+                            </div>
+                            <div class="file-actions">
+                                <button class="btn btn-light btn-sm view-file">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-light btn-sm delete-file">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const employmentHistoryContainer = document.getElementById('employment-history-container');
+            const addEmploymentButton = document.getElementById('add-employment');
+
+            // Tab functionality
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Deactivate all buttons and content
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Activate clicked button and corresponding content
+                    button.classList.add('active');
+                    const targetTabId = button.dataset.tab;
+                    document.getElementById(targetTabId).classList.add('active');
+                });
+            });
+
+            // Add Employment History
+            addEmploymentButton.addEventListener('click', () => {
+                const newEmploymentItem = document.createElement('div');
+                newEmploymentItem.classList.add('employment-history-item');
+                newEmploymentItem.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="required-field">Company Name</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" class="form-control">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Contact Person</label>
+                                <input type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Position Held</label>
+                                <input type="text" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="required-field">From Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="required-field">To Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required-field">Reason for Leaving</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    
+                    <button type="button" class="btn btn-danger btn-sm remove-history">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                `;
+                employmentHistoryContainer.appendChild(newEmploymentItem);
+            });
+
+            // Remove Employment History (Delegated event listener)
+            employmentHistoryContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('remove-history') || event.target.closest('.remove-history')) {
+                    const itemToRemove = event.target.closest('.employment-history-item');
+                    if (itemToRemove) {
+                        itemToRemove.remove();
+                    }
+                }
+            });
+
+            // File Upload Functionality
+            document.querySelectorAll('.file-upload').forEach(fileUploadDiv => {
+                const fileInput = fileUploadDiv.querySelector('input[type="file"]');
+                const uploadButton = fileUploadDiv.querySelector('.btn-light');
+                const dragDropText = fileUploadDiv.querySelector('p');
+
+                // Simulate click on hidden input when button or area is clicked
+                uploadButton.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent form submission if button is inside a form
+                    fileInput.click();
+                });
+                fileUploadDiv.addEventListener('click', (e) => {
+                    if (!e.target.closest('.btn')) { // Don't trigger if button is clicked
+                        fileInput.click();
+                    }
+                });
+
+                fileInput.addEventListener('change', () => {
+                    if (fileInput.files.length > 0) {
+                        const fileName = fileInput.files.length > 1 ? `${fileInput.files.length} files selected` : fileInput.files[0].name;
+                        dragDropText.textContent = fileName;
+                        dragDropText.style.color = '#28a745';
+                    } else {
+                        dragDropText.textContent = 'Drag & drop your file here or click to browse';
+                        dragDropText.style.color = '#555';
+                    }
+                });
+
+                // Drag and drop events
+                fileUploadDiv.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileUploadDiv.style.borderColor = '#28a745';
+                    dragDropText.textContent = 'Drop your file here!';
+                });
+
+                fileUploadDiv.addEventListener('dragleave', () => {
+                    fileUploadDiv.style.borderColor = '#007bff';
+                    dragDropText.textContent = 'Drag & drop your file here or click to browse';
+                });
+
+                fileUploadDiv.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileUploadDiv.style.borderColor = '#007bff';
+                    fileInput.files = e.dataTransfer.files; // Assign dropped files to input
+                    const fileName = fileInput.files.length > 1 ? `${fileInput.files.length} files selected` : fileInput.files[0].name;
+                    dragDropText.textContent = fileName;
+                    dragDropText.style.color = '#28a745';
+                });
+            });
+
+            // Handle additional file list actions (view/delete) - Example, not fully functional backend
+            document.querySelectorAll('.file-list').forEach(fileListDiv => {
+                fileListDiv.addEventListener('click', (e) => {
+                    if (e.target.closest('.view-file')) {
+                        alert('View file functionality (requires backend/viewer)');
+                    } else if (e.target.closest('.delete-file')) {
+                        if (confirm('Are you sure you want to delete this file?')) {
+                            e.target.closest('.file-item').remove();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

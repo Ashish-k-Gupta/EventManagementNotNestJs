@@ -118,7 +118,7 @@ export class EventService {
         return res;
     }
 
-    async softRemove(eventId: number): Promise<Events>{
+    async softRemoveAndCancelled(eventId: number): Promise<Events>{
         
         const eventToSoftDelete = await this.eventRepository.findOne({where: {id: eventId}});
 
@@ -128,7 +128,11 @@ export class EventService {
         if(eventToSoftDelete.fromDate && eventToSoftDelete.tillDate < new Date()){
             throw new BadRequestException('Cannot soft-delete an event that has already started')
         }
-        return this.eventRepository.softRemove(eventToSoftDelete);
+
+        eventToSoftDelete.isCancelled = true;
+        eventToSoftDelete.deleted_at = new Date();
+
+        return this.eventRepository.save(eventToSoftDelete);
     }
 
 }

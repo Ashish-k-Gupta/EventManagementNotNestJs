@@ -57,7 +57,7 @@ export class EventController{
     softRemove = async(req: Request, res: Response, next: NextFunction) =>{
         try{
             const eventId  = parseInt(req.params.id, 10);
-            await this.eventService.softRemove(eventId);
+            await this.eventService.softRemoveAndCancelled(eventId);
             res.status(StatusCodes.NO_CONTENT).send();
         }catch(err){
             next(err);
