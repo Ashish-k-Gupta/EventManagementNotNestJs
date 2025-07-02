@@ -68,3 +68,12 @@ Example:
     [1.] It first encounters router.get("/:id", ...).
     [2.] It sees that /list-by-ids matches the pattern /:id, and it extracts "list-by-ids" as the id parameter.
     [3.] Therefore, catergoryController.findCategoryById is called, and req.params.id will be "list-by-ids".
+
+    1-june-2025;
+
+    I'm calling it a day today, was too tired, couldn't do much.
+    Next task [Link]: [text](https://g.co/gemini/share/9e58d0a72cef)
+
+    APIs are working need to see what is the next task that we have work on.
+    Just test the Event API, I have tested the for create rest are pending.
+    Bye Good nigth

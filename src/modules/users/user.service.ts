@@ -1,5 +1,5 @@
 import { DataSource, Repository } from "typeorm";
-import { BadRequestException, ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
+import { ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import {z} from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
@@ -27,7 +27,7 @@ export class UserService{
 
 
 
-    async createUser(createUserData: CreateUserInput):Promise<Users>{
+    async createUser(createUserData: CreateUserInput):Promise<Partial<Users>>{
         const existingMail =await this.userRepository.findOne({where: {email: createUserData.email}})
         if(createUserData.role === "admin"){
             throw new ForbiddenException("Admin role is not allowed")
@@ -35,7 +35,9 @@ export class UserService{
         if(existingMail){
             throw new ConflictException(`Eamil already exists.`)
         }
+
         const hashPassword = await this.hashPassword(createUserData.password)
+        
         const newUser = this.userRepository.create({
             firstName: createUserData.firstName,
             lastName: createUserData.lastName,
@@ -43,7 +45,9 @@ export class UserService{
             password: hashPassword,
             role: createUserData.role,
         })
-        return await this.userRepository.save(newUser);
+        const savedUser = await this.userRepository.save(newUser);
+        const {password, deleted_at, updated_at, created_by, ...safeUser} = savedUser;
+        return safeUser;
     }
 
     async findUserByEmail(email: string):Promise<Users | null>{
@@ -102,7 +106,6 @@ export class UserService{
 
         const isPasswordValid = await bcrypt.compare(updatePasswordData.oldPassword, user.password);
         if(!isPasswordValid){
-            console.log("Invalid Password")
             throw new InvalidCredentialsException("Old password does not match.")
         }
 

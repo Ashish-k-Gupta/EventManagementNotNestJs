@@ -11,10 +11,10 @@ export class Users extends UserTracking{
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({nullable: false, unique: true})
+    @Column({nullable: false})
     firstName!: string;
     
-    @Column({nullable: false, unique: true})
+    @Column({nullable: false})
     lastName!: string;
 
     @Column({nullable: false, unique: true})
