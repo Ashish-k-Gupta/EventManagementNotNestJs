@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import { CatergoryController } from "../category.controller";
 import { checkAdmin } from "../../common/middlewares/auth.middleware";
 import { UserRoles } from "../../users/enums/UserRole.enum";
@@ -8,7 +8,7 @@ import { createCategorySchema, updateCategorySchema } from "../validator/categor
 export const catergoryRouter = (catergoryController: CatergoryController): Router =>{
     const router = Router();
 
-    router.post("/", checkAdmin(UserRoles.ADMIN),validateSchema(createCategorySchema), catergoryController.createCategory)
+    router.post("/", checkAdmin(UserRoles.ADMIN),validateSchema(createCategorySchema), catergoryController.createCategory as RequestHandler)
     router.get("/", catergoryController.findAllCategory)
     router.get("/quick-list/", catergoryController.quickList)
     router.get("/filter/", catergoryController.findCategoryListByIds)
@@ -17,3 +17,4 @@ export const catergoryRouter = (catergoryController: CatergoryController): Route
     router.delete("/:id",checkAdmin(UserRoles.ADMIN), catergoryController.softRemove)
     return router;
 }
+

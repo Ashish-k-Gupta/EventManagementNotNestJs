@@ -2,13 +2,17 @@ import { CategoryService } from "./category.service";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestException } from "../common/errors/http.exceptions";
+import { CreateCategoryInput } from "./validator/category.validator";
+import { AuthenticatedRequest } from "../../types/authenticated-request";
 
 export class CatergoryController{
     constructor(private categoryService: CategoryService){}
 
-    createCategory = async(req: Request, res: Response, next: NextFunction) =>{
+    createCategory = async(req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
         try{
-            const newCategory = await this.categoryService.createCategory(req.body)
+            const userId = req.user.id;
+            const createCategoryInput : CreateCategoryInput = {name: req.body.name}
+            const newCategory = await this.categoryService.createCategory(userId, createCategoryInput)
             res.status(StatusCodes.CREATED).json(newCategory)
         }catch(err){
             next(err)

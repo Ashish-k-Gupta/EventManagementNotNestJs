@@ -1,13 +1,31 @@
 import { NextFunction, Request, Response } from "express";
 import { EventService } from "./events.service";
 import { StatusCodes } from "http-status-codes";
+import { AuthenticatedRequest } from "../../types/authenticated-request";
 
 export class EventController{
     constructor(private eventService: EventService){}
 
-    createEvent = async (req: Request, res: Response, next: NextFunction) =>{
+    getEvents = async(req: Request, res: Response, next: NextFunction) =>{
         try{
-            const userId = (req as any).user.id;
+            const term = req.query.term as string;
+            const categoryIds = req.query.categoryIds
+            ? (Array.isArray(req.query.categoryIds)
+             ? req.query.categoryIds  
+             : [req.query.categoryIds])
+             .map(Number): undefined;
+            const page = parseInt(req.query.page as string, 10) || 1;
+            const limit = parseInt(req.query.limit as string, 10) || 10;
+            const result = await this.eventService.getEvent(term, categoryIds, page, limit)
+            res.status(StatusCodes.OK).json(result);
+        }catch(err){
+            next(err);
+        }
+    }
+
+    createEvent = async (req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
+        try{
+            const userId = req.user.id;
             const event = await this.eventService.createEvent(userId, req.body);
             res.status(StatusCodes.CREATED).json(event);
         }catch(err){
@@ -25,14 +43,14 @@ export class EventController{
         }
     }
 
-    findAllEvents = async (req: Request, res: Response, next: NextFunction) =>{
-        try{
-            const allEvents =await this.eventService.findAllEvents();
-            res.status(StatusCodes.OK).json(allEvents);
-        }catch(err){
-            next(err)
-        }
-    }
+    // findAllEvents = async (req: Request, res: Response, next: NextFunction) =>{
+    //     try{
+    //         const allEvents =await this.eventService.findAllEvents();
+    //         res.status(StatusCodes.OK).json(allEvents);
+    //     }catch(err){
+    //         next(err)
+    //     }
+    // }
 
     quickListEvent = async (req: Request, res: Response, next: NextFunction) =>{
         try{

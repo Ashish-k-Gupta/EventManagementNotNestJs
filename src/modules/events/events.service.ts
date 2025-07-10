@@ -13,10 +13,34 @@ export class EventService {
         this.eventRepository = dataSource.getRepository(Events);
     }
 
+    async getEvent(term: string | undefined, categoryIds: number[] | undefined, page = 1, limit = 10){
+        const query = this.eventRepository
+        .createQueryBuilder("event")
+        .leftJoinAndSelect("event.user", "user")
+        .leftJoinAndSelect("event.categories", "category")
+        .where("event.isCancelled = false");
+
+        if(term){
+        query.andWhere("event.name ILIKE :term", {term: `%${term}%`});
+        }
+
+        if(categoryIds &&  categoryIds.length > 0){
+            query.andWhere("category.id IN (:...categoryIds)", {categoryIds});
+        }
+
+        const total = await query.getCount();
+
+        const events = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getMany();
+        return {total, events}
+    }
+
     async createEvent(userId: number, createEventInput: CreateEventInput): Promise<Events>{
-        const existingEvent = await this.eventRepository.findOne({where: {name: createEventInput.name}})
+        const existingEvent = await this.eventRepository.findOne({where: {title: createEventInput.title}})
         if(existingEvent){
-            throw new ConflictException(`An event named "${createEventInput.name}" already exists. Please choose a different name.`);
+            throw new ConflictException(`An event named "${createEventInput.title}" already exists. Please choose a different name.`);
         }
 
         const categoriesDatabase = await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds)
@@ -29,15 +53,16 @@ export class EventService {
         }
 
         const newEvent = this.eventRepository.create({
-            name: createEventInput.name,
+            title: createEventInput.title,
             description: createEventInput.description,
             language: createEventInput.language,
             ticketPrice: createEventInput.ticketPrice,
-            fromDate: createEventInput.fromDate,
-            tillDate: createEventInput.tillDate,
+            startDate: createEventInput.startDate,
+            endDate: createEventInput.endDate,
             user: {id: userId},
             categories: categoriesDatabase,
             isCancelled: false,
+            created_by: userId
         });
         return await this.eventRepository.save(newEvent);
     }
@@ -50,30 +75,30 @@ export class EventService {
         return event;
     }
 
-    async findAllEvents(): Promise<Events[]>{
-        return this.eventRepository.find({
-            relations: ['user', 'categories'],
-            select:{
-                user:{
-                    id: true,
-                    firstName: true,
-                },
-                categories:{
-                    id: true,
-                    name: true
-                }
-            }
-        });
-    }
+    // async findAllEvents(): Promise<Events[]>{
+    //     return this.eventRepository.find({
+    //         relations: ['user', 'categories'],
+    //         select:{
+    //             user:{
+    //                 id: true,
+    //                 firstName: true,
+    //             },
+    //             categories:{
+    //                 id: true,
+    //                 name: true
+    //             }
+    //         }
+    //     });
+    // }
 
     async quickListEvent(): Promise<Events[]>{
         return this.eventRepository.find({
             relations: ['user'],
             select:{
                 id: true,
-                name: true,
-                fromDate: true,
-                tillDate: true,
+                title: true,
+                startDate: true,
+                endDate: true,
                 language: true,
                 ticketPrice: true,
                 user:{
@@ -129,7 +154,7 @@ export class EventService {
         if (!eventToSoftDelete) {
             throw new NotFoundException(`Event with ID "${eventId}" not found.`);
         }
-        if(eventToSoftDelete.fromDate && eventToSoftDelete.tillDate < new Date()){
+        if(eventToSoftDelete.startDate && eventToSoftDelete.endDate < new Date()){
             throw new BadRequestException('Cannot soft-delete an event that has already started')
         }
 
@@ -137,7 +162,7 @@ export class EventService {
         eventToSoftDelete.deleted_at = new Date();
 
         const removedEvent =await this.eventRepository.save(eventToSoftDelete);
-        const res = `Event ${removedEvent.name} removed successfully`;
+        const res = `Event ${removedEvent.title} removed successfully`;
         return{message: res}
     }
 

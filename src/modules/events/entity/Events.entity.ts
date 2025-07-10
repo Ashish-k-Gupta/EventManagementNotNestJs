@@ -10,7 +10,7 @@ export class Events extends UserTracking{
     id!: number;
 
     @Column({nullable: false, unique: true})
-    name!: string;
+    title!: string;
 
     @Column({nullable: true})
     description!: string;
@@ -22,11 +22,10 @@ export class Events extends UserTracking{
     ticketPrice!: number;
 
     @Column({type: 'timestamptz', nullable: false, name: "event_from_date"})
-    fromDate!: Date;
+    startDate!: Date;
 
     @Column({type: 'timestamptz', nullable: false, name: "event_till_date"})
-    tillDate!: Date;
-
+    endDate!: Date;
 
     @ManyToOne(() => Users, (users) => users.events)
     @JoinColumn({name: 'user_id'})

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity,  ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import UserTracking from "../../common/models/UserTracking.entity";
 import { Events } from "../../events/entity/Events.entity";
 

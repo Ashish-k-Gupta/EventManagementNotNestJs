@@ -11,8 +11,11 @@ export class CategoryService {
         this.categoryRepository = dataSource.getRepository(Category);
     }
 
-    async createCategory(createCategoryInput : CreateCategoryInput): Promise<Category>{
-        const newCategory = this.categoryRepository.create(createCategoryInput);
+    async createCategory(userId: number, createCategoryInput : CreateCategoryInput): Promise<Category>{
+        const newCategory = this.categoryRepository.create({
+            name: createCategoryInput.name,
+            created_by: userId,
+            });
 
         return await this.categoryRepository.save(newCategory);
     }

@@ -1,0 +1,241 @@
+[
+    {
+        "name": "Community Coding Bootcamp",
+        "description": "A weekend bootcamp teaching coding fundamentals to beginners in a community setting.",
+        "language": "English",
+        "ticketPrice": 99.99,
+        "fromDate": "2025-09-13T09:00:00Z",
+        "tillDate": "2025-09-15T17:00:00Z",
+        "categoryIds": [
+            3,
+            5
+        ]
+    },
+    {
+        "name": "Trail Running Challenge",
+        "description": "A 15km trail running competition through scenic landscapes. Open for all skill levels.",
+        "language": "English",
+        "ticketPrice": 45.00,
+        "fromDate": "2025-08-20T07:00:00Z",
+        "tillDate": "2025-08-20T14:00:00Z",
+        "categoryIds": [
+            2,
+            10
+        ]
+    },
+    {
+        "name": "Gaming for Good",
+        "description": "A 24-hour charity gaming marathon to raise funds for underprivileged youth.",
+        "language": "English",
+        "ticketPrice": 15.00,
+        "fromDate": "2025-07-25T12:00:00Z",
+        "tillDate": "2025-07-26T12:00:00Z",
+        "categoryIds": [
+            1,
+            7
+        ]
+    },
+    {
+        "name": "Outdoor Mindfulness Hike",
+        "description": "A guided hiking session that integrates mindfulness practices and breathing techniques.",
+        "language": "English",
+        "ticketPrice": 35.00,
+        "fromDate": "2025-10-10T07:00:00Z",
+        "tillDate": "2025-10-10T13:00:00Z",
+        "categoryIds": [
+            8,
+            10
+        ]
+    },
+    {
+        "name": "Digital Literacy for Seniors",
+        "description": "Free workshop to teach internet safety, basic apps, and social media to senior citizens.",
+        "language": "English",
+        "ticketPrice": 0.00,
+        "fromDate": "2025-08-15T10:00:00Z",
+        "tillDate": "2025-08-15T16:00:00Z",
+        "categoryIds": [
+            3,
+            4
+        ]
+    },
+    {
+        "name": "Comedy Open Mic Night",
+        "description": "Laugh it out loud! Join or watch local talents at this open mic comedy event.",
+        "language": "English",
+        "ticketPrice": 12.00,
+        "fromDate": "2025-09-09T19:00:00Z",
+        "tillDate": "2025-09-09T22:00:00Z",
+        "categoryIds": [
+            9
+        ]
+    },
+    {
+        "name": "Backyard Yoga & Brunch",
+        "description": "A relaxing yoga session followed by a healthy organic brunch. BYO yoga mat!",
+        "language": "English",
+        "ticketPrice": 40.00,
+        "fromDate": "2025-08-05T08:00:00Z",
+        "tillDate": "2025-08-05T12:00:00Z",
+        "categoryIds": [
+            8,
+            5
+        ]
+    },
+    {
+        "name": "Tech for Good Hackathon",
+        "description": "Build innovative solutions for real social challenges in this 36-hour hackathon.",
+        "language": "English",
+        "ticketPrice": 0.00,
+        "fromDate": "2025-09-27T10:00:00Z",
+        "tillDate": "2025-09-29T22:00:00Z",
+        "categoryIds": [
+            1,
+            3
+        ]
+    },
+    {
+        "name": "Fashion Sustainability Panel",
+        "description": "Industry experts discuss the future of sustainable fashion and ethical production.",
+        "language": "English",
+        "ticketPrice": 20.00,
+        "fromDate": "2025-10-22T15:00:00Z",
+        "tillDate": "2025-10-22T18:00:00Z",
+        "categoryIds": [
+            6,
+            1
+        ]
+    },
+    {
+        "name": "Women's Self-Defense Workshop",
+        "description": "Empower yourself with basic self-defense techniques taught by professionals.",
+        "language": "English",
+        "ticketPrice": 30.00,
+        "fromDate": "2025-09-18T10:00:00Z",
+        "tillDate": "2025-09-18T14:00:00Z",
+        "categoryIds": [
+            2,
+            4
+        ]
+    },
+    {
+        "name": "Social Awareness Through Film",
+        "description": "Documentary screening followed by a discussion on modern social issues.",
+        "language": "English",
+        "ticketPrice": 18.00,
+        "fromDate": "2025-08-30T18:00:00Z",
+        "tillDate": "2025-08-30T21:00:00Z",
+        "categoryIds": [
+            1,
+            9
+        ]
+    },
+    {
+        "name": "Urban Survival Skills Camp",
+        "description": "Learn essential outdoor survival and self-reliance techniques in a city setting.",
+        "language": "English",
+        "ticketPrice": 70.00,
+        "fromDate": "2025-10-01T09:00:00Z",
+        "tillDate": "2025-10-02T17:00:00Z",
+        "categoryIds": [
+            4,
+            10
+        ]
+    },
+    {
+        "name": "Inclusive Community Picnic",
+        "description": "An open-invite picnic event to celebrate cultural diversity and inclusion.",
+        "language": "English",
+        "ticketPrice": 0.00,
+        "fromDate": "2025-08-10T11:00:00Z",
+        "tillDate": "2025-08-10T16:00:00Z",
+        "categoryIds": [
+            1,
+            5
+        ]
+    },
+    {
+        "name": "Esports Local Tournament",
+        "description": "Compete in a day-long esports tournament with cash prizes and swag!",
+        "language": "English",
+        "ticketPrice": 25.00,
+        "fromDate": "2025-09-02T10:00:00Z",
+        "tillDate": "2025-09-02T20:00:00Z",
+        "categoryIds": [
+            7,
+            2
+        ]
+    },
+    {
+        "name": "Laughter Yoga in the Park",
+        "description": "A unique wellness experience combining yoga and laughter therapy outdoors.",
+        "language": "English",
+        "ticketPrice": 10.00,
+        "fromDate": "2025-07-22T08:30:00Z",
+        "tillDate": "2025-07-22T10:30:00Z",
+        "categoryIds": [
+            8,
+            9
+        ]
+    },
+    {
+        "name": "Outdoor Fitness Bootcamp",
+        "description": "Get fit with a high-energy outdoor group workout session.",
+        "language": "English",
+        "ticketPrice": 35.00,
+        "fromDate": "2025-08-07T07:00:00Z",
+        "tillDate": "2025-08-07T09:00:00Z",
+        "categoryIds": [
+            2,
+            8
+        ]
+    },
+    {
+        "name": "Fashion Runway for Awareness",
+        "description": "An elegant fashion show promoting body positivity and mental health awareness.",
+        "language": "English",
+        "ticketPrice": 50.00,
+        "fromDate": "2025-10-15T19:00:00Z",
+        "tillDate": "2025-10-15T22:00:00Z",
+        "categoryIds": [
+            6,
+            1
+        ]
+    },
+    {
+        "name": "Outdoor Coding Jam",
+        "description": "A casual, open-air meetup for developers to collaborate and share ideas.",
+        "language": "English",
+        "ticketPrice": 10.00,
+        "fromDate": "2025-09-12T14:00:00Z",
+        "tillDate": "2025-09-12T19:00:00Z",
+        "categoryIds": [
+            3,
+            10
+        ]
+    },
+    {
+        "name": "Tech Safety for Kids Workshop",
+        "description": "A hands-on session for children to learn about safe internet use and digital boundaries.",
+        "language": "English",
+        "ticketPrice": 20.00,
+        "fromDate": "2025-07-29T10:00:00Z",
+        "tillDate": "2025-07-29T12:30:00Z",
+        "categoryIds": [
+            3,
+            4
+        ]
+    },
+    {
+        "name": "Community Garden Day",
+        "description": "Volunteer to help plant, clean, and learn about sustainable gardening practices.",
+        "language": "English",
+        "ticketPrice": 0.00,
+        "fromDate": "2025-07-18T09:00:00Z",
+        "tillDate": "2025-07-18T13:00:00Z",
+        "categoryIds": [
+            5,
+            10
+        ]
+    }
+]
