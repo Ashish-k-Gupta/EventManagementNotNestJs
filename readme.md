@@ -83,3 +83,9 @@ Example:
     Didn't do much as I'm not good at sql queries. This month I will spend time writing those queries and learning about it.
     Got know about few of them but still long way to go
     The file in the queryBuilder was way out of my digestion. I have decided that it's better to learn sql then push it under the rug.
+
+
+June/11/2025
+Some done with sql started with this project again. Asked help from clause and oh boy, the shit it took me, uncharted seas bitch... I didn't knew what was what at first. Created some validation copy pasted it, most of the shit went right above my head. But I do have some Idea what is going on there. But can't vibe code like this. I have to study it deeply. I imporving in the sense of quality of work I do. I have to be more focused. This reel brain need to stopped. Short attention span man. It will kill me. But I will keep coding I'm enjoying this hourly base roller coster of depressing feeling.
+
+Good Night sweet heart ;(
