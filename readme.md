@@ -85,7 +85,53 @@ Example:
     The file in the queryBuilder was way out of my digestion. I have decided that it's better to learn sql then push it under the rug.
 
 
-June/11/2025
+July/11/2025
 Some done with sql started with this project again. Asked help from clause and oh boy, the shit it took me, uncharted seas bitch... I didn't knew what was what at first. Created some validation copy pasted it, most of the shit went right above my head. But I do have some Idea what is going on there. But can't vibe code like this. I have to study it deeply. I imporving in the sense of quality of work I do. I have to be more focused. This reel brain need to stopped. Short attention span man. It will kill me. But I will keep coding I'm enjoying this hourly base roller coster of depressing feeling.
 
 Good Night sweet heart ;(
+
+
+July/11/2025
+Today I have got to know that you can build schema validator for queries as well, (like filter, pagination, search then a queryValidator itself.)
+Got to know that you also can how validator are different from the type infers. That type check for types only and how validator looks for the value. I think I still haven't understand the actual use of typescript. Then how error caught at compile time are different then run time. TS does a compile time error check. The validation errors are caught at run time. I still doesn't have a good mental map for this. I still need to study them more regoursly (this is not correct spelling I now bitch). But anyway about to call it a day. 
+Hey I also got to know about genric type  man that shit is cool. you can kind of tell that I will give a type which it takes as a parameter and then it let you defined the rest of the type will be kind of fixed 
+
+
+[BASICALLY]="okay so we can say T is let's the other type schema in which will also be included in the new schema that I'll build. The one you gave me vary according to what you have provided me. But the one I have build always be the same through out the whole application wherever you use me.
+
+
+[GEMINI]
+The useablity of genric is here that it makes a type variable, like you can chose to which type schma you want to send? "
+Yes, you've hit the nail on the head with both points!
+
+    "So here what T let's you do is insert another type of schema as parameter, Then it puts the parameter's schema in the object of array as data. and let's you add additional schema types in the meta/"
+
+        Correct! T is exactly that placeholder. It allows you to "inject" or "insert" another Zod schema (your itemSchema) as a parameter.
+
+        This itemSchema (which is T) then dictates the type of the elements within the data array of the new schema that paginationResponseSchema builds.
+
+        And yes, the meta part of the new schema has its own, fixed structure that's defined directly within paginationResponseSchema, independent of T. You don't "add additional schema types" into meta using T; rather, meta is consistently defined.
+
+    "The one you gave me vary according to what you have provided me. But the one I have build always be the same through out the whole application wherever you use me."
+
+        Absolutely correct!
+
+            The paginationResponseSchema function itself is a consistent blueprint. Its internal structure (data array + meta object) is always the same.
+
+            What varies is the specific type that T represents when you use paginationResponseSchema.
+
+            So, when you call paginationResponseSchema(userSchema), the resulting schema is for paginated users.
+
+            When you call paginationResponseSchema(productSchema), the resulting schema is for paginated products.
+
+            The overall shape of the pagination response ({ data: [...], meta: {...} }) remains consistent throughout your application, which is a huge benefit for API design and client-side consumption.
+
+    "The useablity of genric is here that it makes a type variable, like you can chose to which type schma you want to send?"
+
+        Precisely! That's the core utility of generics here. T acts as a "type variable." It allows you to:
+
+            Define a function (paginationResponseSchema) that works with a generic item type.
+
+            Then, at the point of using that function, you choose and specify the concrete itemSchema (and thus the type T) that the pagination response should contain.
+
+This pattern is incredibly powerful for creating highly reusable and type-safe utilities, especially when dealing with common API response patterns like pagination, where the wrapper structure is consistent but the payload's type changes.
