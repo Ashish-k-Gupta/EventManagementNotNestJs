@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Details</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .info-label {
+            font-size: 0.875rem; /* text-sm */
+            color: #6b7280; /* text-gray-500 */
+            font-weight: 500; /* font-medium */
+            margin-bottom: 0.25rem;
+        }
+        .info-value {
+            font-size: 1rem; /* text-base */
+            color: #1f2937; /* text-gray-900 */
+            font-weight: 600; /* font-semibold */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-xl">
+        <!-- Header Section -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-4 border-b border-gray-200">
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Truck Details: T-9876</h1>
+                <p class="text-lg text-gray-600">License Plate: CA 5X7890</p>
+            </div>
+            <div class="mt-4 sm:mt-0 flex gap-3">
+                <button class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md">
+                    Edit Truck
+                </button>
+                <button class="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-md">
+                    View Service History
+                </button>
+            </div>
+        </div>
+
+        <!-- Truck Image and Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-1 bg-gray-50 rounded-lg p-4 flex justify-center items-center shadow-inner">
+                <img src="https://placehold.co/400x300/E0E7FF/4338CA?text=Truck+Image" alt="Truck Placeholder Image" class="rounded-md object-cover max-h-64 w-full">
+            </div>
+            <div class="lg:col-span-2 p-6 bg-white rounded-lg shadow-md border border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Overview</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Make</span>
+                        <span class="info-value">Freightliner</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Model</span>
+                        <span class="info-value">Cascadia 126</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Year</span>
+                        <span class="info-value">2022</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">VIN</span>
+                        <span class="info-value">1FV6J9Y23N1XXXXXX</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Truck ID</span>
+                        <span class="info-value">T-9876</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="info-value text-green-600">In Service</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Current Odometer</span>
+                        <span class="info-value">125,450 miles</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Current Location</span>
+                        <span class="info-value">Dallas, TX</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance & Compliance Section -->
+        <div class="p-6 bg-white rounded-lg shadow-md border border-gray-100 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Maintenance & Compliance</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Last Service Date</span>
+                    <span class="info-value">2025-06-15</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Next Service Due</span>
+                    <span class="info-value">2025-09-15 or 150,000 miles</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Annual Inspection Date</span>
+                    <span class="info-value">2025-03-20</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Registration Expiry</span>
+                    <span class="info-value">2026-01-31</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">DOT Inspection Status</span>
+                    <span class="info-value text-green-600">Compliant</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Driver Assignment Section -->
+        <div class="p-6 bg-white rounded-lg shadow-md border border-gray-100 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Driver Assignment</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Current Driver</span>
+                    <span class="info-value">Harpreet Singh (ID: 56)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Driver</span>
+                    <span class="info-value">John Doe (ID: 45)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Assigned Since</span>
+                    <span class="info-value">2025-07-01</span>
+                </div>
+            </div>
+            <div class="mt-6">
+                <button class="px-5 py-2 bg-teal-600 text-white font-semibold rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 shadow-md">
+                    Assign New Driver
+                </button>
+            </div>
+        </div>
+
+        <!-- Reefer Unit Details Section (Conditional) -->
+        <div class="p-6 bg-white rounded-lg shadow-md border border-gray-100 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Reefer Unit Details</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Reefer Unit Make</span>
+                    <span class="info-value">Thermo King</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Reefer Unit Model</span>
+                    <span class="info-value">Precedent S-600</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Reefer Unit ID</span>
+                    <span class="info-value">TK-9876-UNIT</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Reefer Service</span>
+                    <span class="info-value">2025-05-10</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Next Reefer Service Due</span>
+                    <span class="info-value">2025-11-10</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Uploaded Documents Section -->
+        <div class="p-6 bg-white rounded-lg shadow-md border border-gray-100">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Uploaded Documents</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Version</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded Date</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Vehicle Registration</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">V2.1</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">2025-01-15</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button class="text-blue-600 hover:text-blue-900 mr-4">View</button>
+                                <button class="text-indigo-600 hover:text-indigo-900">Download</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Annual Inspection Report</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">V1.0</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">2025-03-25</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button class="text-blue-600 hover:text-blue-900 mr-4">View</button>
+                                <button class="text-indigo-600 hover:text-indigo-900">Download</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Insurance Policy</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">V3.0</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">2024-12-01</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button class="text-blue-600 hover:text-blue-900 mr-4">View</button>
+                                <button class="text-indigo-600 hover:text-indigo-900">Download</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Maintenance Record (Engine)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">V1.2</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">2025-06-15</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button class="text-blue-600 hover:text-blue-900 mr-4">View</button>
+                                <button class="text-indigo-600 hover:text-indigo-900">Download</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button class="px-5 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-md">
+                    Upload New Document
+                </button>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
+
+if 

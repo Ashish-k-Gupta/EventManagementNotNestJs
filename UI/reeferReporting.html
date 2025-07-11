@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reefer Reporting Dashboard (Persistent Draft)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .discrepancy {
+            color: #ef4444; /* Red for critical discrepancy (cargo temp issue) */
+            font-weight: 600;
+        }
+        .warning {
+            color: #f97316; /* Orange for warning/potential unit issue */
+            font-weight: 600;
+        }
+        .no-data {
+            color: #9ca3af; /* Gray for no data */
+            font-style: italic;
+        }
+        /* Custom styles for input fields within table for better alignment */
+        .table-input {
+            width: 100%;
+            padding: 4px 8px; /* py-1 px-2 equivalent */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 4px; /* rounded-md */
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* subtle inner shadow */
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem; /* leading-5 */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        .table-input:focus {
+            outline: none;
+            border-color: #3b82f6; /* focus:border-blue-500 */
+            box-shadow: 0 0 0 1px #3b82f6; /* focus:ring-blue-500 */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-xl">
+        <!-- Header -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-6 text-center">Reefer Reporting Dashboard</h1>
+
+        <!-- Start Report / Filter Section -->
+        <div class="mb-8 p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col md:flex-row justify-between items-center gap-4">
+            <h2 class="text-xl font-semibold text-gray-700">Reefer Loads Overview</h2>
+            <button id="startReportBtn" class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-md w-full md:w-auto">
+                Start Reefer Report
+            </button>
+        </div>
+
+        <!-- Filter/Search Section (Optional, can be integrated with Start Report if always active) -->
+        <div class="mb-8 p-4 bg-gray-50 rounded-lg shadow-inner">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Filter Loads</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="customerRef" class="block text-sm font-medium text-gray-700 mb-1">Customer Ref</label>
+                    <input type="text" id="customerRef" placeholder="e.g., CUST-001" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                </div>
+                <div>
+                    <label for="loadNumber" class="block text-sm font-medium text-gray-700 mb-1">Load Number</label>
+                    <input type="text" id="loadNumber" placeholder="e.g., L-54321" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                </div>
+                <div>
+                    <label for="trailerNumber" class="block text-sm font-medium text-gray-700 mb-1">Trailer Number</label>
+                    <input type="text" id="trailerNumber" placeholder="e.g., T-9876" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="applyFiltersBtn" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md">
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Reporting Table -->
+        <div class="overflow-x-auto shadow-lg rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200 bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Customer Ref</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Load #</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trailer #</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp Required</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp Mode Required</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Check-Call Update</th>
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thermo Set Pt</th>
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Box Temp</th>
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ambient Temp</th>
+                    </tr>
+                </thead>
+                <tbody id="reeferTableBody" class="divide-y divide-gray-200">
+                    <!-- Rows will be dynamically inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Single Save Report Button -->
+        <div class="mt-8 flex justify-end">
+            <button id="saveReportBtn" class="px-8 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg text-lg">
+                Save Report
+            </button>
+        </div>
+
+        <!-- Message Box for user feedback -->
+        <div id="messageBox" class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg hidden"></div>
+    </div>
+
+    <script>
+        // --- Utility Functions ---
+        // Debounce function to limit how often a function is called
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        // Function to show temporary messages to the user
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-md shadow-lg'; // Reset classes
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-600');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-600');
+            } else {
+                messageBox.classList.add('bg-gray-800');
+            }
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Data Management ---
+        const LOCAL_STORAGE_KEY = 'reeferReportDraft';
+        let currentReportData = []; // This will hold the current state of the table data
+
+        // Simulates fetching initial in-transit loads
+        function getInitialLoads() {
+            return [
+                {
+                    id: 'load1',
+                    customerRef: "CUST-001",
+                    loadNumber: "L-54321",
+                    trailerNumber: "T-9876",
+                    tempRequired: "34°F",
+                    tempMode: "Continuous",
+                    lastUpdateTemp: "34°F",
+                    lastUpdateMode: "Continuous",
+                    lastUpdateTimestamp: "10:30 AM, 07/07/2025",
+                    lastUpdateUser: "John D.",
+                    thermoSetPoint: "34°F", // Initial Thermoking data (could be empty or fetched)
+                    thermoBoxTemp: "34.2°F",
+                    thermoAmbient: "85°F",
+                    thermoLastRefresh: "10:35 AM"
+                },
+                {
+                    id: 'load2',
+                    customerRef: "CUST-002",
+                    loadNumber: "L-54322",
+                    trailerNumber: "T-1234",
+                    tempRequired: "38°F",
+                    tempMode: "Cycle Sentry",
+                    lastUpdateTemp: "42°F", // Discrepancy
+                    lastUpdateMode: "Continuous", // Discrepancy
+                    lastUpdateTimestamp: "09:15 AM, 07/07/2025",
+                    lastUpdateUser: "Jane S.",
+                    thermoSetPoint: "38°F",
+                    thermoBoxTemp: "38.5°F",
+                    thermoAmbient: "88°F",
+                    thermoLastRefresh: "10:35 AM"
+                },
+                {
+                    id: 'load3',
+                    customerRef: "CUST-003",
+                    loadNumber: "L-54323",
+                    trailerNumber: "T-5678",
+                    tempRequired: "0°F",
+                    tempMode: "Continuous",
+                    lastUpdateTemp: "0°F",
+                    lastUpdateMode: "Continuous",
+                    lastUpdateTimestamp: "08:00 AM, 07/07/2025",
+                    lastUpdateUser: "Mike R.",
+                    thermoSetPoint: "5°F", // Discrepancy
+                    thermoBoxTemp: "6.1°F", // Discrepancy
+                    thermoAmbient: "90°F",
+                    thermoLastRefresh: "10:35 AM"
+                },
+                {
+                    id: 'load4',
+                    customerRef: "CUST-004",
+                    loadNumber: "L-54324",
+                    trailerNumber: "T-9999",
+                    tempRequired: "28°F",
+                    tempMode: "Continuous",
+                    lastUpdateTemp: "28°F",
+                    lastUpdateMode: "Continuous",
+                    lastUpdateTimestamp: "07:00 AM, 07/07/2025",
+                    lastUpdateUser: "Sarah K.",
+                    thermoSetPoint: "28°F",
+                    thermoBoxTemp: "35.5°F", // Warning
+                    thermoAmbient: "75°F",
+                    thermoLastRefresh: "10:35 AM"
+                },
+                {
+                    id: 'load5',
+                    customerRef: "CUST-005",
+                    loadNumber: "L-54325",
+                    trailerNumber: "T-1122",
+                    tempRequired: "0°F",
+                    tempMode: "Continuous",
+                    lastUpdateTemp: "0°F",
+                    lastUpdateMode: "Continuous",
+                    lastUpdateTimestamp: "06:00 AM, 07/07/2025",
+                    lastUpdateUser: "David L.",
+                    thermoSetPoint: "0°F",
+                    thermoBoxTemp: "10°F", // Discrepancy
+                    thermoAmbient: "12°F", // Warning
+                    thermoLastRefresh: "10:35 AM"
+                },
+                {
+                    id: 'load6',
+                    customerRef: "CUST-006",
+                    loadNumber: "L-54326",
+                    trailerNumber: "T-3344",
+                    tempRequired: "36°F",
+                    tempMode: "Continuous",
+                    lastUpdateTemp: "36°F",
+                    lastUpdateMode: "Continuous",
+                    lastUpdateTimestamp: "05:00 AM, 07/07/2025",
+                    lastUpdateUser: "Olivia P.",
+                    thermoSetPoint: "", // No data
+                    thermoBoxTemp: "",
+                    thermoAmbient: "",
+                    thermoLastRefresh: ""
+                }
+            ];
+        }
+
+        // Saves the current report data to local storage
+        const saveDraftToLocalStorage = debounce(() => {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(currentReportData));
+                console.log('Draft saved to local storage.');
+                // showMessage('Draft saved automatically!', 'info'); // Optional: show a subtle message
+            } catch (e) {
+                console.error('Error saving draft to local storage:', e);
+                showMessage('Error saving draft!', 'error');
+            }
+        }, 1000); // Save after 1 second of no input
+
+        // Loads report data from local storage
+        function loadDraftFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (savedData) {
+                    currentReportData = JSON.parse(savedData);
+                    showMessage('Loaded saved draft!', 'info');
+                } else {
+                    currentReportData = getInitialLoads(); // Load fresh if no draft
+                    showMessage('No saved draft found. Starting new report.', 'info');
+                }
+                renderTable();
+            } catch (e) {
+                console.error('Error loading draft from local storage:', e);
+                currentReportData = getInitialLoads(); // Fallback to initial loads
+                showMessage('Error loading draft. Starting new report.', 'error');
+                renderTable();
+            }
+        }
+
+        // Clears the draft from local storage
+        function clearDraftFromLocalStorage() {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+            console.log('Draft cleared from local storage.');
+        }
+
+        // Simulates saving the final report to history
+        function saveFinalReport() {
+            console.log("Saving final report to history:", currentReportData);
+            // In a real application, you would send currentReportData to your backend API here
+            // Example: fetch('/api/reports', { method: 'POST', body: JSON.stringify(currentReportData) });
+
+            clearDraftFromLocalStorage(); // Clear draft after final save
+            currentReportData = getInitialLoads(); // Optionally reload fresh data for a new report
+            renderTable();
+            showMessage('Report saved successfully to history!', 'success');
+        }
+
+        // --- UI Rendering ---
+        function renderTable() {
+            const tableBody = document.getElementById('reeferTableBody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            currentReportData.forEach((rowData, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${rowData.customerRef}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">${rowData.loadNumber}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">${rowData.trailerNumber}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">${rowData.tempRequired}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">${rowData.tempMode}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                        <div class="flex flex-col">
+                            <span class="${rowData.lastUpdateTemp !== rowData.tempRequired ? 'discrepancy' : ''}">Temp: ${rowData.lastUpdateTemp}</span>
+                            <span class="${rowData.lastUpdateMode !== rowData.tempMode ? 'discrepancy' : ''}">Mode: ${rowData.lastUpdateMode}</span>
+                            <span class="text-xs text-gray-500">${rowData.lastUpdateTimestamp} by ${rowData.lastUpdateUser}</span>
+                        </div>
+                    </td>
+                    <td class="px-2 py-1">
+                        <input type="text" value="${rowData.thermoSetPoint}"
+                            class="table-input ${rowData.thermoSetPoint && rowData.thermoSetPoint !== rowData.tempRequired ? 'discrepancy' : ''} ${!rowData.thermoSetPoint ? 'no-data' : ''}"
+                            placeholder="N/A" data-index="${index}" data-field="thermoSetPoint">
+                    </td>
+                    <td class="px-2 py-1">
+                        <input type="text" value="${rowData.thermoBoxTemp}"
+                            class="table-input ${rowData.thermoBoxTemp && Math.abs(parseFloat(rowData.thermoBoxTemp) - parseFloat(rowData.tempRequired)) > 5 ? 'discrepancy' : ''} ${rowData.thermoBoxTemp && rowData.thermoSetPoint && Math.abs(parseFloat(rowData.thermoBoxTemp) - parseFloat(rowData.thermoSetPoint)) > 3 ? 'warning' : ''} ${!rowData.thermoBoxTemp ? 'no-data' : ''}"
+                            placeholder="N/A" data-index="${index}" data-field="thermoBoxTemp">
+                    </td>
+                    <td class="px-2 py-1">
+                        <input type="text" value="${rowData.thermoAmbient}"
+                            class="table-input ${rowData.thermoAmbient && rowData.thermoBoxTemp && Math.abs(parseFloat(rowData.thermoAmbient) - parseFloat(rowData.thermoBoxTemp)) < 5 && Math.abs(parseFloat(rowData.thermoBoxTemp) - parseFloat(rowData.tempRequired)) > 5 ? 'warning' : ''} ${!rowData.thermoAmbient ? 'no-data' : ''}"
+                            placeholder="N/A" data-index="${index}" data-field="thermoAmbient">
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Attach event listeners to the newly rendered input fields
+            document.querySelectorAll('.table-input').forEach(input => {
+                input.addEventListener('input', handleInputChange);
+            });
+        }
+
+        // Handles input changes in the Thermoking fields
+        function handleInputChange(event) {
+            const index = event.target.dataset.index;
+            const field = event.target.dataset.field;
+            let value = event.target.value;
+
+            // Basic parsing for numerical comparisons for colors
+            if (field.includes('Temp') || field.includes('Point') || field.includes('Ambient')) {
+                value = value.replace(/°F/g, ''); // Remove °F for numerical comparison
+            }
+
+            currentReportData[index][field] = value;
+            saveDraftToLocalStorage(); // Trigger debounced save
+            renderTable(); // Re-render to update discrepancy colors dynamically
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load draft or initial data when the page loads
+            loadDraftFromLocalStorage();
+
+            // Event listener for the "Start Reefer Report" button
+            document.getElementById('startReportBtn').addEventListener('click', () => {
+                clearDraftFromLocalStorage(); // Start fresh
+                currentReportData = getInitialLoads();
+                renderTable();
+                showMessage('New Reefer Report started!', 'info');
+            });
+
+            // Event listener for the "Save Report" button
+            document.getElementById('saveReportBtn').addEventListener('click', saveFinalReport);
+
+            // Event listener for Apply Filters button (placeholder for actual filtering logic)
+            document.getElementById('applyFiltersBtn').addEventListener('click', () => {
+                showMessage('Filtering not implemented in this demo.', 'info');
+                // In a real app, you'd apply filters to currentReportData and re-renderTable()
+            });
+        });
+    </script>
+</body>
+</html>

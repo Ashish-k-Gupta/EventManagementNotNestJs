@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { EventService } from "./events.service";
 import { StatusCodes } from "http-status-codes";
+<<<<<<< Updated upstream
 import { AuthenticatedRequest } from "../../types/authenticated-request";
+=======
+import { number } from "zod";
+>>>>>>> Stashed changes
 
 export class EventController{
     constructor(private eventService: EventService){}
@@ -30,6 +34,46 @@ export class EventController{
             res.status(StatusCodes.CREATED).json(event);
         }catch(err){
             next(err);
+        }
+    }
+    allEvent = async (req: Request, res: Response, next: NextFunction) =>{
+        try{
+           const {term, categoryIds, page , limit} = req.query as { term?: string; categoryIds?: string | string[]; page?: string; limit?: string};
+
+           let parsedCategoryIds: number[] | undefined;
+
+           if(categoryIds){
+            let categoryIdArray: string[];
+            if (Array.isArray(categoryIds)) {
+                 categoryIdArray = categoryIds;
+            }else {
+              categoryIdArray = categoryIds.split(',');
+           }
+            
+            parsedCategoryIds = categoryIdArray
+                .map((id: string) => parseInt(id.trim(), 10))
+                .filter((id:number) => !isNaN(id));
+
+            if (parsedCategoryIds.length === 0) {
+            parsedCategoryIds = undefined;
+            }
+           }
+
+            const parsedPage = page ? parseInt(page, 10):1;
+            const parsedLimit = limit ? parseInt(limit, 10): 10;
+
+            const finalPage = Math.max(1, parsedPage);
+            const finalLimit = Math.max(1, parsedLimit);
+
+            const events = await this.eventService.allEvent(
+                    term,
+                    parsedCategoryIds,
+                    finalPage,
+                    finalLimit
+            );
+            res.status(StatusCodes.OK).json(events)
+        }catch(err){
+            next(err)
         }
     }
 

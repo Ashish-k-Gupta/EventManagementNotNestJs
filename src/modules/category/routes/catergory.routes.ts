@@ -16,5 +16,9 @@ export const catergoryRouter = (catergoryController: CatergoryController): Route
     router.put("/:id", checkAdmin(UserRoles.ADMIN),validateSchema(updateCategorySchema), catergoryController.updateCategory)
     router.delete("/:id",checkAdmin(UserRoles.ADMIN), catergoryController.softRemove)
     return router;
+<<<<<<< Updated upstream
 }
 
+=======
+};
+>>>>>>> Stashed changes

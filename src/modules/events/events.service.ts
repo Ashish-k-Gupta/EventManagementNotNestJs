@@ -1,4 +1,4 @@
-import { DataSource, Repository } from "typeorm";
+import { DataSource, Repository, In, ILike } from "typeorm";
 import { Events } from "./entity/Events.entity";
 import { CreateEventInput, UpdateEventInput } from "./validators/event.validator";
 import { CategoryService } from "../category/category.service";
@@ -11,6 +11,35 @@ export class EventService {
         private categorySerivce: CategoryService,
     ){
         this.eventRepository = dataSource.getRepository(Events);
+    }
+    async allEvent(
+        term?: string | undefined, 
+        categoryIds?: number[] | undefined, 
+        page: number = 1, 
+        limit: number = 10 
+    ): Promise<Events[]| undefined>{
+        const query =  this.eventRepository.createQueryBuilder("event")
+            .leftJoinAndSelect("event.categories", "category")
+            .distinct(true)
+            .skip((page -1) * limit).take(limit);
+
+        const conditions = [];
+        const parameters: {[key: string]: any } = {};
+
+        if(term){
+            conditions.push("(event.name ILIKE :searchTerm OR category.name ILIKE :searchTerm)");
+            parameters.searchTerm = `%${term}%`;
+        }
+
+        if(categoryIds && categoryIds.length > 0){
+              conditions.push("category.id IN (:...categoryIds)");
+              parameters.categoryIds = categoryIds;
+        }
+        if(conditions.length > 0){
+            query.where(conditions.join(" AND "), parameters)
+        }
+      
+        return await query.getMany();
     }
 
     async getEvent(term: string | undefined, categoryIds: number[] | undefined, page = 1, limit = 10){

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkcall Logs - Full Page</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: #f0f2f5; /* Light background for the whole page */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 10px; /* Reduced padding around the main content area */
+        }
+        .main-container {
+            width: 100%;
+            max-width: 1600px; /* Max width to prevent it from becoming too wide on large screens */
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        .call-entry {
+            border-bottom: 1px solid #e5e7eb; /* Subtle separator between entries */
+            padding: 15px; /* Reduced padding for each entry */
+            position: relative; /* Needed for pseudo-elements */
+            padding-left: 40px; /* Space for the timeline */
+        }
+        .call-entry:last-child {
+            border-bottom: none; /* No border for the last entry */
+        }
+        /* Timeline dot and line */
+        .call-entry::before {
+            content: '';
+            position: absolute;
+            left: 15px; /* Aligns with the padding */
+            top: 20px; /* Adjust to align with the status dot */
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #9ca3af; /* Default gray dot */
+            z-index: 1; /* Ensure it's above the line */
+        }
+        .call-entry::after {
+            content: '';
+            position: absolute;
+            left: 19px; /* Aligns with the center of the dot */
+            top: 30px; /* Starts below the dot */
+            bottom: 0;
+            width: 2px;
+            background-color: #e5e7eb; /* Light gray line */
+            z-index: 0;
+        }
+        .call-entry:last-child::after {
+            content: none; /* No line after the last entry */
+        }
+
+        /* Status-specific dot colors */
+        .call-entry.status-green::before { background-color: #22c55e; }
+        .call-entry.status-red::before { background-color: #ef4444; }
+        .call-entry.status-orange::before { background-color: #f97316; }
+        .call-entry.status-blue::before { background-color: #3b82f6; }
+
+        .status-dot { /* This class is now used for the dot inside the entry, not the timeline dot */
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            display: none; /* Hide the old status dot, replaced by the timeline dot */
+        }
+
+        /* Table specific styles */
+        .data-table th, .data-table td {
+            padding: 8px 12px; /* Compact padding for table cells */
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.75rem; /* text-xs */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .data-table td {
+            font-size: 0.875rem; /* text-sm */
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200 rounded-t-xl">
+            <h1 class="text-xl font-bold text-gray-800">Checkcall Logs</h1>
+            <button class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-200 ease-in-out">
+                <i class="fas fa-plus mr-2"></i>ADD NEW CALL
+            </button>
+        </div>
+
+        <!-- Temperature Summary -->
+        <div class="grid grid-cols-3 gap-3 p-4 border-b border-gray-200">
+            <div class="flex flex-col items-center p-3 bg-gray-100 rounded-lg">
+                <span class="text-xl font-bold text-gray-800">32°F</span>
+                <span class="text-xs text-gray-500">Continuous</span>
+            </div>
+            <div class="flex flex-col items-center p-3 bg-gray-100 rounded-lg">
+                <span class="text-xl font-bold text-gray-800">32°F</span>
+                <span class="text-xs text-gray-500">Set Temperature</span>
+            </div>
+            <div class="flex flex-col items-center p-3 bg-gray-100 rounded-lg">
+                <span class="text-xl font-bold text-gray-800">170</span>
+                <span class="text-xs text-gray-500">Clark County, IL 62423</span>
+            </div>
+        </div>
+
+        <!-- Main Load Information Table -->
+        <div class="p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">Load Details</h3>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 data-table">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type & Driver</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trailer</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appt Time</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check In</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check Out</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time on Stop</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Left</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ETA</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Sample Data Row 1 -->
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">PICKUP <br> 932</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">1932</td>
+                            <td class="px-4 py-2 text-sm text-gray-700">Walmart Distribution Center 6060 (EV7), <br> Mira Loma, CA</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">Jul 4, 2025 3:00 PM - PDT</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">Jul 4, 2025 1:30 PM - PDT</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">Jul 4, 2025 6:00 PM - PDT</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">270</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">0h:07m:45s</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                        </tr>
+                        <!-- Sample Data Row 2 -->
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">DELIVERY <br> 932</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">1932</td>
+                            <td class="px-4 py-2 text-sm text-gray-700">Walmart Distribution Center 4737, <br> Jacksonville, TX</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">Jul 4, 2025 4:00 AM - CDT</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Current Load Status -->
+        <div class="p-4 bg-blue-50 border-b border-blue-200">
+            <h3 class="text-base font-semibold text-blue-800 mb-2">Current Load Status:</h3>
+            <div class="flex items-center text-blue-700 text-sm">
+                <i class="fas fa-check-circle text-lg mr-2"></i>
+                <span class="font-medium">Check Out</span>
+                <span class="mx-3 text-gray-500">|</span>
+                <i class="fas fa-map-marker-alt mr-1"></i>
+                <span class="mr-3">Walmart Distribution Center 8060 (E17), Mira Loma, CA</span>
+                <span class="mx-3 text-gray-500">|</span>
+                <i class="far fa-calendar-alt mr-1"></i>
+                <span>Jul 4, 2025 6:00 PM - PDT</span>
+            </div>
+        </div>
+
+        <!-- Check Call Entries Section -->
+        <div class="py-3">
+            <!-- Check Out Entry -->
+            <div class="call-entry status-green">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex flex-col">
+                        <div class="flex items-center mb-1">
+                            <h2 class="text-base font-medium text-green-700 mr-2">Check Out</h2>
+                            <span class="text-gray-600 text-xs">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Walmart Distribution Center 8060 (E17), 4250 Hamner Ave, Mira Loma, CA 91752, USA
+                            </span>
+                        </div>
+                        <div class="flex items-center text-gray-700 text-xs ml-4">
+                            <span class="mr-3">
+                                <i class="far fa-calendar-alt mr-1"></i>
+                                <span class="font-medium">Jul 4, 2025 6:00 PM - PDT</span>
+                            </span>
+                            <span class="mr-3">
+                                <i class="fas fa-truck mr-1"></i>
+                                <span class="font-medium">Seal: 5746586</span>
+                            </span>
+                            <span>
+                                <i class="fas fa-thermometer-half mr-1"></i>
+                                <span class="font-medium">Reefer Temp: 32°F</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-gray-700 text-xs">
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-user-circle text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">Harpreet Singh</span>
+                        </div>
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-id-badge text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">532</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-trailer text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">1932</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Info for Check Out -->
+                <div class="grid grid-cols-6 gap-3 text-xs text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <div class="col-span-1 font-medium">Seal Number</div>
+                    <div class="col-span-1 font-medium">Reefer Temp, As Per BOL</div>
+                    <div class="col-span-1 font-medium">Set Reefer Temp</div>
+                    <div class="col-span-1 font-medium">Reefer Mode</div>
+                    <div class="col-span-2 font-medium">Remarks</div>
+
+                    <div class="col-span-1">5746586</div>
+                    <div class="col-span-1">32°F</div>
+                    <div class="col-span-1">32°F</div>
+                    <div class="col-span-1">Continuous</div>
+                    <div class="col-span-2">Need To Send Blind Bol To The Delivery Driver</div>
+                </div>
+
+                <div class="grid grid-cols-6 gap-3 text-xs text-gray-700 bg-gray-50 p-3 rounded-lg mt-3">
+                    <div class="col-span-1 font-medium">Ref Number</div>
+                    <div class="col-span-1 font-medium">Commodities</div>
+                    <div class="col-span-1 font-medium">Ordered Pallet</div>
+                    <div class="col-span-1 font-medium">Ordered Case</div>
+                    <div class="col-span-1 font-medium">Picked Pallet</div>
+                    <div class="col-span-1 font-medium">Picked Case</div>
+
+                    <div class="col-span-1">7458693</div>
+                    <div class="col-span-1">Electronics</div>
+                    <div class="col-span-1">2200</div>
+                    <div class="col-span-1"></div> <!-- Empty as per image -->
+                    <div class="col-span-1">22</div>
+                    <div class="col-span-1">2350</div>
+                </div>
+
+                <div class="text-right text-xs text-gray-500 mt-3">
+                    Created By: Admin, Jul 4, 2025 4:55 AM
+                </div>
+            </div>
+
+            <!-- Issue At Shipper Entry (Updated) -->
+            <div class="call-entry status-red">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex flex-col">
+                        <div class="flex items-center mb-1">
+                            <h2 class="text-base font-medium text-red-700 mr-2">Issue At Shipper</h2>
+                            <span class="text-gray-600 text-xs">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Walmart Distribution Center 8060 (E17), 4250 Hamner Ave, Mira Loma, CA 91752, USA
+                            </span>
+                        </div>
+                        <div class="flex items-center text-gray-700 text-xs ml-4">
+                            <span class="mr-3">
+                                <i class="far fa-calendar-alt mr-1"></i>
+                                <span class="font-medium">Jul 4, 2025 4:00 PM - PDT</span>
+                            </span>
+                            <span class="text-blue-600 font-medium"><i class="fas fa-edit mr-1"></i>Updated</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-gray-700 text-xs">
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-user-circle text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">Harpreet Singh</span>
+                        </div>
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-id-badge text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">532</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-trailer text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">1932</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Info for Issue At Shipper -->
+                <div class="grid grid-cols-6 gap-3 text-xs text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <div class="col-span-1 font-medium">Reason</div>
+                    <div class="col-span-2 font-medium">Remarks</div>
+                    <div class="col-span-3"></div> <!-- Empty column for spacing -->
+
+                    <div class="col-span-1">Appointment Not In System</div>
+                    <div class="col-span-2">We Have Informed The Customer. Waiting For Their Response</div>
+                    <div class="col-span-3"></div>
+                </div>
+
+                <div class="text-right text-xs text-gray-500 mt-3">
+                    Created By: Admin, Jul 4, 2025 4:51 AM
+                </div>
+            </div>
+
+            <!-- Issue Start Date/Time Entry (No Appointment Scheduled) -->
+            <div class="call-entry status-red">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex flex-col">
+                        <div class="flex items-center mb-1">
+                            <h2 class="text-base font-medium text-red-700 mr-2">Issue Start Date/Time</h2>
+                            <span class="text-gray-600 text-xs">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Walmart Distribution Center 8060 (E17), 4250 Hamner Ave, Mira Loma, CA 91752, USA
+                            </span>
+                        </div>
+                        <div class="flex items-center text-gray-700 text-xs ml-4">
+                            <span class="mr-3">
+                                <i class="far fa-calendar-alt mr-1"></i>
+                                <span class="font-medium">Jul 4, 2025 4:00 PM - PDT</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-gray-700 text-xs">
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-user-circle text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">Harpreet Singh</span>
+                        </div>
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-id-badge text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">532</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-trailer text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">1932</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Info for Issue Start Date/Time -->
+                <div class="grid grid-cols-6 gap-3 text-xs text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <div class="col-span-1 font-medium">Reason</div>
+                    <div class="col-span-5"></div> <!-- Empty column for spacing -->
+
+                    <div class="col-span-6">No Appointment Scheduled</div>
+                </div>
+
+                <div class="text-right text-xs text-gray-500 mt-3">
+                    Created By: Admin, Jul 4, 2025 4:48 AM
+                </div>
+            </div>
+
+            <!-- Waiting At Shipper Entry -->
+            <div class="call-entry status-orange">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex flex-col">
+                        <div class="flex items-center mb-1">
+                            <h2 class="text-base font-medium text-orange-700 mr-2">Waiting At Shipper</h2>
+                            <span class="text-gray-600 text-xs">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Walmart Distribution Center 8060 (E17), 4250 Hamner Ave, Mira Loma, CA 91752, USA
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-gray-700 text-xs">
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-user-circle text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">Harpreet Singh</span>
+                        </div>
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-id-badge text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">532</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-trailer text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">1932</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Info for Waiting At Shipper -->
+                <div class="grid grid-cols-6 gap-3 text-xs text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <div class="col-span-6 font-medium">Reason</div>
+
+                    <div class="col-span-6">Load Not Ready</div>
+                </div>
+
+                <div class="text-right text-xs text-gray-500 mt-3">
+                    Created By: Admin, Jul 4, 2025 4:47 AM
+                </div>
+            </div>
+
+            <!-- Check In Entry -->
+            <div class="call-entry status-green">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex flex-col">
+                        <div class="flex items-center mb-1">
+                            <h2 class="text-base font-medium text-green-700 mr-2">Check In</h2>
+                            <span class="text-gray-600 text-xs">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Walmart Distribution Center 8060 (E17), 4250 Hamner Ave, Mira Loma, CA 91752, USA
+                            </span>
+                        </div>
+                        <div class="flex items-center text-gray-700 text-xs ml-4">
+                            <span class="mr-3">
+                                <i class="far fa-calendar-alt mr-1"></i>
+                                <span class="font-medium">Jul 4, 2025 1:30 PM - PDT</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-gray-700 text-xs">
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-user-circle text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">Harpreet Singh</span>
+                        </div>
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-id-badge text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">532</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-trailer text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">1932</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right text-xs text-gray-500 mt-3">
+                    Created By: Admin, Jul 4, 2025 4:46 AM
+                </div>
+            </div>
+
+            <!-- ETA Entry -->
+            <div class="call-entry status-blue">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex flex-col">
+                        <div class="flex items-center mb-1">
+                            <h2 class="text-base font-medium text-blue-700 mr-2">Eta</h2>
+                            <span class="text-gray-600 text-xs">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Walmart Distribution Center 8060 (E17), 4250 Hamner Ave, Mira Loma, CA 91752, USA
+                            </span>
+                        </div>
+                        <div class="flex items-center text-gray-700 text-xs ml-4">
+                            <span class="mr-3">
+                                <i class="far fa-calendar-alt mr-1"></i>
+                                <span class="font-medium">Jul 4, 2025 2:30 PM - PDT</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-gray-700 text-xs">
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-user-circle text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">Harpreet Singh</span>
+                        </div>
+                        <div class="flex items-center mr-3">
+                            <i class="fas fa-id-badge text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">532</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-trailer text-lg mr-1 text-gray-500"></i>
+                            <span class="font-medium">1932</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Info for ETA -->
+                <div class="grid grid-cols-6 gap-3 text-xs text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <div class="col-span-6 font-medium">Moving Status</div>
+                    <div class="col-span-6">Moving</div>
+                </div>
+
+                <div class="text-right text-xs text-gray-500 mt-3">
+                    Created By: Admin, Jul 4, 2025 4:45 AM
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Detail Page</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid for info */
+            gap: 0.75rem; /* Slightly reduced gap for compactness */
+        }
+        .info-item {
+            background-color: #ffffff;
+            padding: 0.75rem 1rem; /* Slightly reduced vertical padding */
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .info-label {
+            font-weight: 500;
+            color: #4b5563; /* Gray-700 */
+            font-size: 0.875rem; /* sm */
+            margin-bottom: 0.125rem; /* Reduced margin */
+        }
+        .info-value {
+            font-weight: 600;
+            color: #1f2937; /* Gray-900 */
+            font-size: 0.95rem; /* Slightly smaller base font */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-6xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-xl">
+
+        <!-- Header Section -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 pb-3 border-b border-gray-200">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-1">WAL-MART TRANSPORTATION LLC</h1>
+                <p class="text-lg text-gray-600">Customer Type: <span class="font-semibold text-blue-600">BROKER</span></p>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-3 sm:mt-0">
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 shadow-sm">FMCSA Status: ACTIVE</span>
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 shadow-sm">ID Status: ACTIVE</span>
+            </div>
+        </header>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 mb-6">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                Edit Customer
+            </button>
+            <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                Manage Branches
+            </button>
+            <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                Delete Customer
+            </button>
+        </div>
+
+        <!-- Main Content - Sections -->
+        <div class="space-y-6"> <!-- Reduced space between sections -->
+            <!-- Section: Overview / General Information -->
+            <section class="bg-gray-50 p-5 rounded-lg shadow-inner"> <!-- Reduced padding -->
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">Overview</h2> <!-- Reduced margin-bottom -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <p class="info-label">Customer ID</p>
+                        <p class="info-value">15</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">Name</p>
+                        <p class="info-value">WAL-MART TRANSPORTATION LLC</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">Type</p>
+                        <p class="info-value">BROKER</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">Created At</p>
+                        <p class="info-value">2025-07-08 04:29:50</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">Updated At</p>
+                        <p class="info-value">2025-07-08 04:29:50</p>
+                    </div>
+                    <div class="info-item col-span-full sm:col-span-1">
+                        <p class="info-label">Client ID</p>
+                        <p class="info-value">1</p>
+                    </div>
+                    <div class="info-item col-span-full sm:col-span-1">
+                        <p class="info-label">File ID</p>
+                        <p class="info-value">76</p>
+                    </div>
+                    <div class="info-item col-span-full">
+                        <p class="info-label">Notes</p>
+                        <p class="info-value text-gray-500 italic">No notes available.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Compliance & Financials -->
+            <section class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">Compliance & Financials</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <p class="info-label">FMCSA Status</p>
+                        <p class="info-value">ACTIVE</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">MC Number</p>
+                        <p class="info-value">Walmart</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">DOT Number</p>
+                        <p class="info-value">63585</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">Credit Limit</p>
+                        <p class="info-value">$10,000,000</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">Payment Terms</p>
+                        <p class="info-value">NET_30</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">Credit Rating</p>
+                        <p class="info-value">A</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Primary Branch Details -->
+            <section class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">Primary Branch Details</h2>
+                <div class="space-y-5"> <!-- Reduced space within section -->
+                    <!-- Branch Basic Info -->
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <p class="info-label">Branch Name</p>
+                            <p class="info-value">WAL-MART TRANSPORTATION LLC</p>
+                        </div>
+                        <div class="info-item">
+                            <p class="info-label">Branch ID</p>
+                            <p class="info-value">13</p>
+                        </div>
+                        <div class="info-item">
+                            <p class="info-label">Phone</p>
+                            <p class="info-value">+1 479-204-4297</p>
+                        </div>
+                        <div class="info-item">
+                            <p class="info-label">Email</p>
+                            <p class="info-value">walmart@loads.com</p>
+                        </div>
+                        <div class="info-item col-span-full">
+                            <p class="info-label">Additional Emails</p>
+                            <p class="info-value text-gray-500 italic">N/A</p>
+                        </div>
+                    </div>
+
+                    <!-- Company Representative -->
+                    <div class="border-t border-gray-200 pt-5"> <!-- Reduced padding-top -->
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">Company Representative</h3> <!-- Reduced margin-bottom -->
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <p class="info-label">Name</p>
+                                <p class="info-value">John Macallen</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Role</p>
+                                <p class="info-value">Operation Manager West Coast</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Phone</p>
+                                <p class="info-value">1234567890 Ext. 156</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Fax</p>
+                                <p class="info-value">18006564575</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Email</p>
+                                <p class="info-value">john.macallen@walmart.com</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Details -->
+                    <div class="border-t border-gray-200 pt-5"> <!-- Reduced padding-top -->
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">Address</h3> <!-- Reduced margin-bottom -->
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <p class="info-label">Street</p>
+                                <p class="info-value">311, North Walton Boulevard</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">City, State, Zip</p>
+                                <p class="info-value">Bentonville, Arkansas 72712</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Country</p>
+                                <p class="info-value">United States (US)</p>
+                            </div>
+                            <div class="info-item col-span-full">
+                                <p class="info-label">Google Address</p>
+                                <p class="info-value">311 N Walton Blvd, Bentonville, AR 72712, USA</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Timezone</p>
+                                <p class="info-value">America/Chicago</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Latitude</p>
+                                <p class="info-value">36.3769418</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-label">Longitude</p>
+                                <p class="info-value">-94.2231723</p>
+                            </div>
+                        </div>
+                        <!-- Optional: Map Placeholder -->
+                        <div class="mt-5 p-3 bg-gray-100 rounded-md text-center text-gray-500 italic"> <!-- Reduced padding and margin-top -->
+                            <p>Map showing primary branch location would go here.</p>
+                            <img src="https://placehold.co/600x250/e0e0e0/808080?text=Map+Placeholder" alt="Map Placeholder" class="w-full h-auto rounded-md mt-2">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: All Branches (Placeholder for a table) -->
+            <section class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">All Branches</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primary</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Example Row (Primary Branch) -->
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">WAL-MART TRANSPORTATION LLC</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">311 N Walton Blvd, Bentonville...</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">+1 479-204-4297</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">walmart@loads.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">Yes</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-blue-600 hover:text-blue-900 mr-2">View</a>
+                                    <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                </td>
+                            </tr>
+                            <!-- Add more branch rows here dynamically -->
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Walmart Distribution Center</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">123 Main St, Anytown, USA</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">distro@walmart.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">No</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-blue-600 hover:text-blue-900 mr-2">View</a>
+                                    <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                    Add New Branch
+                </button>
+            </section>
+
+            <!-- Section: Customer Contracts / Documents -->
+            <section class="bg-gray-50 p-5 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">Customer Contracts & Documents</h2>
+                <div class="overflow-x-auto mb-4">
+                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Document Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded On</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Master Service Agreement 2025.pdf</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2025-06-15</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-blue-600 hover:text-blue-900 mr-2">View</a>
+                                    <a href="#" class="text-green-600 hover:text-green-900 mr-2">Download</a>
+                                    <a href="#" class="text-red-600 hover:text-red-900">Delete</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Credit Application.docx</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2025-01-20</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-blue-600 hover:text-blue-900 mr-2">View</a>
+                                    <a href="#" class="text-green-600 hover:text-green-900 mr-2">Download</a>
+                                    <a href="#" class="text-red-600 hover:text-red-900">Delete</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Insurance Certificate.pdf</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-12-01</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-blue-600 hover:text-blue-900 mr-2">View</a>
+                                    <a href="#" class="text-green-600 hover:text-green-900 mr-2">Download</a>
+                                    <a href="#" class="text-red-600 hover:text-red-900">Delete</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                    Upload New Document
+                </button>
+            </section>
+        </div>
+    </div>
+</body>
+</html>
