@@ -1,7 +1,7 @@
 import z from 'zod';
 
 export const CreateEventSchema = z.object({
-    title: z.string().min(3, "Event name must be at least 3 character"),
+    title: z.string().min(3, "Event title must be at least 3 character"),
     description: z.string().min(50, "Event description must be at least 50 characters long"),
     language: z.string().min(2, "Language must be at least 2 characters long"),
     ticketPrice: z.number().min(0, "Ticket price cannot be negative"),

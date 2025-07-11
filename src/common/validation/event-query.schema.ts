@@ -1,18 +1,14 @@
-import z from 'zod';
+import z, { number, string } from 'zod';
 
 export const EventQueryParamsSchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
   sortBy: z.string().optional(),
   sortOrder: z.enum(['ASC', 'DESC']).optional(),
-  search: z.string().optional(),
-  // Filter parameters (flattened for query params)
-  category: z.string().optional(),
-  status: z.enum(['draft', 'published', 'cancelled', 'completed']).optional(),
+  term: z.string().optional(),
+  categoryIds: z.union([z.string(),z.array(z.string())]).optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
   priceMin: z.coerce.number().min(0).optional(),
   priceMax: z.coerce.number().min(0).optional(),
 }).refine(
@@ -38,3 +34,5 @@ export const EventQueryParamsSchema = z.object({
     path: ["startDate"],
   }
 );
+
+export type EventQueryParams = z.infer<typeof EventQueryParamsSchema>;

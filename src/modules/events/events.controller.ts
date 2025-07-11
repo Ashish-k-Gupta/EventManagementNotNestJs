@@ -2,23 +2,24 @@ import { NextFunction, Request, Response } from "express";
 import { EventService } from "./events.service";
 import { StatusCodes } from "http-status-codes";
 import { AuthenticatedRequest } from "../../types/authenticated-request";
+import { EventQueryParams, EventQueryParamsSchema } from "../../common/validation/event-query.schema";
+import z from 'zod';
 
 export class EventController{
     constructor(private eventService: EventService){}
 
     getEvents = async(req: Request, res: Response, next: NextFunction) =>{
         try{
-            const term = req.query.term as string;
-            const categoryIds = req.query.categoryIds
-            ? (Array.isArray(req.query.categoryIds)
-             ? req.query.categoryIds  
-             : [req.query.categoryIds])
-             .map(Number): undefined;
-            const page = parseInt(req.query.page as string, 10) || 1;
-            const limit = parseInt(req.query.limit as string, 10) || 10;
-            const result = await this.eventService.getEvent(term, categoryIds, page, limit)
+            const validateQueryParams: EventQueryParams = EventQueryParamsSchema.parse(req.query);
+            const result = await this.eventService.getEvent(validateQueryParams);
             res.status(StatusCodes.OK).json(result);
         }catch(err){
+                 if (err instanceof z.ZodError) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Validation error in query parameters",
+                    errors: err.errors
+                });
+            }
             next(err);
         }
     }

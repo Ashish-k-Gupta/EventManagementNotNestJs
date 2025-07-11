@@ -10,7 +10,7 @@ import { UserRoles } from "../../users/enums/UserRole.enum";
 export const eventRouter = (eventController: EventController): Router =>{
     const router = Router();
     router.post('/',validateSchema(CreateEventSchema), eventController.createEvent as RequestHandler);
-    router.get('/', eventController.getEvents);
+    router.get('/', eventController.getEvents as RequestHandler);
     // router.get('/', eventController.findAllEvents);
     router.get('/quick-list', eventController.quickListEvent);
     router.get('/:id', eventController.findEventById);

@@ -1,17 +1,16 @@
-import { z } from 'zod';
-import { CreateEventSchema } from '../../modules/events/validators/event.validator';
+import z, { object } from 'zod';
 
 export const PaginationOptionsSchema = z.object({
-    page: z.coerce.number().int().min(1).default(1),
-    limit: z.coerce.number().int().min(1).max(100).default(10),
-    sortBy: z.string().optional().default('created_at'),
-    sortOrder: z.enum(['ASC', 'DESC']).optional().default('DESC')
+    page: z.coerce.number().min(1).default(1).optional(),
+    limit: z.coerce.number().min(1).max(100).default(10).optional(),
+    sortBy: z.string().default('created_at').optional(),
+    sortOrder: z.enum(['ASC', 'DESC']).default('DESC').optional()
 })
+export type paginationOptions = z.infer<typeof PaginationOptionsSchema>;
 
-export type PaginationOptions = z.infer<typeof PaginationOptionsSchema>;
 
-export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) => z.object({
-    data: z.array(itemSchema), 
+export const PaginatedResponse = <T extends z.AnyZodObject>(itemSchema: T) =>({
+    data: z.array(itemSchema),
     meta: z.object({
         total: z.number().min(0),
         page: z.number().min(1),
