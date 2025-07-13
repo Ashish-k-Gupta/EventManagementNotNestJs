@@ -43,8 +43,8 @@ async function  bootstrap() {
             res.send('Hello World!');
         });
         app.use('/auth', authRouter(dataSource));
+
         app.use(authenticateJWT);
-        
         app.use('/users', userRouter(userController));
         app.use('/category', catergoryRouter(catergoryController));
         app.use('/events', eventRouter(eventController));

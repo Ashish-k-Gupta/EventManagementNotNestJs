@@ -3,7 +3,7 @@ import { Events } from "./entity/Events.entity";
 import { CreateEventInput, UpdateEventInput } from "./validators/event.validator";
 import { CategoryService } from "../category/category.service";
 import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
-import { EventQueryParams } from "../../common/validation/event-query.schema";
+import { EventQueryParams } from "../../common/validation/eventQuerySchema";
 
 export class EventService {
     private eventRepository: Repository<Events>;
@@ -150,7 +150,11 @@ export class EventService {
     }
 
     async findEventById(eventId: number): Promise<Events> {
-        const event = await this.eventRepository.findOne({ where: { id: eventId } })
+        const event = await this.eventRepository.findOne({
+             where: { id: eventId },
+             select: ['title', 'description', 'language', 'ticketPrice', 'startDate', 'endDate', 'categories']
+            })
+
         if (!event) {
             throw new NotFoundException(`Event with ID "${eventId}" not found`)
         }

@@ -11,12 +11,12 @@ dotenv.config();
 const secretKey = process.env.JWT_SECRET as string;
 const jwtExpiresIn = parseInt(process.env.JWT_EXPIRES_IN!) || 3600;
 
-if(!secretKey){
+if (!secretKey) {
     throw new NotFoundException("Secret key is missing")
 }
-export class AuthService{
+export class AuthService {
 
-    constructor(private userService: UserService){}
+    constructor(private userService: UserService) { }
 
     async generateToken(payload: PayloadForToken): Promise<{ token: string }> {
         const signOptions: SignOptions = { expiresIn: jwtExpiresIn };
@@ -24,36 +24,37 @@ export class AuthService{
         return { token };
     }
 
-    async registerUser(createUserInput: CreateUserInput):Promise<{token: string, user: Partial<Users>}>{
-      const user = await this.userService.createUser(createUserInput);
-      const payload = {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role
-    };
-      const signOptions: SignOptions = {
-        expiresIn: jwtExpiresIn
-      };
-      
-      const Jwt_token = jwt.sign(payload, secretKey, signOptions);
-      return {
-        user: user,
-        token: Jwt_token,
+    async registerUser(createUserInput: CreateUserInput): Promise<{ token: string, user: Partial<Users> }> {
+        const user = await this.userService.createUser(createUserInput);
+        const payload = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role
+        };
+        const signOptions: SignOptions = {
+            expiresIn: jwtExpiresIn
+        };
+
+        const Jwt_token = jwt.sign(payload, secretKey, signOptions);
+        return {
+            user: user,
+            token: Jwt_token,
+        }
+
     }
 
-}
-
-    async login(loginUserInput: LoginUserInput):Promise<{token: string, user: Users}>{
+    async login(loginUserInput: LoginUserInput): Promise<{ token: string, user: Users }> {
         const ValidUser = await this.userService.validateUser(loginUserInput);
-        const {id, email, firstName, lastName, role} = ValidUser;
+        const { id, email, firstName, lastName, role } = ValidUser;
         const payload = { id, email, firstName, lastName, role };
         const { token } = await this.generateToken(payload);
-        return{
+        return {
             user: ValidUser,
             token: token,
         }
+
 
     }
 }

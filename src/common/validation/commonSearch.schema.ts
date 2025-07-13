@@ -1,6 +1,6 @@
 import z from 'zod';
-import { PaginationOptionsSchema } from './pagination.schema';
-import { FilterOptionsSchema } from './filters.schema';
+import { PaginationOptionsSchema } from './commonPagination.schema';
+import { FilterOptionsSchema } from './commonFilterSchema ';
 
 export const eventSearchOptionsSchema = PaginationOptionsSchema.extend({
     search: z.string().optional(),

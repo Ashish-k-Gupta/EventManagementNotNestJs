@@ -1,6 +1,5 @@
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import UserTracking from "../../common/models/UserTracking.entity";
-import { UserRoles } from "../enums/UserRole.enum";
 import { Events } from "../../events/entity/Events.entity";
 import * as bcrypt from 'bcrypt'
 

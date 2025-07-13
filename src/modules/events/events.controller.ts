@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { EventService } from "./events.service";
 import { StatusCodes } from "http-status-codes";
 import { AuthenticatedRequest } from "../../types/authenticated-request";
-import { EventQueryParams, EventQueryParamsSchema } from "../../common/validation/event-query.schema";
+import { EventQueryParams, EventQueryParamsSchema } from "../../common/validation/eventQuerySchema";
 import z from 'zod';
 
 export class EventController{
