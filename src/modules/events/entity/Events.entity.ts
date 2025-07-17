@@ -18,6 +18,9 @@ export class Events extends UserTracking{
     @Column({nullable: false})
     language!: string;
 
+    @Column({default: 0})
+    availableSeats!: number;
+
     @Column({nullable: false, type: 'decimal', precision: 10, scale: 2})
     ticketPrice!: number;
 
