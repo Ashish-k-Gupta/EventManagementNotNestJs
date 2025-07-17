@@ -120,3 +120,38 @@ export class User extends BaseEntityWithTracking {
   @Column({ unique: true })
   email: string;
 }
+
+import { EntityManager } from "typeorm";
+import { SeederInterface } from "../seeder.interface";
+import { Users } from "../../modules/users/models/Users.entity";
+import { USER_ROLE } from "../../modules/users/enums/UserRole.enum";
+import * as bcrypt from 'bcrypt';
+
+export class adminSeeder implements SeederInterface {
+    name = "adminSeeder"
+
+    async run(dataSource: EntityManager){
+        const userRepository = dataSource.getRepository(Users)
+        const adminEmail = 'ashish@example.com'
+        const defaultPassword = 'Test@1234'
+        const existingAdmin = await userRepository.findOneBy({email: adminEmail})
+        if(!existingAdmin){
+
+            const salt =  await bcrypt.genSalt(10)
+            const hashedPassword = await bcrypt.hash(defaultPassword, salt)
+            const adminUserDetails = userRepository.create({
+                firstName: 'Ashish',
+                lastName: 'Gupta',
+                email: adminEmail,
+                password: hashedPassword,
+                role: USER_ROLE.ADMIN,
+                created_at: new Date(),
+            })
+            await userRepository.save(adminUserDetails)
+            console.log(`Admin user '${adminEmail}' has been seeded`)
+        }else{
+            console.log(`Admin user '${adminEmail}' already exists. Skipping seeding.`);
+        }
+            console.log('Admin seeded successfully')
+    }
+}

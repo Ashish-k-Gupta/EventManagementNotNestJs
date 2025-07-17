@@ -1,4 +1,4 @@
-import { DataSource, Entity, Migration } from "typeorm";
+import { DataSource} from "typeorm";
 import { loadEntityFiles } from "./utils/load-entities";
 import { loadMigrationFiles } from "./utils/load-migration";
 import dotenv from 'dotenv'
@@ -21,7 +21,7 @@ try{
         entities: loadedEntities,
         migrations: loadedMigrations,
         logging: process.env.NODE_ENV !== 'production' ? ['warn', 'migration', 'error'] : false,
-        connectTimeoutMS: 10000
+        connectTimeoutMS: 10000,
     })
     await appDataSource.initialize();
     console.log("Data source has been initialized!");

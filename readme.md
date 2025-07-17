@@ -135,3 +135,25 @@ Yes, you've hit the nail on the head with both points!
             Then, at the point of using that function, you choose and specify the concrete itemSchema (and thus the type T) that the pagination response should contain.
 
 This pattern is incredibly powerful for creating highly reusable and type-safe utilities, especially when dealing with common API response patterns like pagination, where the wrapper structure is consistent but the payload's type changes.
+
+july-15-2025
+
+Fuck man shit hit the fan. 
+It was simple I changed created a new database. Now the old admin I created by post request was deleted. And this time I have applied the logic that one cannot create a an admin role using request. So I had to create a user using seeder. And man spent like 2-3 hours doing this. ChatGPTing /Gemining my way. and it didn't work and now I'm going sleep. It's too late. I'll have to go to office tomorrow.
+Good night sweety, I love this shit. 
+We will try to fix this tomorrow.
+:)
+
+
+Oh boy this thing is done. I was able to implement the seeder using by running a script. This is not the correct method. There are better ways to run seeder specially like admin.
+Like writing a script where it ask for the email of the person you want to add as admin and then it will send them a link on that email to setup their password and that is more industry method. But I'll try to do that next time. But for the moment this is good. I'm satisfied with this......
+
+Let's go...............
+
+
+
+corn
+hairs
+Rice Weevils
+not able to find my board
+coming to my room.
