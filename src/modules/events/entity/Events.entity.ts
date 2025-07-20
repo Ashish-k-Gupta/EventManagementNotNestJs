@@ -19,6 +19,9 @@ export class Events extends UserTracking{
     @Column({nullable: false})
     language!: string;
 
+    @Column({nullable: false, default: 0})
+    totalSeats!: number;
+
     @Column({default: 0})
     availableSeats!: number;
 
@@ -54,5 +57,5 @@ export class Events extends UserTracking{
     isCancelled!: boolean;
 
     @OneToMany(() => Ticket, (tickets) => tickets.event)
-    tickets!: Ticket;
+    tickets!: Ticket[];
 }

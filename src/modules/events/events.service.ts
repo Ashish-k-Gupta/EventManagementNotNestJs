@@ -138,6 +138,8 @@ export class EventService {
             title: createEventInput.title,
             description: createEventInput.description,
             language: createEventInput.language,
+            totalSeats: createEventInput.totalSeats,
+            availableSeats: createEventInput.totalSeats,
             ticketPrice: createEventInput.ticketPrice,
             startDate: createEventInput.startDate,
             endDate: createEventInput.endDate,
