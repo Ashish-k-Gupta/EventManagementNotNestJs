@@ -4,6 +4,7 @@ import { Events } from "../../events/entity/Events.entity";
 import * as bcrypt from 'bcrypt'
 
 import { UserRolesArray } from "../enums/UserRole.enum";
+import { Ticket } from "../../tickets/models/Ticket.entity";
 
 @Entity()
 export class Users extends UserTracking{
@@ -31,5 +32,8 @@ export class Users extends UserTracking{
 
     @OneToMany(() => Events, (events) => events.user)
     events?: Events[];
+
+    @OneToMany(() => Ticket, (ticket) => ticket.user)
+    tickets!: Ticket[];
 
 }

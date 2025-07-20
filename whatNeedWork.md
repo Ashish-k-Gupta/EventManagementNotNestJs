@@ -155,3 +155,75 @@ export class adminSeeder implements SeederInterface {
             console.log('Admin seeded successfully')
     }
 }
+
+
+
+
+
+import { DataSource, Repository, Transaction } from "typeorm";
+import { Ticket } from "./models/Ticket.entity";
+import { CreateTicketInput } from "./validators/ticket.validators";
+import { Users } from "../users/models/Users.entity";
+import { Events } from "../events/entity/Events.entity";
+import { BadRequestException, NotFoundException } from "../common/errors/http.exceptions";
+
+export class TicketService {
+    private ticketRepository: Repository<Ticket>;
+    private userRepository: Repository<Users>;
+    private eventRepository: Repository<Events>;
+    constructor(private dataSource: DataSource){
+        this.ticketRepository = dataSource.getRepository(Ticket),
+        this.userRepository = dataSource.getRepository(Users),
+        this.eventRepository = dataSource.getRepository(Events)
+    }
+
+    async createTicket(userId: number, createTicketInput: CreateTicketInput): Promise<Ticket[]>{
+        return await this.dataSource.transaction(async transactionalEntityManager  => {
+            const eventRepository = transactionalEntityManager.getRepository(Events);
+            const ticketRepository = transactionalEntityManager.getRepository(Ticket);
+
+            const event = await eventRepository.findOne({
+                where: {id: createTicketInput.eventId}
+            })
+
+            if(!event){
+                throw new NotFoundException(`Event with ID ${createTicketInput.eventId} not found.`)
+            }
+
+            if(event.isCancelled){
+                throw new BadRequestException(`Cannot register for a cancleed event: ${event.title} -- ${event.id}`)
+            }
+
+            if(event.startDate > new Date()){
+
+            }
+
+            if(event.availableSeats < createTicketInput.numberOfTickets){
+                  throw new BadRequestException(`Not enough seats available for ${event.title}. Only ${event.availableSeats} seats left.`);
+            }
+
+            const expectedPrice = event.ticketPrice * createTicketInput.numberOfTickets;
+
+            if(createTicketInput.totalPrice !== expectedPrice){
+                throw new BadRequestException(`Amount sent (${createTicketInput.totalPrice} does not match the total ticket price (${expectedPrice}) for ${createTicketInput.numberOfTickets} tickets)`)
+            }
+
+            const now = new Date();
+            const registrationOpensAt = new Date(event.startDate.getTime() - 15* 60 * 60 * 1000);
+            const registrationClosesAt = new Date(event.startDate.getTime() - 30 * 60 * 1000);
+
+
+            if(now < registrationOpensAt){
+                throw new BadRequestException(
+                `Registration for ${event.title} has not opened yet. It opens on ${registrationOpensAt.toLocaleString()}.`
+                )
+            }
+            if (now > registrationClosesAt) {
+                throw new BadRequestException(
+                    `Registration for ${event.title} has closed. It ended on ${registrationClosesAt.toLocaleString()}.`
+  );
+            
+            })
+        
+    }
+}

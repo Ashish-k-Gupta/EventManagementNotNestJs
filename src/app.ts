@@ -15,11 +15,13 @@ import { CategoryService } from './modules/category/category.service';
 import { CatergoryController } from './modules/category/category.controller';
 import { EventController } from './modules/events/events.controller';
 import { EventService } from './modules/events/events.service';
+import { ticketRouter } from './modules/tickets/routes/ticket.routes';
+import { TicketService } from './modules/tickets/ticket.service';
+import { TicketController } from './modules/tickets/ticket.controller';
 
 
 const app = express();
 const port = process.env.SERVER_PORT || 3001;
-// let userService: UserService;
 
 
 async function  bootstrap() {
@@ -33,6 +35,9 @@ async function  bootstrap() {
 
         const eventService = new EventService( dataSource, categorySerivce);
         const eventController = new EventController(eventService);
+
+        const ticketService = new TicketService(dataSource)
+        const ticketController = new TicketController(ticketService)
 
         console.log('Database initialized successfully')
 
@@ -48,6 +53,7 @@ async function  bootstrap() {
         app.use('/users', userRouter(userController));
         app.use('/category', catergoryRouter(catergoryController));
         app.use('/events', eventRouter(eventController));
+        app.use('/tickets', ticketRouter(ticketController));
 
 
         app.use((err: Error, req: Request, res: Response, next: NextFunction) =>{

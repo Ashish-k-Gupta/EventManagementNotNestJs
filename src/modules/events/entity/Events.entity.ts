@@ -3,6 +3,7 @@ import UserTracking from "../../common/models/UserTracking.entity";
 import { Users } from "../../users/models/Users.entity";
 import { Category } from "../../category/entity/Category.entity";
 import { IsBoolean } from "class-validator";
+import { Ticket } from "../../tickets/models/Ticket.entity";
 
 @Entity()
 export class Events extends UserTracking{
@@ -51,4 +52,7 @@ export class Events extends UserTracking{
     @Column({nullable: false, default: false})
     @IsBoolean()
     isCancelled!: boolean;
+
+    @OneToMany(() => Ticket, (tickets) => tickets.event)
+    tickets!: Ticket;
 }

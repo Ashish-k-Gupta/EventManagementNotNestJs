@@ -1,0 +1,31 @@
+import { NextFunction, Request, Response } from "express";
+import { TicketService } from "./ticket.service";
+import { AuthenticatedRequest } from "../../types/authenticated-request";
+import { StatusCodes } from "http-status-codes";
+
+export class TicketController{
+    constructor(private ticketService: TicketService){}
+
+    allTickets = async(req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
+        try{
+            const allTickets = this.ticketService.findTickets(req.user.id)
+            res.status(StatusCodes.OK).json(allTickets);
+        }catch(error){
+            next(error)
+        }
+    }
+
+    createTicket = async(req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
+        try{
+            const usreId = req.user.id;
+
+            const tickets =  this.ticketService.createTicket(usreId, req.body);
+            res.status(StatusCodes.CREATED).json(tickets)
+
+        }catch(error){
+            next(error);
+        }
+    }
+
+
+}

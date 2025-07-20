@@ -12,10 +12,10 @@ export const CreateEventSchema = z.object({
     const startDate = new Date(data.startDate);
     const endDate = new Date(data.endDate);
 
-    if(startDate < endDate){
+    if(startDate > endDate){
         ctx.addIssue({
             code: 'custom',
-            message: 'tillDate cannot be before fromDate',
+            message: 'End Date cannot be before Start Date',
             path: ['tillDate']
         })
     }
@@ -23,7 +23,7 @@ export const CreateEventSchema = z.object({
     if(startDate < new Date()){
         ctx.addIssue({
             code: 'custom',
-            message: 'fromDate cannot be in the past',
+            message: 'Start Date cannot be in the past',
             path: ['fromDate']
         })
     }
@@ -57,8 +57,8 @@ export const updateEventSchema = z.object({
         if(parsedEndDate! < parsedStartDate!){
             ctx.addIssue({
                 code: 'custom',
-                message: 'tillDate can not be before fromDate',
-                path: ['tillDate'],
+                message: 'End Date can not be before start Date',
+                path: ['endDate'],
             })
         }
     }
@@ -67,8 +67,8 @@ export const updateEventSchema = z.object({
         if(parsedStartDate! < new Date()){
             ctx.addIssue({
                 code: 'custom',
-                message: 'fromDate cannot be in the past',
-                path: ['fromDate']
+                message: 'Start Date cannot be in the past',
+                path: ['startDate']
             })
         }
     }
