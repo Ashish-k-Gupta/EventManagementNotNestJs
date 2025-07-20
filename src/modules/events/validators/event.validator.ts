@@ -4,6 +4,7 @@ export const CreateEventSchema = z.object({
     title: z.string().min(3, "Event title must be at least 3 character"),
     description: z.string().min(50, "Event description must be at least 50 characters long"),
     language: z.string().min(2, "Language must be at least 2 characters long"),
+    totalSeats: z.number().min(1, "Total seats cannot be 0"),
     ticketPrice: z.number().min(0, "Ticket price cannot be negative"),
     startDate: z.string().datetime({offset: true}),
     endDate: z.string().datetime({offset: true}),
@@ -12,10 +13,10 @@ export const CreateEventSchema = z.object({
     const startDate = new Date(data.startDate);
     const endDate = new Date(data.endDate);
 
-    if(startDate < endDate){
+    if(startDate > endDate){
         ctx.addIssue({
             code: 'custom',
-            message: 'tillDate cannot be before fromDate',
+            message: 'End Date cannot be before Start Date',
             path: ['tillDate']
         })
     }
@@ -23,7 +24,7 @@ export const CreateEventSchema = z.object({
     if(startDate < new Date()){
         ctx.addIssue({
             code: 'custom',
-            message: 'fromDate cannot be in the past',
+            message: 'Start Date cannot be in the past',
             path: ['fromDate']
         })
     }
@@ -57,8 +58,8 @@ export const updateEventSchema = z.object({
         if(parsedEndDate! < parsedStartDate!){
             ctx.addIssue({
                 code: 'custom',
-                message: 'tillDate can not be before fromDate',
-                path: ['tillDate'],
+                message: 'End Date can not be before start Date',
+                path: ['endDate'],
             })
         }
     }
@@ -67,8 +68,8 @@ export const updateEventSchema = z.object({
         if(parsedStartDate! < new Date()){
             ctx.addIssue({
                 code: 'custom',
-                message: 'fromDate cannot be in the past',
-                path: ['fromDate']
+                message: 'Start Date cannot be in the past',
+                path: ['startDate']
             })
         }
     }

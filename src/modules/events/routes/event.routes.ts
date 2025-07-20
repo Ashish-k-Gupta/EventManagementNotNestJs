@@ -2,7 +2,7 @@ import { RequestHandler, Router } from "express";
 import { EventController } from "../events.controller";
 import { validateSchema } from "../../common/middlewares/validation.middleware";
 import { CreateEventSchema, updateEventSchema } from "../validators/event.validator";
-import { authenticateJWT, authorize, checkOwnerShipOrAdmin } from "../../common/middlewares/auth.middleware";
+import { authorize, checkOwnerShipOrAdmin } from "../../common/middlewares/auth.middleware";
 import { USER_ROLE } from "../../users/enums/UserRole.enum";
 
 
