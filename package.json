@@ -22,7 +22,7 @@
     "start": "node ./dist/app.js",
     "build": "tsc",
     "typeorm": "typeorm-ts-node-commonjs",
-    "migration:generate": "npx typeorm-ts-node-commonjs migration:generate",
+    "migration:generate": "typeorm-ts-node-commonjs -d src/AppDataSource.ts migration:generate",
     "migrate:dev": "npx typeorm-ts-node-commonjs migration:run -d src/AppDataSource.ts",
     "migrate:prod": "npx typeorm migration:run -d dist/AppDataSource.js",
     "start:dev": "nodemon ./src/app.ts",

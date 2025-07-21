@@ -7,6 +7,7 @@ export const createTicketSchema = z.object({
 })
 
 export const updateTicketSchema = z.object({
+    ticketId: z.array(z.number().int().positive()),
     isCancelled: z.boolean().refine(val => val === true, {
         message: "To cancel a ticket, 'isCancelled' must be true."
     }).optional()
@@ -14,3 +15,4 @@ export const updateTicketSchema = z.object({
 
 export type CreateTicketInput = z.infer<typeof createTicketSchema>;
 export type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
+

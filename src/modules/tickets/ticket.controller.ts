@@ -8,7 +8,7 @@ export class TicketController{
 
     allTickets = async(req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
         try{
-            const allTickets = this.ticketService.findTickets(req.user.id)
+            const allTickets =await this.ticketService.findTickets(req.user.id)
             res.status(StatusCodes.OK).json(allTickets);
         }catch(error){
             next(error)
@@ -18,7 +18,6 @@ export class TicketController{
     createTicket = async(req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
         try{
             const usreId = req.user.id;
-
             const tickets =  this.ticketService.createTicket(usreId, req.body);
             res.status(StatusCodes.CREATED).json(tickets)
 
