@@ -116,7 +116,7 @@ export class TicketService{
           where: {
             id: In(updateTicketInput.ticketId)
           },
-          relations: ['event', 'user']
+          relations: ['event', 'user', 'event.user']
         })
         const failedCancellation : {ticketId: number, reason: string}[] = [];
         const successfulCancellation: Ticket[] = [];
@@ -152,7 +152,10 @@ export class TicketService{
           }else{
             ticket.isCancelled = true;
             successfulCancellation.push(ticket)
-          }
+            if(ticket.event){
+              ticket.event.availableSeats = (ticket.event.availableSeats || 0) + 1;
+            }
+{}          }
         }
 
         const eventToSave = new Map<number, Events>();
@@ -172,7 +175,8 @@ export class TicketService{
         const user = await this.userRepo.findOne({where: {id: userId}})
         if(user && user.email){
           for(const ticket of successfulCancellation){
-            await this.emailService.sendTicketCancelEmail(user.email, ticket, ticket.event)
+            await this.emailService.sendTicketCancelEmail(user.email, ticket, ticket.event), this.emailService.ticketCancellationAlert(ticket.event.user.email, ticket, ticket.event, ticket.user)
+
           }
         }
 

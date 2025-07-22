@@ -206,6 +206,8 @@ async newRegistrationAlert(organizerId: string, ticket: Ticket, event: Events, a
                                                 <p style="margin: 5px 0;"><strong>Attendee Email:</strong> ${attendeeUser.email || 'N/A'}</p>
                                                 <p style="margin: 5px 0;"><strong>Booking Date:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
                                                 <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                                <p style="margin: 5px 0;"><strong>Tickets Left:</strong> ${event.availableSeats}</p>
+
                                             </div>
 
                                             <p style="font-size: 16px;">Keep track of your attendees and prepare for a great event!</p>
@@ -236,5 +238,65 @@ try {
 
 }
 
+    async ticketCancellationAlert(organizerEmail: string, ticket: Ticket, event: Events, attendeeUser: Users): Promise<void> {
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || '"Event Booking System" <no-reply@yourdomain.com>', 
+            to: organizerEmail, 
+            subject: `Ticket Cancellation Alert for ${event.title} - Ticket ID: ${ticket.id}`, 
+            html: `
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="center" style="padding: 20px 0;">
+                                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background-color: #FFC107; padding: 20px; text-align: center; color: #333;">
+                                            <h1 style="margin: 0; font-size: 28px;">Ticket Cancellation Alert!</h1>
+                                        </td>
+                                    </tr>
+                                    <!-- Body Content -->
+                                    <tr>
+                                        <td style="padding: 30px;">
+                                            <h2 style="color: #FFC107; margin-top: 0;">Hello Organizer!</h2>
+                                            <p style="font-size: 16px;">A ticket for your event <strong>${event.title}</strong> has been <strong>cancelled</strong>.</p>
+                                            
+                                            <div style="background-color: #f9f9f9; border: 1px solid #eee; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                                                <h3 style="color: #555; margin-top: 0; font-size: 20px;">Cancellation Details:</h3>
+                                                <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #FFC107; font-weight: bold;">${event.title}</span></p>
+                                                <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
+                                                <p style="margin: 5px 0;"><strong>Attendee Name:</strong> ${attendeeUser.firstName || ''} ${attendeeUser.lastName || ''}</p>
+                                                <p style="margin: 5px 0;"><strong>Attendee Email:</strong> ${attendeeUser.email || 'N/A'}</p>
+                                                <p style="margin: 5px 0;"><strong>Cancellation Date:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                                                <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                                <p style="margin: 5px 0;"><strong>Tickets Left:</strong> ${event.availableSeats}</p>
+                                            </div>
+
+                                            <p style="font-size: 16px;">The seat for this ticket has been re-added to your event's available capacity.</p>
+                                            <p style="font-size: 16px;">Best regards,<br/>The Event Team</p>
+                                        </td>
+                                    </tr>
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #777;">
+                                            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Event Booking System. All rights reserved.</p>
+                                            <p style="margin: 5px 0 0;">This is an automated email, please do not reply.</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `,
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log(`Ticket cancellation alert email sent to ${organizerEmail} for Ticket ID: ${ticket.id}`);
+        } catch (error) {
+            console.error(`Failed to send ticket cancellation alert email to ${organizerEmail} for Ticket ID: ${ticket.id}`, error);
+        }
+    }
 
 }
