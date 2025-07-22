@@ -18,6 +18,7 @@ import { EventService } from './modules/events/events.service';
 import { ticketRouter } from './modules/tickets/routes/ticket.routes';
 import { TicketService } from './modules/tickets/ticket.service';
 import { TicketController } from './modules/tickets/ticket.controller';
+import { EmailService } from './common/service/email.service';
 
 
 const app = express();
@@ -36,7 +37,9 @@ async function  bootstrap() {
         const eventService = new EventService( dataSource, categorySerivce);
         const eventController = new EventController(eventService);
 
-        const ticketService = new TicketService(dataSource)
+        const emailService = new EmailService()
+
+        const ticketService = new TicketService(dataSource, emailService)
         const ticketController = new TicketController(ticketService)
 
         console.log('Database initialized successfully')

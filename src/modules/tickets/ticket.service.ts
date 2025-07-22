@@ -3,6 +3,8 @@ import { Events } from "../events/entity/Events.entity";
 import { Ticket } from "./models/Ticket.entity";
 import { CreateTicketInput, UpdateTicketInput } from "./validators/ticket.validators";
 import { BadRequestException, NotFoundException } from "../common/errors/http.exceptions";
+import { Users } from "../users/models/Users.entity";
+import { EmailService } from "../../common/service/email.service";
 
 interface CancellationResult {
   success: boolean;
@@ -10,15 +12,14 @@ interface CancellationResult {
   failedTickets: { ticketId: number; reason: string }[];
 }
 export class TicketService{
-    private eventRepo: Repository<Events>;
-    private ticketRepo: Repository<Ticket>;
-
-    constructor(private dataSource: DataSource){
-        this.eventRepo = this.dataSource.getRepository(Events)
-        this.ticketRepo = this.dataSource.getRepository(Ticket)
+    private ticketRepo: Repository<Ticket>
+    private eventRepo: Repository<Events>
+    private userRepo: Repository<Users>
+    constructor(private dataSource: DataSource, private emailService: EmailService){
+         this.ticketRepo = dataSource.getRepository(Ticket)
+         this.eventRepo = dataSource.getRepository(Events)
+         this.userRepo = dataSource.getRepository(Users)
     }
-
-    
 
     async findTickets(userId: number){
         const [tickets, count] = await this.ticketRepo
@@ -43,6 +44,7 @@ export class TicketService{
             async transactionEntityManger =>{
                 const eventRepo = transactionEntityManger.getRepository(Events);
                 const ticketRepo = transactionEntityManger.getRepository(Ticket);
+                const userRepo = transactionEntityManger.getRepository(Users);
 
                 const event = await eventRepo.findOne({where: {id: createTicketInput.eventId}})
                 if(!event){
@@ -87,9 +89,16 @@ export class TicketService{
                 const savedTickets = await ticketRepo.save(tickets)
                 event.availableSeats -= createTicketInput.numberOfTickets;
                 await eventRepo.save(event)
+
+                const user = await userRepo.findOne({where: {id: userId}})
+                if(user && user.email){
+                  for (const ticket of savedTickets){
+                    await this.emailService.sendTicketConfirmationEmail(user.email, ticket, event);
+                  }
+                }else{
+                    console.warn(`User with ID ${userId} not found or has no email. Skipping ticket confiramtion email`)
+                  }
                 return savedTickets;
-
-
         }
     )}
 
