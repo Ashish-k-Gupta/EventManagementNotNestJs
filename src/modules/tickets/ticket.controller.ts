@@ -18,7 +18,7 @@ export class TicketController{
     createTicket = async(req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
         try{
             const usreId = req.user.id;
-            const tickets =  this.ticketService.createTicket(usreId, req.body);
+            const tickets =  await this.ticketService.createTicket(usreId, req.body);
             res.status(StatusCodes.CREATED).json(tickets)
 
         }catch(error){

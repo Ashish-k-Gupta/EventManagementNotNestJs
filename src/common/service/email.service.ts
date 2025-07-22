@@ -3,8 +3,7 @@ import * as nodemailer from 'nodemailer';
 import * as QRCode from 'qrcode';
 import { Ticket } from '../../modules/tickets/models/Ticket.entity';
 import { Events } from '../../modules/events/entity/Events.entity';
-import { timeStamp } from 'console';
-import { Subject } from 'typeorm/persistence/Subject';
+import { Users } from '../../modules/users/models/Users.entity';
 
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.email', 
@@ -35,13 +34,14 @@ export class EmailService{
   async sendTicketConfirmationEmail(userEmail: string, ticket: Ticket, event: Events): Promise<void>{
     const qrCodeContent = JSON.stringify({
         ticketId: ticket.id,
+        ticketIsCancelled: ticket.isCancelled,
         userEmail: userEmail,
         eventId: event.id,
         timeStamp: new Date().toISOString()
     });
 
     const qrCodeBuffer = await this.generateQrCodeBuffer(qrCodeContent);
-    const qrCodeCid = `qrcode_${ticket.id}@eventapp.com`; // Unique ID for this image
+    const qrCodeCid = `qrcode_${ticket.id}@eventapp.com`; 
 
 
     const mailOptions ={
@@ -49,30 +49,60 @@ export class EmailService{
         to: userEmail,
         subject: `Your Ticket for ${event.title} - Ticket ID: ${ticket.id}`,
          html: `
-                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                    <h2>Hello!</h2>
-                    <p>Thank you for booking your ticket for <strong>${event.title}</strong>!</p>
-                    <p><strong>Ticket ID:</strong> ${ticket.id}</p>
-                    <p><strong>Event:</strong> ${event.title}</p>
-                    <p><strong>Date:</strong> ${new Date(event.startDate).toLocaleDateString()}</p>
-                    <p><strong>Time:</strong> ${new Date(event.startDate).toLocaleTimeString()} - ${new Date(event.endDate).toLocaleTimeString()}</p>
-                    <p><strong>Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
-                    <p>Please present the QR code below at the event entry point for scanning.</p>
-                    <div style="text-align: center; margin: 20px 0;">
-                        <img src="${qrCodeCid}" alt="QR Code for Ticket ID ${ticket.id}" style="max-width: 100%; height: auto; border: 1px solid #ddd; padding: 5px;"/>
-                    </div>
-                    <p>We look forward to seeing you there!</p>
-                    <p>Best regards,<br/>The Event Team</p>
-                    <hr style="border: none; border-top: 1px solid #eee;"/>
-                    <p style="font-size: 0.8em; color: #777;">This is an automated email, please do not reply.</p>
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="center" style="padding: 20px 0;">
+                                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background-color: #4CAF50; padding: 20px; text-align: center; color: #ffffff;">
+                                            <h1 style="margin: 0; font-size: 28px;">Your Event Ticket!</h1>
+                                        </td>
+                                    </tr>
+                                    <!-- Body Content -->
+                                    <tr>
+                                        <td style="padding: 30px;">
+                                            <h2 style="color: #4CAF50; margin-top: 0;">Hello!</h2>
+                                            <p style="font-size: 16px;">Thank you for booking your ticket for <strong>${event.title}</strong>!</p>
+                                            
+                                            <div style="background-color: #f9f9f9; border: 1px solid #eee; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                                                <h3 style="color: #555; margin-top: 0; font-size: 20px;">Event Details:</h3>
+                                                <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #4CAF50; font-weight: bold;">${event.title}</span></p>
+                                                <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
+                                                <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(event.startDate).toLocaleDateString()}</p>
+                                                <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date(event.startDate).toLocaleTimeString()} - ${new Date(event.endDate).toLocaleTimeString()}</p>
+                                                <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                            </div>
+
+                                            <p style="font-size: 16px;">Please present the QR code below at the event entry point for scanning.</p>
+                                            <div style="text-align: center; margin: 30px 0;">
+                                                <!-- Reference the QR code using its Content-ID (cid:) -->
+                                                <img src="cid:${qrCodeCid}" alt="QR Code for Ticket ID ${ticket.id}" style="max-width: 250px; height: auto; border: 5px solid #4CAF50; padding: 5px; border-radius: 8px;"/>
+                                            </div>
+                                            <p style="font-size: 16px;">We look forward to seeing you there!</p>
+                                            <p style="font-size: 16px;">Best regards,<br/>The Event Team</p>
+                                        </td>
+                                    </tr>
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #777;">
+                                            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Event Booking System. All rights reserved.</p>
+                                            <p style="margin: 5px 0 0;">This is an automated email, please do not reply.</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             `, 
             attachments: [
                 {
-                    filename: `ticket_qr_${ticket.id}.png`, // Name of the attachment
-                    content: qrCodeBuffer, // The QR code image data
-                    contentType: 'image/png', // MIME type
-                    cid: qrCodeCid, // This MUST match the cid: in the img src
+                    filename: `ticket_qr_${ticket.id}.png`, 
+                    content: qrCodeBuffer, 
+                    contentType: 'image/png', 
+                    cid: qrCodeCid, 
                 },
             ],
             
@@ -85,4 +115,126 @@ export class EmailService{
         }
     }
 
-  }
+
+async sendTicketCancelEmail(userEmail: string, ticket: Ticket, event: Events): Promise<void>{
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: userEmail,
+        subject: `Cancelled Your Ticket for ${event.title} - Ticket ID: ${ticket.id}`,
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="center" style="padding: 20px 0;">
+                                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background-color: #DC3545; padding: 20px; text-align: center; color: #ffffff;">
+                                            <h1 style="margin: 0; font-size: 28px;">Ticket Cancellation Confirmed</h1>
+                                        </td>
+                                    </tr>
+                                    <!-- Body Content -->
+                                    <tr>
+                                        <td style="padding: 30px;">
+                                            <h2 style="color: #DC3545; margin-top: 0;">Hello!</h2>
+                                            <p style="font-size: 16px;">This email confirms that your ticket for <strong>${event.title}</strong> has been successfully <strong>cancelled</strong>.</p>
+                                            
+                                            <div style="background-color: #f9f9f9; border: 1px solid #eee; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                                                <h3 style="color: #555; margin-top: 0; font-size: 20px;">Cancellation Details:</h3>
+                                                <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #DC3545; font-weight: bold;">${event.title}</span></p>
+                                                <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
+                                                <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(event.startDate).toLocaleDateString()}</p>
+                                                <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date(event.startDate).toLocaleTimeString()} - ${new Date(event.endDate).toLocaleTimeString()}</p>
+                                                <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                            </div>
+
+                                            <p style="font-size: 16px;">If you have any questions, please contact our support team.</p>
+                                            <p style="font-size: 16px;">Best regards,<br/>The Event Team</p>
+                                        </td>
+                                    </tr>
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #777;">
+                                            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Event Booking System. All rights reserved.</p>
+                                            <p style="margin: 5px 0 0;">This is an automated email, please do not reply.</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tabl
+        `
+    };
+
+    try{
+        await transporter.sendMail(mailOptions);
+        console.log(`Ticket Cancellation email sent to ${userEmail} for Ticket ID: ${ticket.id}`);
+    }catch (error) {
+            console.error(`Failed to send ticket cancellation email to ${userEmail} for Ticket ID ${ticket.id}:`, error);
+        }
+
+}
+
+async newRegistrationAlert(organizerId: string, ticket: Ticket, event: Events, attendeeUser: Users){
+    const mailOptions ={
+        from: process.env.EMAIL_UESER,
+        to: event.user.email,
+        subject: `You've Got a New Attendee for ${event.title} - Ticket ID: ${ticket.id}`,
+        html:`
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="center" style="padding: 20px 0;">
+                                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background-color: #007BFF; padding: 20px; text-align: center; color: #ffffff;">
+                                            <h1 style="margin: 0; font-size: 28px;">New Attendee Alert!</h1>
+                                        </td>
+                                    </tr>
+                                    <!-- Body Content -->
+                                    <tr>
+                                        <td style="padding: 30px;">
+                                            <h2 style="color: #007BFF; margin-top: 0;">Hello Organizer!</h2>
+                                            <p style="font-size: 16px;">A new ticket has been booked for your event <strong>${event.title}</strong>!</p>
+                                            
+                                            <div style="background-color: #f9f9f9; border: 1px solid #eee; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+                                                <h3 style="color: #555; margin-top: 0; font-size: 20px;">Booking Details:</h3>
+                                                <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #007BFF; font-weight: bold;">${event.title}</span></p>
+                                                <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
+                                                <p style="margin: 5px 0;"><strong>Attendee Name:</strong> ${attendeeUser.firstName} ${attendeeUser.lastName}</p>
+                                                <p style="margin: 5px 0;"><strong>Attendee Email:</strong> ${attendeeUser.email || 'N/A'}</p>
+                                                <p style="margin: 5px 0;"><strong>Booking Date:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                                                <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                            </div>
+
+                                            <p style="font-size: 16px;">Keep track of your attendees and prepare for a great event!</p>
+                                            <p style="font-size: 16px;">Best regards,<br/>The Event Team</p>
+                                        </td>
+                                    </tr>
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #777;">
+                                            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Event Booking System. All rights reserved.</p>
+                                            <p style="margin: 5px 0 0;">This is an automated email, please do not reply.</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+        `
+    }
+
+try {
+    await transporter.sendMail(mailOptions);
+    console.log(`New ticket booking email sent to ${event.user.email} for Ticket ID: ${ticket.id}`);
+} catch (error) {
+    console.error(`Failed to send new ticket booking email to ${event.user.email} for Ticket ID: ${ticket.id}`, error);
+}
+
+}
+
+
+}

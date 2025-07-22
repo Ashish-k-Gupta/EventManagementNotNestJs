@@ -46,7 +46,7 @@ export class TicketService{
                 const ticketRepo = transactionEntityManger.getRepository(Ticket);
                 const userRepo = transactionEntityManger.getRepository(Users);
 
-                const event = await eventRepo.findOne({where: {id: createTicketInput.eventId}})
+                const event = await eventRepo.findOne({where: {id: createTicketInput.eventId}, relations: ['user']})
                 if(!event){
                     throw new NotFoundException('Event not found')
                 }
@@ -93,7 +93,7 @@ export class TicketService{
                 const user = await userRepo.findOne({where: {id: userId}})
                 if(user && user.email){
                   for (const ticket of savedTickets){
-                    await this.emailService.sendTicketConfirmationEmail(user.email, ticket, event);
+                    await this.emailService.sendTicketConfirmationEmail(user.email, ticket, event), this.emailService.newRegistrationAlert(event.user.email, ticket, event, user);
                   }
                 }else{
                     console.warn(`User with ID ${userId} not found or has no email. Skipping ticket confiramtion email`)
@@ -168,6 +168,12 @@ export class TicketService{
 
         if(eventToSave.size > 0){
           await eventRepo.save(Array.from(eventToSave.values()));
+        }
+        const user = await this.userRepo.findOne({where: {id: userId}})
+        if(user && user.email){
+          for(const ticket of successfulCancellation){
+            await this.emailService.sendTicketCancelEmail(user.email, ticket, ticket.event)
+          }
         }
 
         return{
