@@ -1,8 +1,8 @@
-import { DataSource, In, Repository, Transaction } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { Events } from "../events/entity/Events.entity";
 import { Ticket } from "./models/Ticket.entity";
 import { CreateTicketInput, UpdateTicketInput } from "./validators/ticket.validators";
-import { BadRequestException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
+import { BadRequestException, NotFoundException } from "../common/errors/http.exceptions";
 
 interface CancellationResult {
   success: boolean;
@@ -93,65 +93,81 @@ export class TicketService{
         }
     )}
 
- async updateTicket(userId: number, updateTicketInput: UpdateTicketInput): Promise<CancellationResult> {
+    async cancelTickets (userId: number, updateTicketInput: UpdateTicketInput): Promise<CancellationResult>{
+      
+      if(!updateTicketInput.ticketId || updateTicketInput.ticketId.length === 0){
+        throw new BadRequestException('No ticket IDs provided for cancellation');
+      }
 
-  if (!userId) {
-    throw new UnauthorizedException('Not authorized to access this, or invalid token');
-  }
+      return this.dataSource.transaction(async transactionEntityManger =>{
+        const ticketRepo: Repository<Ticket> = transactionEntityManger.getRepository(Ticket);
+        const eventRepo: Repository<Events> = transactionEntityManger.getRepository(Events)
 
-  return this.dataSource.transaction(async transactionEntityManager => {
-    const eventRepo = transactionEntityManager.getRepository(Events); 
-    const ticketRepo = transactionEntityManager.getRepository(Ticket);
+        const ticketToProcess = await ticketRepo.find({
+          where: {
+            id: In(updateTicketInput.ticketId)
+          },
+          relations: ['event', 'user']
+        })
+        const failedCancellation : {ticketId: number, reason: string}[] = [];
+        const successfulCancellation: Ticket[] = [];
 
-    const ticketsToProcess = await ticketRepo.find({
-      where: { id: In(updateTicketInput.ticketId) },
-      relations: ['event', 'user']
-    });
+        
+        const foundTicketIds = new Set(ticketToProcess.map(t => t.id));
+        updateTicketInput.ticketId.forEach(inputId => {
+          if(!foundTicketIds.has(inputId)){
+            failedCancellation.push({ticketId: inputId, reason: 'Ticket not found'})
+          }
+        })
+        
+        const now = new Date().getTime();
 
-    if (ticketsToProcess.length === 0) {
-      throw new BadRequestException('No tickets found with the provided IDs.');
+        for(const ticket of ticketToProcess){
+          let reasonForFailure: string | null = null;
+
+            if(ticket.userId !== userId){
+              reasonForFailure = "You are not authorized to cancel this ticket."
+            }else if(ticket.isCancelled){
+               reasonForFailure ='Ticket is already cancelled.'
+            }else{
+              const eventStartDateTime = new Date(ticket.event.startDate).getTime()
+              const oneHourBeforeEvent = (eventStartDateTime - 60 * 60 * 1000)
+              
+              if(now > oneHourBeforeEvent){
+               reasonForFailure = 'Event is about to start. Cannot cancel ticket now.';
+              }
+            }
+
+          if(reasonForFailure){
+            failedCancellation.push({ticketId: ticket.id, reason: reasonForFailure})
+          }else{
+            ticket.isCancelled = true;
+            successfulCancellation.push(ticket)
+          }
+        }
+
+        const eventToSave = new Map<number, Events>();
+        for(const ticket of successfulCancellation){
+          if(ticket.event){
+            eventToSave.set(ticket.event.id, ticket.event)
+          }
+        }
+
+        if(successfulCancellation.length > 0){
+          await ticketRepo.save(successfulCancellation)
+        }
+
+        if(eventToSave.size > 0){
+          await eventRepo.save(Array.from(eventToSave.values()));
+        }
+
+        return{
+            success: failedCancellation.length === 0,
+            cancelledTickets: successfulCancellation.map(t => t.id),
+            failedTickets: failedCancellation
+        }
+        
+      })
     }
-
-    const failedCancellation: { ticketId: number; reason: string }[] = [];
-    const successfulCancellation: Ticket[] = [];
-
-    for (const ticket of ticketsToProcess) {
-      let isTicketValidForCancellation = true; 
-
-      if (ticket.userId !== userId) {
-        failedCancellation.push({ ticketId: ticket.id, reason: 'You are not authorized to cancel this ticket.' });
-        isTicketValidForCancellation = false;
-      }
-
-      if (ticket.isCancelled) {
-        failedCancellation.push({ ticketId: ticket.id, reason: 'Ticket is already cancelled.' });
-        isTicketValidForCancellation = false;
-      }
-
-      const eventStartTime = new Date(ticket.event.startDate);
-      const oneHourBeforeEvent = new Date(eventStartTime.getTime() - 60 * 60 * 1000); 
-
-      if (new Date() > oneHourBeforeEvent) { 
-        failedCancellation.push({ ticketId: ticket.id, reason: 'Cancellation not available. Event is about to start (less than 1 hour away).' });
-        isTicketValidForCancellation = false;
-      }
-
-      if (isTicketValidForCancellation) {
-        ticket.isCancelled = true;
-        successfulCancellation.push(ticket);
-      }
-    }
-
-    if (successfulCancellation.length > 0) {
-      await ticketRepo.save(successfulCancellation);
-    }
-
-    return {
-      success: failedCancellation.length === 0,
-      cancelledTickets: successfulCancellation.map(t => t.id),
-      failedTickets: failedCancellation
-    };
-  });
-}
 
 }
