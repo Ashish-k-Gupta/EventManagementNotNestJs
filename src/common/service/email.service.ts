@@ -303,25 +303,53 @@ export class EmailService {
 
 
         const mailOptions = {
-            from: 'noreply@your-application.com', // Your application's sender email
+            from: process.env.EMAIL_FROM ||'noreply@your-application.com', 
             to: resetPasswordEmail,
             subject: 'Password Reset Request for Your Account',
             html: `
-                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                    <h2 style="color: #0056b3;">Password Reset Request</h2>
-                    <p>Hello,</p>
-                    <p>You have requested to reset the password for your account.</p>
-                    <p>Please click on the link below to reset your password:</p>
-                    <p style="margin: 20px 0;">
-                        <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px;">Reset Your Password</a>
-                    </p>
-                    <p>This link is valid for a limited time (e.g., 1 hour). If you did not request a password reset, please ignore this email.</p>
-                    <p>Thank you,<br>Your Application Team</p>
-                    <hr style="border: 0; border-top: 1px solid #eee;">
-                    <p style="font-size: 0.8em; color: #666;">If the button above does not work, copy and paste the following URL into your browser:</p>
-                    <p style="font-size: 0.8em; color: #666; word-break: break-all;">${resetUrl}</p>
+              <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="center" style="padding: 20px 0;">
+                                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background-color: #007bff; padding: 20px; text-align: center; color: #ffffff;">
+                                            <h1 style="margin: 0; font-size: 28px;">Password Reset</h1>
+                                        </td>
+                                    </tr>
+                                    <!-- Body Content -->
+                                    <tr>
+                                        <td style="padding: 30px;">
+                                            <h2 style="color: #007bff; margin-top: 0;">Hello!</h2>
+                                            <p style="font-size: 16px;">You have requested to reset the password for your account.</p>
+                                            <p style="font-size: 16px;">Please click on the button below to reset your password:</p>
+                                            
+                                            <div style="text-align: center; margin: 30px 0;">
+                                                <a href="${resetUrl}" 
+                                                   style="display: inline-block; padding: 12px 25px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold; transition: background-color 0.3s ease;">
+                                                    Reset Your Password
+                                                </a>
+                                            </div>
+                                            
+                                            <p style="font-size: 14px; color: #666;">This link is valid for a limited time. If you did not request a password reset, please ignore this email.</p>
+                                            <p style="font-size: 16px;">Thank you,<br/>The Event Team</p>
+                                        </td>
+                                    </tr>
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #777;">
+                                            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Event Booking System. All rights reserved.</p>
+                                            <p style="margin: 5px 0 0;">This is an automated email, please do not reply.</p>
+                                            <p style="font-size: 0.8em; color: #666; word-break: break-all; margin-top: 10px;">If the button above does not work, copy and paste the following URL into your browser:<br/>${resetUrl}</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-                `
+            `
         }
 
          try {
