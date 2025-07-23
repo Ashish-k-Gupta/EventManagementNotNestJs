@@ -2,8 +2,9 @@ import { UserService } from "./user.service";
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
+import { EmailService } from "../../common/service/email.service";
 export class UserController {
-    constructor(private userService: UserService) { }
+    constructor(private userService: UserService, private emailService: EmailService) { }
 
     createUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -76,6 +77,30 @@ export class UserController {
             res.status(StatusCodes.OK).json({ message: "User removed" });
         } catch (err) {
             next(err);
+        }
+    }
+
+    resetPassword = async(req: Request, res: Response, next: NextFunction) =>{
+        try{
+            console.log(req.body)
+            const {email} = req.body;
+            console.log(email)
+            await this.userService.resetPassword(email, this.emailService);
+            res.status(StatusCodes.OK).json({message:"Reset password link sent."});
+        }catch(err){
+            next(err)
+        }
+    }
+
+    confirmResetPassword = async(req: Request, res: Response, next: NextFunction) =>{
+        try{
+            console.log(req)
+            const token = req.query.token as  string;
+            const {newPassword} = req.body;
+            await this.userService.confirmResetPassword(token, newPassword);
+            res.status(StatusCodes.OK).json({message: "Password changed successfully"});
+        }catch(err){
+            next(err)
         }
     }
 }

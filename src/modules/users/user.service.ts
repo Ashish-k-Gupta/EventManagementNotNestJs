@@ -1,10 +1,14 @@
 import { DataSource, Repository } from "typeorm";
-import { ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
+import { BadRequestException, ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import { z } from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
 import { loginSchema } from "../auth/validator/login.validator";
 import { Users } from "./models/Users.entity";
+import * as crypto from 'node:crypto'
+import { PasswordResetToken } from "./models/PasswordResetToken.entity";
+import { RESET_TOKEN_STATUS } from "./enums/ResetTokenStatus.enum";
+import { EmailService } from "../../common/service/email.service";
 
 
 type CreateUserInput = z.infer<typeof createUserSchema>
@@ -16,8 +20,10 @@ type LoginUserInput = z.infer<typeof loginSchema>
 export class UserService {
 
     private userRepository: Repository<Users>;
+    private passwordResetTokenRepository: Repository<PasswordResetToken>;
     constructor(private dataSource: DataSource) {
-        this.userRepository = dataSource.getRepository(Users)
+        this.userRepository = dataSource.getRepository(Users);
+        this.passwordResetTokenRepository = dataSource.getRepository(PasswordResetToken);
     }
 
     private async hashPassword(password: string): Promise<string> {
@@ -132,5 +138,74 @@ export class UserService {
             throw new InvalidCredentialsException("Email or password incorrect");
         }
         return user;
+    }
+
+
+    async resetPassword(userEmail: string, emailService: EmailService):Promise<string>{
+        const resetUser = await this.userRepository.findOne({where: {email: userEmail}});
+        if(!resetUser){
+            throw new BadRequestException('If user exist password reset link sent successfully. Please check your email.');
+        }
+        await this.passwordResetTokenRepository.update(
+        {
+            user: resetUser,
+            tokenStatus: RESET_TOKEN_STATUS.IS_VALID
+        },
+        {
+            tokenStatus: RESET_TOKEN_STATUS.INVALIDATED
+        })
+        
+        const token_expiry_time  = new Date(new Date().getTime() + 15 * 60 * 1000);
+        const resetToken = crypto.randomBytes(32).toString('hex');
+
+        const port = process.env.SERVER_PORT || 3000;
+        const frontendBaseUrl = process.env.FRONTEND_URL || `http://localhost:${port}`; 
+        const resetUrl = `${frontendBaseUrl}/users/confirm-reset-password?token=${resetToken}`
+        
+        const newToken = this.passwordResetTokenRepository.create({
+            token: resetToken,
+            expiry_time: token_expiry_time,
+            user: resetUser
+        })
+        await this.passwordResetTokenRepository.save(newToken);
+        await emailService.resetPasswordRequest(userEmail, resetUrl)
+        return 'Password reset link sent successfully. Please check your email.'
+        
+    }
+
+    async confirmResetPassword(reqToken: string, newPassword: string): Promise<{message: string}>{
+        const validToken = await this.passwordResetTokenRepository.findOne({
+            where: {token: reqToken},
+            relations: ['user']
+        });
+
+        if(!validToken){
+            throw new BadRequestException('Invalid or expired token')
+        }
+        if(validToken.tokenStatus !== 'isValid'){
+            throw new BadRequestException('Invalid or expired token')
+        }
+        const now = new Date();
+        if(validToken.expiry_time < now){
+            validToken.tokenStatus = RESET_TOKEN_STATUS.EXPIRED;
+            await this.passwordResetTokenRepository.save(validToken)
+            throw new BadRequestException('Invliad or expired token')
+        }
+
+
+        const salt = await bcrypt.genSalt(10)
+        const newHashedPasswod = await bcrypt.hash(newPassword, salt);
+
+        const userToUpdate = validToken.user;
+        if(!userToUpdate){
+            throw new BadRequestException('Something went wrong')
+        }
+        userToUpdate.password = newHashedPasswod;
+        await this.userRepository.save(userToUpdate);
+
+        validToken.tokenStatus = RESET_TOKEN_STATUS.USED;
+        await this.passwordResetTokenRepository.save(validToken);
+
+        return{message: "Password reset successfully"}
     }
 }

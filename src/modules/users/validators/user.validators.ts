@@ -31,5 +31,43 @@ export const updatePasswordSchema = z.object({
     }
 )
 
+const emailRequestSchema  = z.object({
+    email: z.string().email().min(1, "Must provide a valid email")
+})
+
+export const requestNewPasswordSchema = z.object({
+    body: emailRequestSchema,
+    query: z.object({}).optional(),
+    params: z.object({}).optional()
+})
+
+const resetPasswordQueryParamSchema = z.object({
+    token: z.string({
+        required_error: 'Password reset token is missing from the URL',
+        invalid_type_error: 'Password reset token must be a string',
+    }).min(1, 'Password reset token cannot be empty.')
+})
+
+const resetPasswordBodySchema = z.object({
+    newPassword: z.string({
+        required_error: 'New Password is required',
+        invalid_type_error: 'New password must be a string.'        
+    }).min(8, 'New password be at least 8 characters long.')
+    .regex(/[A-Z]/,' New password must contains at least one uppercase letter')
+    .regex(/[a-z]/,' New password must contains at least one lowercase letter')
+    .regex(/[0-9]/,' New password must contains at least one number')
+    .regex(/[^a-zA-Z0-9]/,' New password must contains at least one special character.'),
+    confirmNewPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmNewPassword,{
+    message: "Password don't match",
+    path: ['confirmNewPassword']
+})
+
+export const confirmResetPasswordSchema = z.object({
+    query: resetPasswordQueryParamSchema,
+    body: resetPasswordBodySchema
+})
+
+
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type LoginUserInput = z.infer<typeof createUserSchema>;

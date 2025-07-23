@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { UserController } from "../User.controller";
 import { validateSchema } from "../../common/middlewares/validation.middleware";
-import { updatePasswordSchema, updateUserSchema } from "../validators/user.validators";
+import { confirmResetPasswordSchema, requestNewPasswordSchema, updatePasswordSchema, updateUserSchema,  } from "../validators/user.validators";
 import { authenticateJWT, authorize, checkOwnerShipOrAdmin } from "../../common/middlewares/auth.middleware";
 import { USER_ROLE } from "../enums/UserRole.enum";
 
@@ -9,6 +9,8 @@ export const userRouter = (userController: UserController): Router => {
     const router = Router();
 
     // router.post('/', validateSchema(createUserSchema), userController.createUser)
+    router.post('/reset-password',validateSchema(requestNewPasswordSchema), userController.resetPassword)
+    router.post('/confirm-reset-password', validateSchema(confirmResetPasswordSchema), userController.confirmResetPassword)
     router.use(authenticateJWT);
     router.get('/', authorize(USER_ROLE.ADMIN), userController.findAll);
     router.get('/:id', checkOwnerShipOrAdmin, userController.findOneById);

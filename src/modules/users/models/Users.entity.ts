@@ -1,10 +1,10 @@
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import UserTracking from "../../common/models/UserTracking.entity";
 import { Events } from "../../events/entity/Events.entity";
-import * as bcrypt from 'bcrypt'
 
 import { UserRolesArray } from "../enums/UserRole.enum";
 import { Ticket } from "../../tickets/models/Ticket.entity";
+import { PasswordResetToken } from "./PasswordResetToken.entity";
 
 @Entity()
 export class Users extends UserTracking{
@@ -36,4 +36,7 @@ export class Users extends UserTracking{
     @OneToMany(() => Ticket, (ticket) => ticket.user)
     tickets!: Ticket[];
 
+
+    @OneToMany(() => PasswordResetToken, (passwordResetToken) => passwordResetToken.user)
+    resetTokens!: PasswordResetToken[];
 }

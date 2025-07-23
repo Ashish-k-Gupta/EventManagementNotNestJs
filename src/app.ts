@@ -3,7 +3,7 @@ import { createAndInitializeDataSource } from "./AppDataSource";
 import { DataSource } from 'typeorm';
 import express, { NextFunction, Request, Response } from 'express';
 import { userRouter } from './modules/users/routes/user.routes';
-import { AppError, InvalidCredentialsException, NotFoundException } from './modules/common/errors/http.exceptions';
+import { AppError} from './modules/common/errors/http.exceptions';
 import { StatusCodes } from 'http-status-codes';
 import { authRouter } from './modules/auth/routes/auth.routes';
 import { authenticateJWT } from './modules/common/middlewares/auth.middleware';
@@ -27,9 +27,11 @@ const port = process.env.SERVER_PORT || 3001;
 
 async function  bootstrap() {
     try{
-        const dataSource: DataSource = await createAndInitializeDataSource()
+        const dataSource: DataSource = await createAndInitializeDataSource();
+        const emailService = new EmailService();
+
         const userService = new UserService(dataSource);
-        const userController = new UserController(userService);
+        const userController = new UserController(userService, emailService);
 
         const categorySerivce = new CategoryService(dataSource);
         const catergoryController = new CatergoryController(categorySerivce);
@@ -37,23 +39,22 @@ async function  bootstrap() {
         const eventService = new EventService( dataSource, categorySerivce);
         const eventController = new EventController(eventService);
 
-        const emailService = new EmailService()
 
-        const ticketService = new TicketService(dataSource, emailService)
-        const ticketController = new TicketController(ticketService)
+        const ticketService = new TicketService(dataSource, emailService);
+        const ticketController = new TicketController(ticketService);
 
         console.log('Database initialized successfully')
 
-        app.use(express.json())
+        app.use(express.json());
         app.use(express.urlencoded({extended: true}));
         
         app.get('/', (req, res) => {
             res.send('Hello World!');
         });
         app.use('/auth', authRouter(dataSource));
+        app.use('/users', userRouter(userController));
 
         app.use(authenticateJWT);
-        app.use('/users', userRouter(userController));
         app.use('/category', catergoryRouter(catergoryController));
         app.use('/events', eventRouter(eventController));
         app.use('/tickets', ticketRouter(ticketController));

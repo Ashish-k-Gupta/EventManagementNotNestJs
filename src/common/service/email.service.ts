@@ -6,49 +6,49 @@ import { Events } from '../../modules/events/entity/Events.entity';
 import { Users } from '../../modules/users/models/Users.entity';
 
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.email', 
-    port: parseInt(process.env.EMAIL_PORT || '587', 10), 
-    secure: process.env.EMAIL_SECURE === 'true', 
+    host: process.env.EMAIL_HOST || 'smtp.gmail.email',
+    port: parseInt(process.env.EMAIL_PORT || '587', 10),
+    secure: process.env.EMAIL_SECURE === 'true',
     auth: {
-        user: process.env.EMAIL_USER , 
-        pass: process.env.EMAIL_PASS 
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     },
 });
 
-export class EmailService{
-  private async generateQrCodeBuffer(data: string): Promise<Buffer>{
-    try{
-        const qrCodeBuffer = await QRCode.toBuffer(data, {
-            errorCorrectionLevel: 'H',
-            width: 250,
-            margin: 1,
-            type: 'png'
-        })
-        return qrCodeBuffer;
-    }catch(error){
-        console.error('Error generation QR code:', error)
-        throw new Error('Failed to generate QR code Buffer.')
+export class EmailService {
+    private async generateQrCodeBuffer(data: string): Promise<Buffer> {
+        try {
+            const qrCodeBuffer = await QRCode.toBuffer(data, {
+                errorCorrectionLevel: 'H',
+                width: 250,
+                margin: 1,
+                type: 'png'
+            })
+            return qrCodeBuffer;
+        } catch (error) {
+            console.error('Error generation QR code:', error)
+            throw new Error('Failed to generate QR code Buffer.')
+        }
     }
-  }
 
-  async sendTicketConfirmationEmail(userEmail: string, ticket: Ticket, event: Events): Promise<void>{
-    const qrCodeContent = JSON.stringify({
-        ticketId: ticket.id,
-        ticketIsCancelled: ticket.isCancelled,
-        userEmail: userEmail,
-        eventId: event.id,
-        timeStamp: new Date().toISOString()
-    });
+    async sendTicketConfirmationEmail(userEmail: string, ticket: Ticket, event: Events): Promise<void> {
+        const qrCodeContent = JSON.stringify({
+            ticketId: ticket.id,
+            ticketIsCancelled: ticket.isCancelled,
+            userEmail: userEmail,
+            eventId: event.id,
+            timeStamp: new Date().toISOString()
+        });
 
-    const qrCodeBuffer = await this.generateQrCodeBuffer(qrCodeContent);
-    const qrCodeCid = `qrcode_${ticket.id}@eventapp.com`; 
+        const qrCodeBuffer = await this.generateQrCodeBuffer(qrCodeContent);
+        const qrCodeCid = `qrcode_${ticket.id}@eventapp.com`;
 
 
-    const mailOptions ={
-        from: process.env.EMAIL_USER,
-        to: userEmail,
-        subject: `Your Ticket for ${event.title} - Ticket ID: ${ticket.id}`,
-         html: `
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: userEmail,
+            subject: `Your Ticket for ${event.title} - Ticket ID: ${ticket.id}`,
+            html: `
                 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                         <tr>
@@ -96,18 +96,18 @@ export class EmailService{
                         </tr>
                     </table>
                 </div>
-            `, 
+            `,
             attachments: [
                 {
-                    filename: `ticket_qr_${ticket.id}.png`, 
-                    content: qrCodeBuffer, 
-                    contentType: 'image/png', 
-                    cid: qrCodeCid, 
+                    filename: `ticket_qr_${ticket.id}.png`,
+                    content: qrCodeBuffer,
+                    contentType: 'image/png',
+                    cid: qrCodeCid,
                 },
             ],
-            
+
         };
-         try {
+        try {
             await transporter.sendMail(mailOptions);
             console.log(`Ticket confirmation email sent to ${userEmail} for Ticket ID: ${ticket.id}`);
         } catch (error) {
@@ -116,12 +116,12 @@ export class EmailService{
     }
 
 
-async sendTicketCancelEmail(userEmail: string, ticket: Ticket, event: Events): Promise<void>{
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: userEmail,
-        subject: `Cancelled Your Ticket for ${event.title} - Ticket ID: ${ticket.id}`,
-        html: `
+    async sendTicketCancelEmail(userEmail: string, ticket: Ticket, event: Events): Promise<void> {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: userEmail,
+            subject: `Cancelled Your Ticket for ${event.title} - Ticket ID: ${ticket.id}`,
+            html: `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                         <tr>
@@ -164,23 +164,23 @@ async sendTicketCancelEmail(userEmail: string, ticket: Ticket, event: Events): P
                         </tr>
                     </tabl
         `
-    };
+        };
 
-    try{
-        await transporter.sendMail(mailOptions);
-        console.log(`Ticket Cancellation email sent to ${userEmail} for Ticket ID: ${ticket.id}`);
-    }catch (error) {
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log(`Ticket Cancellation email sent to ${userEmail} for Ticket ID: ${ticket.id}`);
+        } catch (error) {
             console.error(`Failed to send ticket cancellation email to ${userEmail} for Ticket ID ${ticket.id}:`, error);
         }
 
-}
+    }
 
-async newRegistrationAlert(organizerId: string, ticket: Ticket, event: Events, attendeeUser: Users){
-    const mailOptions ={
-        from: process.env.EMAIL_UESER,
-        to: event.user.email,
-        subject: `You've Got a New Attendee for ${event.title} - Ticket ID: ${ticket.id}`,
-        html:`
+    async newRegistrationAlert(organizerId: string, ticket: Ticket, event: Events, attendeeUser: Users) {
+        const mailOptions = {
+            from: process.env.EMAIL_UESER,
+            to: event.user.email,
+            subject: `You've Got a New Attendee for ${event.title} - Ticket ID: ${ticket.id}`,
+            html: `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                         <tr>
@@ -227,22 +227,22 @@ async newRegistrationAlert(organizerId: string, ticket: Ticket, event: Events, a
                     </table>
                 </div>
         `
+        }
+
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log(`New ticket booking email sent to ${event.user.email} for Ticket ID: ${ticket.id}`);
+        } catch (error) {
+            console.error(`Failed to send new ticket booking email to ${event.user.email} for Ticket ID: ${ticket.id}`, error);
+        }
+
     }
-
-try {
-    await transporter.sendMail(mailOptions);
-    console.log(`New ticket booking email sent to ${event.user.email} for Ticket ID: ${ticket.id}`);
-} catch (error) {
-    console.error(`Failed to send new ticket booking email to ${event.user.email} for Ticket ID: ${ticket.id}`, error);
-}
-
-}
 
     async ticketCancellationAlert(organizerEmail: string, ticket: Ticket, event: Events, attendeeUser: Users): Promise<void> {
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Event Booking System" <no-reply@yourdomain.com>', 
-            to: organizerEmail, 
-            subject: `Ticket Cancellation Alert for ${event.title} - Ticket ID: ${ticket.id}`, 
+            from: process.env.EMAIL_FROM || '"Event Booking System" <no-reply@yourdomain.com>',
+            to: organizerEmail,
+            subject: `Ticket Cancellation Alert for ${event.title} - Ticket ID: ${ticket.id}`,
             html: `
                 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -296,6 +296,40 @@ try {
             console.log(`Ticket cancellation alert email sent to ${organizerEmail} for Ticket ID: ${ticket.id}`);
         } catch (error) {
             console.error(`Failed to send ticket cancellation alert email to ${organizerEmail} for Ticket ID: ${ticket.id}`, error);
+        }
+    }
+
+    async resetPasswordRequest(resetPasswordEmail: string, resetUrl: string): Promise<void> {
+
+
+        const mailOptions = {
+            from: 'noreply@your-application.com', // Your application's sender email
+            to: resetPasswordEmail,
+            subject: 'Password Reset Request for Your Account',
+            html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <h2 style="color: #0056b3;">Password Reset Request</h2>
+                    <p>Hello,</p>
+                    <p>You have requested to reset the password for your account.</p>
+                    <p>Please click on the link below to reset your password:</p>
+                    <p style="margin: 20px 0;">
+                        <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px;">Reset Your Password</a>
+                    </p>
+                    <p>This link is valid for a limited time (e.g., 1 hour). If you did not request a password reset, please ignore this email.</p>
+                    <p>Thank you,<br>Your Application Team</p>
+                    <hr style="border: 0; border-top: 1px solid #eee;">
+                    <p style="font-size: 0.8em; color: #666;">If the button above does not work, copy and paste the following URL into your browser:</p>
+                    <p style="font-size: 0.8em; color: #666; word-break: break-all;">${resetUrl}</p>
+                </div>
+                `
+        }
+
+         try {
+            await transporter.sendMail(mailOptions);
+            console.log(`Password reset email sent to ${resetPasswordEmail}`);
+        } catch (error) {
+            console.error(`Failed to send password reset email to ${resetPasswordEmail}`, error);
+            throw new Error(`Failed to send password reset email: ${error}`);
         }
     }
 
