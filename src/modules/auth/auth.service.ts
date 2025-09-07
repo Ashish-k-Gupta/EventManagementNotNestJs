@@ -6,6 +6,7 @@ import { CreateUserInput, LoginUserInput } from "../users/validators/user.valida
 import { Users } from "../users/models/Users.entity";
 import { PayloadForToken } from "./validator/payload.validator";
 
+type UserWithoutPassword = Omit<Users, 'password' | 'setCreatedBy' | 'setUpdatedBy'>;
 
 dotenv.config();
 const secretKey = process.env.JWT_SECRET as string;
@@ -25,7 +26,7 @@ export class AuthService {
     }
 
     async registerUser(createUserInput: CreateUserInput): Promise<{ token: string, user: Partial<Users> }> {
-        const user = await this.userService.createUser(createUserInput);
+        const user = await this.userService.createUser({ body: createUserInput });
         const payload = {
             id: user.id,
             email: user.email,
@@ -45,16 +46,16 @@ export class AuthService {
 
     }
 
-    async login(loginUserInput: LoginUserInput): Promise<{ token: string, user: Users }> {
-        const ValidUser = await this.userService.validateUser(loginUserInput);
-        const { id, email, firstName, lastName, role } = ValidUser;
+    async login(loginUserInput: LoginUserInput): Promise<{ token: string, user: UserWithoutPassword }> {
+        const ValidUser = await this.userService.validateUser({ body: loginUserInput });
+        const { password, ...userWithoutPassword } = ValidUser;
+        const { id, email, firstName, lastName, role } = userWithoutPassword;
         const payload = { id, email, firstName, lastName, role };
         const { token } = await this.generateToken(payload);
+
         return {
-            user: ValidUser,
+            user: userWithoutPassword,
             token: token,
         }
-
-
     }
 }

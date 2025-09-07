@@ -6,7 +6,6 @@ type AnyZodObject = z.ZodObject<any> | z.ZodEffects<any, any, any>;
 export const validateSchema = (schema: AnyZodObject) => (req: Request, res: Response, next: NextFunction) =>{
     try{
       schema.parse({
-
        body: req.body,
        query: req.query,
        params: req.params,

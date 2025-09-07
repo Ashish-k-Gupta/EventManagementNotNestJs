@@ -4,6 +4,7 @@ import { CreateEventInput, UpdateEventInput } from "./validators/event.validator
 import { CategoryService } from "../category/category.service";
 import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 import { EventQueryParams } from "../../common/validation/eventQuerySchema";
+import { EventDetailResponseDto } from "../../dto/eventDetailResponse.dto";
 
 export class EventService {
     private eventRepository: Repository<Events>;
@@ -45,10 +46,10 @@ export class EventService {
             // ])
             .leftJoinAndSelect("event.user", "user")
             .addSelect([
-            "user.id",
-            "user.firstName",
-            "user.lastName",
-            "user.email"
+                "user.id",
+                "user.firstName",
+                "user.lastName",
+                "user.email"
             ])
             .leftJoinAndSelect("event.categories", "category")
             // .addSelect([
@@ -151,16 +152,30 @@ export class EventService {
         return await this.eventRepository.save(newEvent);
     }
 
-    async findEventById(eventId: number): Promise<Events> {
+    async findEventById(eventId: number): Promise<EventDetailResponseDto> {
         const event = await this.eventRepository.findOne({
-             where: { id: eventId },
-             select: ['title', 'description', 'language', 'ticketPrice', 'startDate', 'endDate', 'categories']
-            })
+            where: { id: eventId },
+            relations: ['categories'],
+            select: ['id', 'title', 'description', 'language', 'totalSeats', 'availableSeats', 'ticketPrice', 'startDate', 'endDate', 'categories', 'isCancelled'],
+        })
 
         if (!event) {
             throw new NotFoundException(`Event with ID "${eventId}" not found`)
         }
-        return event;
+
+        const eventDto = new EventDetailResponseDto()
+        eventDto.id = event.id;
+        eventDto.title = event.title;
+        eventDto.description = event.description;
+        eventDto.language = event.language;
+        eventDto.totalSeats = event.totalSeats;
+        eventDto.availableSeats = event.availableSeats;
+        eventDto.ticketPrice = event.ticketPrice;
+        eventDto.startDate = event.startDate;
+        eventDto.endDate = event.endDate;
+        eventDto.isCancelled = event.isCancelled;
+        eventDto.categories = event.categories.map((category) => category.name)
+        return eventDto;
     }
 
     // async findAllEvents(): Promise<Events[]>{
@@ -194,7 +209,8 @@ export class EventService {
                     firstName: true,
                 },
                 categories: false
-            }
+            },
+            order: { startDate: 'ASC' }
         });
     }
 

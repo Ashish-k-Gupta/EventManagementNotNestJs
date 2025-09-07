@@ -3,7 +3,7 @@ import { BadRequestException, ConflictException, ForbiddenException, InvalidCred
 import * as bcrypt from 'bcrypt'
 import { z } from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
-import { loginSchema } from "../auth/validator/login.validator";
+import { loginSchemaNew } from "../auth/validator/login.validator";
 import { Users } from "./models/Users.entity";
 import * as crypto from 'node:crypto'
 import { PasswordResetToken } from "./models/PasswordResetToken.entity";
@@ -14,7 +14,7 @@ import { EmailService } from "../../common/service/email.service";
 type CreateUserInput = z.infer<typeof createUserSchema>
 type UpdateUserInput = z.infer<typeof updateUserSchema>
 type updatePasswordInput = z.infer<typeof updatePasswordSchema>
-type LoginUserInput = z.infer<typeof loginSchema>
+type LoginUserInput = z.infer<typeof loginSchemaNew>
 
 
 export class UserService {
@@ -34,22 +34,22 @@ export class UserService {
 
 
     async createUser(createUserData: CreateUserInput): Promise<Partial<Users>> {
-        const existingMail = await this.userRepository.findOne({ where: { email: createUserData.email } })
-        if (createUserData.role === "admin") {
+        const existingMail = await this.userRepository.findOne({ where: { email: createUserData.body.email } })
+        if (createUserData.body.role === "admin") {
             throw new ForbiddenException("Admin role is not allowed")
         }
         if (existingMail) {
             throw new ConflictException(`Eamil already exists.`)
         }
 
-        const hashPassword = await this.hashPassword(createUserData.password)
+        const hashPassword = await this.hashPassword(createUserData.body.password)
 
         const newUser = this.userRepository.create({
-            firstName: createUserData.firstName,
-            lastName: createUserData.lastName,
-            email: createUserData.email.toLowerCase(),
+            firstName: createUserData.body.firstName,
+            lastName: createUserData.body.lastName,
+            email: createUserData.body.email.toLowerCase(),
             password: hashPassword,
-            role: createUserData.role,
+            role: createUserData.body.role,
         })
         const savedUser = await this.userRepository.save(newUser);
         const { password, deleted_at, updated_at, created_by, ...safeUser } = savedUser;
@@ -87,11 +87,11 @@ export class UserService {
     }
 
     async updateUser(id: number, updateUserData: UpdateUserInput): Promise<Users> {
-        
+
         const user = await this.findOneById(id);
-        if (updateUserData.email && updateUserData.email !== user.email) {
+        if (updateUserData.body.email && updateUserData.body.email !== user.email) {
             const existingUserWithEmail = await this.userRepository.findOne({
-                where: { email: updateUserData.email }
+                where: { email: updateUserData.body.email }
             })
             if (existingUserWithEmail && existingUserWithEmail.id !== user?.id) {
                 throw new ConflictException('Email already in use by another user.');
@@ -123,7 +123,7 @@ export class UserService {
     }
 
     async validateUser(loginUserInput: LoginUserInput): Promise<Users> {
-        const { email, password } = loginUserInput;
+        const { email, password } = loginUserInput.body;
         const user = await this.userRepository.findOne({
             where: { email: email },
             select: ["id", "firstName", "lastName", "email", "role", "password"]
@@ -141,27 +141,27 @@ export class UserService {
     }
 
 
-    async resetPassword(userEmail: string, emailService: EmailService):Promise<string>{
-        const resetUser = await this.userRepository.findOne({where: {email: userEmail}});
-        if(!resetUser){
+    async resetPassword(userEmail: string, emailService: EmailService): Promise<string> {
+        const resetUser = await this.userRepository.findOne({ where: { email: userEmail } });
+        if (!resetUser) {
             throw new BadRequestException('If user exist password reset link sent successfully. Please check your email.');
         }
         await this.passwordResetTokenRepository.update(
-        {
-            user: resetUser,
-            tokenStatus: RESET_TOKEN_STATUS.IS_VALID
-        },
-        {
-            tokenStatus: RESET_TOKEN_STATUS.INVALIDATED
-        })
-        
-        const token_expiry_time  = new Date(new Date().getTime() + 15 * 60 * 1000);
+            {
+                user: resetUser,
+                tokenStatus: RESET_TOKEN_STATUS.IS_VALID
+            },
+            {
+                tokenStatus: RESET_TOKEN_STATUS.INVALIDATED
+            })
+
+        const token_expiry_time = new Date(new Date().getTime() + 15 * 60 * 1000);
         const resetToken = crypto.randomBytes(32).toString('hex');
 
         const port = process.env.SERVER_PORT || 3000;
-        const frontendBaseUrl = process.env.FRONTEND_URL || `http://localhost:${port}`; 
+        const frontendBaseUrl = process.env.FRONTEND_URL || `http://localhost:${port}`;
         const resetUrl = `${frontendBaseUrl}/users/confirm-reset-password?token=${resetToken}`
-        
+
         const newToken = this.passwordResetTokenRepository.create({
             token: resetToken,
             expiry_time: token_expiry_time,
@@ -170,23 +170,23 @@ export class UserService {
         await this.passwordResetTokenRepository.save(newToken);
         await emailService.resetPasswordRequest(userEmail, resetUrl)
         return 'Password reset link sent successfully. Please check your email.'
-        
+
     }
 
-    async confirmResetPassword(reqToken: string, newPassword: string): Promise<{message: string}>{
+    async confirmResetPassword(reqToken: string, newPassword: string): Promise<{ message: string }> {
         const validToken = await this.passwordResetTokenRepository.findOne({
-            where: {token: reqToken},
+            where: { token: reqToken },
             relations: ['user']
         });
 
-        if(!validToken){
+        if (!validToken) {
             throw new BadRequestException('Invalid or expired token')
         }
-        if(validToken.tokenStatus !== 'isValid'){
+        if (validToken.tokenStatus !== 'isValid') {
             throw new BadRequestException('Invalid or expired token')
         }
         const now = new Date();
-        if(validToken.expiry_time < now){
+        if (validToken.expiry_time < now) {
             validToken.tokenStatus = RESET_TOKEN_STATUS.EXPIRED;
             await this.passwordResetTokenRepository.save(validToken)
             throw new BadRequestException('Invliad or expired token')
@@ -197,7 +197,7 @@ export class UserService {
         const newHashedPasswod = await bcrypt.hash(newPassword, salt);
 
         const userToUpdate = validToken.user;
-        if(!userToUpdate){
+        if (!userToUpdate) {
             throw new BadRequestException('Something went wrong')
         }
         userToUpdate.password = newHashedPasswod;
@@ -206,6 +206,6 @@ export class UserService {
         validToken.tokenStatus = RESET_TOKEN_STATUS.USED;
         await this.passwordResetTokenRepository.save(validToken);
 
-        return{message: "Password reset successfully"}
+        return { message: "Password reset successfully" }
     }
 }

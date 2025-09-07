@@ -2,8 +2,9 @@ import 'reflect-metadata';
 import { createAndInitializeDataSource } from "./AppDataSource";
 import { DataSource } from 'typeorm';
 import express, { NextFunction, Request, Response } from 'express';
+import cors from 'cors';
 import { userRouter } from './modules/users/routes/user.routes';
-import { AppError} from './modules/common/errors/http.exceptions';
+import { AppError } from './modules/common/errors/http.exceptions';
 import { StatusCodes } from 'http-status-codes';
 import { authRouter } from './modules/auth/routes/auth.routes';
 import { authenticateJWT } from './modules/common/middlewares/auth.middleware';
@@ -24,9 +25,23 @@ import { EmailService } from './common/service/email.service';
 const app = express();
 const port = process.env.SERVER_PORT || 3001;
 
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173'];
 
-async function  bootstrap() {
-    try{
+app.use(cors({
+    origin: function (origin: any, callback: any) {
+        // Check if the origin is in the allowedOrigins list or if it's a local request (no origin)
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Allow cookies to be sent with requests
+}));
+
+
+async function bootstrap() {
+    try {
         const dataSource: DataSource = await createAndInitializeDataSource();
         const emailService = new EmailService();
 
@@ -36,7 +51,7 @@ async function  bootstrap() {
         const categorySerivce = new CategoryService(dataSource);
         const catergoryController = new CatergoryController(categorySerivce);
 
-        const eventService = new EventService( dataSource, categorySerivce);
+        const eventService = new EventService(dataSource, categorySerivce);
         const eventController = new EventController(eventService);
 
 
@@ -46,8 +61,8 @@ async function  bootstrap() {
         console.log('Database initialized successfully')
 
         app.use(express.json());
-        app.use(express.urlencoded({extended: true}));
-        
+        app.use(express.urlencoded({ extended: true }));
+
         app.get('/', (req, res) => {
             res.send('Hello World!');
         });
@@ -60,30 +75,30 @@ async function  bootstrap() {
         app.use('/tickets', ticketRouter(ticketController));
 
 
-        app.use((err: Error, req: Request, res: Response, next: NextFunction) =>{
+        app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
             console.error('Caught by global error handler', err);
 
-            if(err instanceof AppError){
+            if (err instanceof AppError) {
                 res.status(err.statusCode).json({
                     message: err.message,
                     statusCode: err.statusCode,
                     isOperational: err.isOperational,
                     name: err.name,
                 })
-            }else{
+            } else {
                 let message = "An unexpected server error occured.";
-                if(process.env.NODE_ENV !== 'production'){
+                if (process.env.NODE_ENV !== 'production') {
                     message: `Internal Server Error: ${err.message}`;
                 }
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message})
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message })
             }
         })
 
         app.listen(port, () => {
             console.log(`Server running on http://localhost:${port}`);
         });
-        
-        }catch(error){
+
+    } catch (error) {
         console.error('Failed to bootstrap application:', error)
         process.exit(1);
     }
