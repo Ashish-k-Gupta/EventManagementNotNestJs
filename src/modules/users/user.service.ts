@@ -3,18 +3,18 @@ import { BadRequestException, ConflictException, ForbiddenException, InvalidCred
 import * as bcrypt from 'bcrypt'
 import { z } from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
-import { loginSchemaNew } from "../auth/validator/login.validator";
 import { Users } from "./models/Users.entity";
 import * as crypto from 'node:crypto'
 import { PasswordResetToken } from "./models/PasswordResetToken.entity";
 import { RESET_TOKEN_STATUS } from "./enums/ResetTokenStatus.enum";
 import { EmailService } from "../../common/service/email.service";
+import { loginSchema } from "../auth/validator/login.validator";
 
 
 type CreateUserInput = z.infer<typeof createUserSchema>
 type UpdateUserInput = z.infer<typeof updateUserSchema>
 type updatePasswordInput = z.infer<typeof updatePasswordSchema>
-type LoginUserInput = z.infer<typeof loginSchemaNew>
+type LoginUserInput = z.infer<typeof loginSchema>
 
 
 export class UserService {
@@ -62,7 +62,6 @@ export class UserService {
             .addSelect('user.password')
             .where('user.email = :email', { email })
             .getOne()
-        console.log("EMAILLLLLLLLLLLLLLL", user)
         return user || null;
     }
 
@@ -123,7 +122,7 @@ export class UserService {
     }
 
     async validateUser(loginUserInput: LoginUserInput): Promise<Users> {
-        const { email, password } = loginUserInput.body;
+        const { email, password } = loginUserInput;
         const user = await this.userRepository.findOne({
             where: { email: email },
             select: ["id", "firstName", "lastName", "email", "role", "password"]

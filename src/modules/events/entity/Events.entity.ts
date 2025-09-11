@@ -3,8 +3,7 @@ import UserTracking from "../../common/models/UserTracking.entity";
 import { Users } from "../../users/models/Users.entity";
 import { Category } from "../../category/entity/Category.entity";
 import { IsBoolean } from "class-validator";
-import { Ticket } from "../../tickets/models/Ticket.entity";
-import { Event_slot } from "./EventSlot.entity";
+import { EventSlot } from "./EventSlot.entity";
 
 @Entity()
 export class Events extends UserTracking {
@@ -42,8 +41,6 @@ export class Events extends UserTracking {
     @IsBoolean()
     isCancelled!: boolean;
 
-
-
-    @OneToMany(() => Event_slot, (slot) => slot.event)
-    slots!: Event_slot[]
+    @OneToMany(() => EventSlot, (slot) => slot.event)
+    slots!: EventSlot[];
 }

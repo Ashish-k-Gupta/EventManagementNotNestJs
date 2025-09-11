@@ -5,6 +5,7 @@ import { NotFoundException } from "../common/errors/http.exceptions";
 import { CreateUserInput, LoginUserInput } from "../users/validators/user.validators";
 import { Users } from "../users/models/Users.entity";
 import { PayloadForToken } from "./validator/payload.validator";
+import { loginSchema } from "./validator/login.validator";
 
 type UserWithoutPassword = Omit<Users, 'password' | 'setCreatedBy' | 'setUpdatedBy'>;
 
@@ -47,7 +48,7 @@ export class AuthService {
     }
 
     async login(loginUserInput: LoginUserInput): Promise<{ token: string, user: UserWithoutPassword }> {
-        const ValidUser = await this.userService.validateUser({ body: loginUserInput });
+        const ValidUser = await this.userService.validateUser(loginUserInput);
         const { password, ...userWithoutPassword } = ValidUser;
         const { id, email, firstName, lastName, role } = userWithoutPassword;
         const payload = { id, email, firstName, lastName, role };

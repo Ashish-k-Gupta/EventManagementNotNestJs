@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Users } from "../../users/models/Users.entity";
 import { Events } from "../../events/entity/Events.entity";
-import { Event_slot } from "../../events/entity/EventSlot.entity";
+import { EventSlot } from "../../events/entity/EventSlot.entity";
 
 @Entity()
 export class Ticket {
@@ -15,9 +15,9 @@ export class Ticket {
     @Column({ name: 'user_id' })
     userId!: number;
 
-    @ManyToOne(() => Event_slot, eventSlot => eventSlot.tickets)
+    @ManyToOne(() => EventSlot, (eventSlot: { tickets: any; }) => eventSlot.tickets)
     @JoinColumn({ name: 'event_slot_id' })
-    event!: Event_slot;
+    event!: EventSlot;
 
     @Column({ name: 'event_slot_id' })
     eventSlotId!: number;

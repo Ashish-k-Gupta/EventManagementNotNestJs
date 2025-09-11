@@ -4,8 +4,8 @@ import { AuthService } from "../auth.service";
 import { AuthController } from "../auth.controller";
 import { validateSchema } from "../../common/middlewares/validation.middleware";
 import { createUserSchema } from "../../users/validators/user.validators";
-import { loginSchemaNew } from "../validator/login.validator";
 import { UserService } from "../../users/user.service";
+import { loginSchema } from "../validator/login.validator";
 
 export const authRouter = (dataSource: DataSource): Router => {
     const router = Router();
@@ -14,8 +14,8 @@ export const authRouter = (dataSource: DataSource): Router => {
     const authController = new AuthController(authService);
 
 
-    router.post('/register', validateSchema(createUserSchema), authController.register)
-    router.post('/login', validateSchema(loginSchemaNew), authController.login)
+    router.post('/register', validateSchema({ body: createUserSchema }), authController.register)
+    router.post('/login', validateSchema({ body: loginSchema }), authController.login)
 
     return router;
 }

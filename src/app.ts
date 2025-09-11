@@ -17,7 +17,7 @@ import { CatergoryController } from './modules/category/category.controller';
 import { EventController } from './modules/events/events.controller';
 import { EventService } from './modules/events/events.service';
 import { ticketRouter } from './modules/tickets/routes/ticket.routes';
-import { TicketService } from './modules/tickets/ticket.service';
+// import { TicketService } from './modules/tickets/ticket.service';
 import { TicketController } from './modules/tickets/ticket.controller';
 import { EmailService } from './common/service/email.service';
 
@@ -55,8 +55,8 @@ async function bootstrap() {
         const eventController = new EventController(eventService);
 
 
-        const ticketService = new TicketService(dataSource, emailService);
-        const ticketController = new TicketController(ticketService);
+        // const ticketService = new TicketService(dataSource, emailService);
+        // const ticketController = new TicketController(ticketService);
 
         console.log('Database initialized successfully')
 
@@ -72,7 +72,7 @@ async function bootstrap() {
         app.use(authenticateJWT);
         app.use('/category', catergoryRouter(catergoryController));
         app.use('/events', eventRouter(eventController));
-        app.use('/tickets', ticketRouter(ticketController));
+        // app.use('/tickets', ticketRouter(ticketController));
 
 
         app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

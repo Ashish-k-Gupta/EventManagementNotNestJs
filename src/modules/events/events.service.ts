@@ -5,18 +5,20 @@ import { CategoryService } from "../category/category.service";
 import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 import { EventQueryParams } from "../../common/validation/eventQuerySchema";
 import { EventDetailResponseDto } from "../../dto/eventDetailResponse.dto";
+import { EventSlot } from "./entity/EventSlot.entity";
 
 export class EventService {
     private eventRepository: Repository<Events>;
+    private eventSlotRepository: Repository<EventSlot>;
     constructor(
         private dataSource: DataSource,
         private categorySerivce: CategoryService,
     ) {
         this.eventRepository = dataSource.getRepository(Events);
+        this.eventSlotRepository = dataSource.getRepository(EventSlot)
     }
 
     async getEvent(params: EventQueryParams) {
-        console.log(params)
         const {
             page = 1,
             limit = 10,
@@ -121,60 +123,113 @@ export class EventService {
     }
 
     async createEvent(userId: number, createEventInput: CreateEventInput): Promise<Events> {
-        const existingEvent = await this.eventRepository.findOne({ where: { title: createEventInput.title } })
-        if (existingEvent) {
-            throw new ConflictException(`An event named "${createEventInput.title}" already exists. Please choose a different title.`);
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+
+        try {
+            const existingEvent = await queryRunner.manager.findOne(Events, { where: { title: createEventInput.title } });
+
+            if (existingEvent) {
+                throw new ConflictException(`An event named "${createEventInput.title}" already exists. Please choose a different title.`);
+            }
+
+            const categoriesDatabase = await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds);
+            const uniqueReqCategoriesDatabase = new Set(categoriesDatabase.map(cat => cat.id));
+            const uniqueReqCategories = new Set(createEventInput.categoryIds);
+            const missingIds = [...uniqueReqCategories].filter(id => !uniqueReqCategoriesDatabase.has(id))
+            if (missingIds.length > 0) {
+                throw new NotFoundException(`Category with ID(s) ${missingIds.join(', ')} do not exist in the database`);
+            }
+            const newEvent = this.eventRepository.create({
+                title: createEventInput.title,
+                description: createEventInput.description,
+                language: createEventInput.language,
+                user: { id: userId },
+                categories: categoriesDatabase,
+                isCancelled: false,
+                created_by: userId
+            })
+
+            const savedEvent = await queryRunner.manager.save(newEvent);
+
+            const newEventSlot = createEventInput.slots.map(slotDto => {
+                return this.eventSlotRepository.create({
+                    start_date: slotDto.startDate,
+                    end_date: slotDto.endDate,
+                    total_seats: slotDto.totalSeats,
+                    available_seats: slotDto.totalSeats,
+                    ticket_price: slotDto.ticketPrice,
+                    event: savedEvent
+
+                })
+            })
+            await queryRunner.manager.save(newEventSlot);
+            await queryRunner.commitTransaction();
+            return savedEvent;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
         }
-
-        const categoriesDatabase = await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds)
-        const uniqueCategoriesDatabase = new Set(categoriesDatabase.map(cat => cat.id))
-        const uniqueReqCategories = new Set(createEventInput.categoryIds)
-
-        const missingIds = [...uniqueReqCategories].filter(id => !uniqueCategoriesDatabase.has(id))
-        if (missingIds.length > 0) {
-            throw new NotFoundException(`Category with ID(s) ${missingIds.join(', ')} do not exist in the database`)
-        }
-
-        const newEvent = this.eventRepository.create({
-            title: createEventInput.title,
-            description: createEventInput.description,
-            language: createEventInput.language,
-            totalSeats: createEventInput.totalSeats,
-            availableSeats: createEventInput.totalSeats,
-            ticketPrice: createEventInput.ticketPrice,
-            startDate: createEventInput.startDate,
-            endDate: createEventInput.endDate,
-            user: { id: userId },
-            categories: categoriesDatabase,
-            isCancelled: false,
-            created_by: userId
-        });
-        return await this.eventRepository.save(newEvent);
     }
 
     async findEventById(eventId: number): Promise<EventDetailResponseDto> {
+        console.log(eventId)
         const event = await this.eventRepository.findOne({
             where: { id: eventId },
-            relations: ['categories'],
-            select: ['id', 'title', 'description', 'language', 'totalSeats', 'availableSeats', 'ticketPrice', 'startDate', 'endDate', 'categories', 'isCancelled'],
+            relations: ['categories', 'slots', 'user'],
+
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                language: true,
+                categories: { id: true, name: true },
+                isCancelled: true,
+                created_by: true,
+                slots: {
+                    id: true,
+                    start_date: true,
+                    end_date: true,
+                    is_cancelled: true,
+                    total_seats: true,
+                    available_seats: true,
+                    ticket_price: true,
+                    ticket: true,
+                    is_sold_out: true,
+                },
+                user: {
+                    firstName: true,
+                    lastName: true,
+                }
+            }
         })
 
         if (!event) {
             throw new NotFoundException(`Event with ID "${eventId}" not found`)
         }
 
+
         const eventDto = new EventDetailResponseDto()
         eventDto.id = event.id;
         eventDto.title = event.title;
         eventDto.description = event.description;
         eventDto.language = event.language;
-        eventDto.totalSeats = event.totalSeats;
-        eventDto.availableSeats = event.availableSeats;
-        eventDto.ticketPrice = event.ticketPrice;
-        eventDto.startDate = event.startDate;
-        eventDto.endDate = event.endDate;
         eventDto.isCancelled = event.isCancelled;
-        eventDto.categories = event.categories.map((category) => category.name)
+        eventDto.categories = event.categories.map((category) => category.name);
+        eventDto.slots = event.slots.map(slot => ({
+            id: slot.id,
+            start_date: slot.start_date,
+            end_date: slot.end_date,
+            total_seats: slot.total_seats,
+            available_seats: slot.available_seats,
+            ticket_price: slot.ticket_price,
+            is_cancelled: slot.is_cancelled,
+            is_sold_out: slot.is_sold_out,
+        }))
         return eventDto;
     }
 
@@ -200,17 +255,14 @@ export class EventService {
             select: {
                 id: true,
                 title: true,
-                startDate: true,
-                endDate: true,
                 language: true,
-                ticketPrice: true,
                 user: {
                     id: true,
                     firstName: true,
                 },
-                categories: false
+                categories: { name: true },
+                slots: { start_date: true, end_date: true, ticket_price: true }
             },
-            order: { startDate: 'ASC' }
         });
     }
 
@@ -244,31 +296,28 @@ export class EventService {
             }
             eventToUpdate.categories = newCategories;
         }
-        console.log("Eventtttttt Before", eventToUpdate)
         Object.assign(eventToUpdate, updateEventInput)
-        console.log("Eventtttttt After", eventToUpdate)
         const res = await this.eventRepository.save(eventToUpdate);
-        console.log("Response", res)
         return res;
     }
 
-    async softRemoveAndCancelled(eventId: number): Promise<{ message: string }> {
+    // async softRemoveAndCancelled(eventId: number): Promise<{ message: string }> {
 
-        const eventToSoftDelete = await this.eventRepository.findOne({ where: { id: eventId } });
+    //     const eventToSoftDelete = await this.eventRepository.findOne({ where: { id: eventId }, relations: { 'slots', 'categories'} });
 
-        if (!eventToSoftDelete) {
-            throw new NotFoundException(`Event with ID "${eventId}" not found.`);
-        }
-        if (eventToSoftDelete.startDate && eventToSoftDelete.endDate < new Date()) {
-            throw new BadRequestException('Cannot soft-delete an event that has already started')
-        }
+    //     if (!eventToSoftDelete) {
+    //         throw new NotFoundException(`Event with ID "${eventId}" not found.`);
+    //     }
+    //     if (eventToSoftDelete.startDate && eventToSoftDelete.endDate < new Date()) {
+    //         throw new BadRequestException('Cannot soft-delete an event that has already started')
+    //     }
 
-        eventToSoftDelete.isCancelled = true;
-        eventToSoftDelete.deleted_at = new Date();
+    //     eventToSoftDelete.isCancelled = true;
+    //     eventToSoftDelete.deleted_at = new Date();
 
-        const removedEvent = await this.eventRepository.save(eventToSoftDelete);
-        const res = `Event ${removedEvent.title} removed successfully`;
-        return { message: res }
-    }
+    //     const removedEvent = await this.eventRepository.save(eventToSoftDelete);
+    //     const res = `Event ${removedEvent.title} removed successfully`;
+    //     return { message: res }
+    // }
 
 }

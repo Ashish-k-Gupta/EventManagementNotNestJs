@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { USER_ROLE, UserRolesArray } from '../enums/UserRole.enum';
 
 
-const createUserBodySchema = z.object({
+export const createUserBodySchema = z.object({
     firstName: z.string().min(3, "FirstName must be at least 3 character").max(20, "First Name can not exceed length of 20 character"),
     lastName: z.string().min(3, "Last Name must be at least 3 character").max(20, "First Name can not exceed length of 20 character"),
     email: z.string().email("Invalid email format").toLowerCase(),

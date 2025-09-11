@@ -80,26 +80,23 @@ export class UserController {
         }
     }
 
-    resetPassword = async(req: Request, res: Response, next: NextFunction) =>{
-        try{
-            console.log(req.body)
-            const {email} = req.body;
-            console.log(email)
+    resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email } = req.body;
             await this.userService.resetPassword(email, this.emailService);
-            res.status(StatusCodes.OK).json({message:"Reset password link sent."});
-        }catch(err){
+            res.status(StatusCodes.OK).json({ message: "Reset password link sent." });
+        } catch (err) {
             next(err)
         }
     }
 
-    confirmResetPassword = async(req: Request, res: Response, next: NextFunction) =>{
-        try{
-            console.log(req)
-            const token = req.query.token as  string;
-            const {newPassword} = req.body;
+    confirmResetPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const token = req.query.token as string;
+            const { newPassword } = req.body;
             await this.userService.confirmResetPassword(token, newPassword);
-            res.status(StatusCodes.OK).json({message: "Password changed successfully"});
-        }catch(err){
+            res.status(StatusCodes.OK).json({ message: "Password changed successfully" });
+        } catch (err) {
             next(err)
         }
     }

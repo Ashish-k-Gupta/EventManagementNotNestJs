@@ -3,11 +3,16 @@ export class EventDetailResponseDto {
     title!: string;
     description!: string;
     language!: string;
-    totalSeats!: number;
-    availableSeats!: number;
-    ticketPrice!: number;
-    startDate!: Date;
-    endDate!: Date;
     isCancelled!: boolean;
     categories!: string[];
+    slots!: {
+        id: number;
+        start_date: string;
+        end_date: string;
+        total_seats: number;
+        available_seats: number;
+        ticket_price: number;
+        is_cancelled: boolean;
+        is_sold_out: boolean;
+    }[];
 }
