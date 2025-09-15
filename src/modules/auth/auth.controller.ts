@@ -15,7 +15,6 @@ export class AuthController {
 
     login = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log(req.body)
             const loginUser = await this.authService.login(req.body);
             res.status(StatusCodes.OK).json(loginUser);
         } catch (err) {

@@ -34,30 +34,21 @@ export class EventService {
 
         const query = this.eventRepository
             .createQueryBuilder("event")
-            //  .select([
-            // "event.id",
-            // "event.title",
-            // "event.description",
-            // "event.language",
-            // "event.ticketPrice",
-            // "event.startDate",
-            // "event.endDate",
-            // "event.isCancelled",
-            // "event.created_at", // You might want event's own created_at/updated_at
-            // "event.updated_at"
-            // ])
-            .leftJoinAndSelect("event.user", "user")
+            .leftJoin("event.slots", "slots")
+            .addSelect([
+                "slots.id",
+                "slots.start_date",
+                "slots.end_date",
+                "slots.is_cancelled"
+            ])
+            .leftJoin("event.user", "user")
             .addSelect([
                 "user.id",
                 "user.firstName",
                 "user.lastName",
-                "user.email"
             ])
-            .leftJoinAndSelect("event.categories", "category")
-            // .addSelect([
-            // "category.id",
-            // "category.name"
-            // ])
+            .leftJoin("event.categories", "category")
+            .addSelect(["category.id", "category.name"])
             .where("event.isCancelled = false");
 
         if (term) {
@@ -98,7 +89,7 @@ export class EventService {
 
         const total = await query.getCount();
 
-        query.orderBy(`event.${sortBy}`, sortOrder); // Use backticks for column names if needed, or ensure 'sortBy' maps to a valid column
+        query.orderBy(`event.${sortBy}`, sortOrder);
 
         query.skip((page - 1) * limit)
             .take(limit);
@@ -177,7 +168,6 @@ export class EventService {
     }
 
     async findEventById(eventId: number): Promise<EventDetailResponseDto> {
-        console.log(eventId)
         const event = await this.eventRepository.findOne({
             where: { id: eventId },
             relations: ['categories', 'slots', 'user'],
@@ -189,7 +179,10 @@ export class EventService {
                 language: true,
                 categories: { id: true, name: true },
                 isCancelled: true,
-                created_by: true,
+                user: {
+                    firstName: true,
+                    lastName: true,
+                },
                 slots: {
                     id: true,
                     start_date: true,
@@ -200,10 +193,6 @@ export class EventService {
                     ticket_price: true,
                     ticket: true,
                     is_sold_out: true,
-                },
-                user: {
-                    firstName: true,
-                    lastName: true,
                 }
             }
         })
@@ -220,6 +209,10 @@ export class EventService {
         eventDto.language = event.language;
         eventDto.isCancelled = event.isCancelled;
         eventDto.categories = event.categories.map((category) => category.name);
+        eventDto.users = {
+            firstName: event.user.firstName,
+            lastName: event.user.lastName
+        };
         eventDto.slots = event.slots.map(slot => ({
             id: slot.id,
             start_date: slot.start_date,
@@ -232,22 +225,6 @@ export class EventService {
         }))
         return eventDto;
     }
-
-    // async findAllEvents(): Promise<Events[]>{
-    //     return this.eventRepository.find({
-    //         relations: ['user', 'categories'],
-    //         select:{
-    //             user:{
-    //                 id: true,
-    //                 firstName: true,
-    //             },
-    //             categories:{
-    //                 id: true,
-    //                 name: true
-    //             }
-    //         }
-    //     });
-    // }
 
     async quickListEvent(): Promise<Events[]> {
         return this.eventRepository.find({
@@ -263,9 +240,32 @@ export class EventService {
                 categories: { name: true },
                 slots: { start_date: true, end_date: true, ticket_price: true }
             },
+            order: { slots: { start_date: "ASC" } }
         });
     }
 
+    async cancelEventSlot(slotId: number): Promise<void> {
+        const updateResult = await this.eventSlotRepository.update({ id: slotId }, { is_cancelled: true })
+        if (updateResult.affected === 0) {
+            throw new NotFoundException("Event slot not found")
+        }
+    }
+
+    async cancelEvent(eventId: number): Promise<void> {
+        await this.eventRepository.update(eventId, { isCancelled: true })
+        await this.eventSlotRepository
+            .createQueryBuilder()
+            .update(EventSlot)
+            .set({ is_cancelled: true })
+            .where('event_id = :eventId', { eventId })
+            .execute();
+        return;
+    }
+
+    async cancelSlot(slotId: number) {
+        const slot = await this.eventSlotRepository.update(slotId, { is_cancelled: true })
+        return;
+    }
 
     async updateEvent(userId: number, eventId: number, updateEventInput: UpdateEventInput): Promise<Events> {
         const eventToUpdate = await this.eventRepository.findOne(
@@ -301,23 +301,17 @@ export class EventService {
         return res;
     }
 
-    // async softRemoveAndCancelled(eventId: number): Promise<{ message: string }> {
+    async softRemoveAndCancelled(eventId: number): Promise<{ message: string }> {
 
-    //     const eventToSoftDelete = await this.eventRepository.findOne({ where: { id: eventId }, relations: { 'slots', 'categories'} });
+        const eventToDelete = await this.eventRepository.findOne({ where: { id: eventId } });
 
-    //     if (!eventToSoftDelete) {
-    //         throw new NotFoundException(`Event with ID "${eventId}" not found.`);
-    //     }
-    //     if (eventToSoftDelete.startDate && eventToSoftDelete.endDate < new Date()) {
-    //         throw new BadRequestException('Cannot soft-delete an event that has already started')
-    //     }
-
-    //     eventToSoftDelete.isCancelled = true;
-    //     eventToSoftDelete.deleted_at = new Date();
-
-    //     const removedEvent = await this.eventRepository.save(eventToSoftDelete);
-    //     const res = `Event ${removedEvent.title} removed successfully`;
-    //     return { message: res }
-    // }
+        if (!eventToDelete) {
+            throw new NotFoundException('Event not found')
+        }
+        eventToDelete.isCancelled = true;
+        await this.eventRepository.softDelete(eventId);
+        const res = `EVent ${eventToDelete.title} removed successfully`;
+        return { message: res };
+    }
 
 }

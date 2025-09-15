@@ -5,6 +5,10 @@ export class EventDetailResponseDto {
     language!: string;
     isCancelled!: boolean;
     categories!: string[];
+    users!: {
+        firstName: string,
+        lastName: string,
+    }
     slots!: {
         id: number;
         start_date: string;

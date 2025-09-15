@@ -36,7 +36,7 @@ export class Events extends UserTracking {
         }
     })
     categories!: Category[];
-
+                                        
     @Column({ nullable: false, default: false })
     @IsBoolean()
     isCancelled!: boolean;

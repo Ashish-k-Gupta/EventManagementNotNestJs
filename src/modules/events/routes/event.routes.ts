@@ -14,11 +14,13 @@ export const eventRouter = (eventController: EventController): Router => {
     router.get('/', eventController.getEvents as RequestHandler);
     router.get('/quick-list', eventController.quickListEvent);
     router.get('/:id', eventController.findEventById);
+    router.put('/cancel-event/:id', eventController.cancelEvent);
+    router.put('/cancel-slot/:id', eventController.cancelSlot);
 
     // Corrected: Pass the schema within a { body: ... } object
     // router.put('/:id', checkOwnerShipOrAdmin, validateSchema({ body: updateEventSchema }), eventController.updateEvent);
 
-    // router.delete('/delete/:id', authorize(USER_ROLE.ADMIN), eventController.softRemove)
+    router.delete('/delete/:id', authorize(USER_ROLE.ADMIN), eventController.softRemove)
 
     return router;
 };

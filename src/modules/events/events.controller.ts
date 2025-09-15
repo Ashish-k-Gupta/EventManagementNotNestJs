@@ -73,14 +73,34 @@ export class EventController {
         }
     }
 
-    // softRemove = async(req: Request, res: Response, next: NextFunction) =>{
-    //     try{
-    //         const eventId  = parseInt(req.params.id, 10);
-    //         const removeEvent = await this.eventService.softRemoveAndCancelled(eventId);
-    //         res.status(StatusCodes.OK).json({message: removeEvent.message});
-    //     }catch(err){
-    //         next(err);
-    //     }
-    // }
+    cancelEvent = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const eventId = parseInt(req.params.id);
+            const cancelEvent = await this.eventService.cancelEvent(eventId)
+            res.status(StatusCodes.OK).json(cancelEvent)
+        } catch (err) {
+            next(err)
+        }
+    }
+
+    cancelSlot = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const slotId = parseInt(req.params.id)
+            const cancelSlot = await this.eventService.cancelEventSlot(slotId)
+            res.status(StatusCodes.OK).json(cancelSlot)
+        } catch (err) {
+            next(err)
+        }
+    }
+
+    softRemove = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const eventId = parseInt(req.params.id);
+            const removeEvent = await this.eventService.softRemoveAndCancelled(eventId);
+            res.status(StatusCodes.OK).json({ message: removeEvent.message });
+        } catch (err) {
+            next(err);
+        }
+    }
 
 }
