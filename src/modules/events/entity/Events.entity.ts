@@ -19,6 +19,9 @@ export class Events extends UserTracking {
     @Column({ nullable: false })
     language!: string;
 
+    @Column({ nullable: true })
+    venue!: string;
+
     @ManyToOne(() => Users, (users) => users.events)
     @JoinColumn({ name: 'user_id' })
     user!: Users;
@@ -36,11 +39,12 @@ export class Events extends UserTracking {
         }
     })
     categories!: Category[];
-                                        
+
     @Column({ nullable: false, default: false })
     @IsBoolean()
     isCancelled!: boolean;
 
     @OneToMany(() => EventSlot, (slot) => slot.event)
     slots!: EventSlot[];
+
 }

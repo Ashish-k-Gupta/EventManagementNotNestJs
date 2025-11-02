@@ -48,6 +48,7 @@ export class AuthService {
     }
 
     async login(loginUserInput: LoginUserInput): Promise<{ token: string, user: UserWithoutPassword }> {
+        console.log('This is working')
         const ValidUser = await this.userService.validateUser(loginUserInput);
         const { password, ...userWithoutPassword } = ValidUser;
         const { id, email, firstName, lastName, role } = userWithoutPassword;

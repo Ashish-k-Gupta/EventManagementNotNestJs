@@ -24,6 +24,8 @@ export class EventController {
         }
     }
 
+
+
     createEvent = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         try {
             const userId = req.user.id;
@@ -39,6 +41,17 @@ export class EventController {
             const eventId = parseInt(req.params.id, 10);
             const event = await this.eventService.findEventById(eventId);
             res.status(StatusCodes.OK).json(event)
+        } catch (err) {
+            next(err)
+        }
+    }
+
+    getSlots = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const eventId = parseInt(req.params.id, 10);
+            const eventSlots = await this.eventService.getEventSlots(eventId);
+            console.log("slots here", eventSlots)
+            res.status(StatusCodes.OK).json(eventSlots)
         } catch (err) {
             next(err)
         }

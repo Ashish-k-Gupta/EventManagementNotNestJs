@@ -8,10 +8,10 @@ export class EventSlot {
     id!: number;
 
     @Column({ type: 'timestamp' })
-    start_date!: string;
+    start_date!: Date;
 
-    @Column({ type: 'timestamp' })
-    end_date!: string;
+    @Column({ type: 'timestamp', nullable: true })
+    end_date!: Date;
 
     @Column({ type: 'integer' })
     total_seats!: number;

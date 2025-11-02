@@ -1,21 +1,23 @@
-import { DataSource, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { Events } from "./entity/Events.entity";
 import { CreateEventInput, UpdateEventInput } from "./validators/event.validator";
 import { CategoryService } from "../category/category.service";
 import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 import { EventQueryParams } from "../../common/validation/eventQuerySchema";
-import { EventDetailResponseDto } from "../../dto/eventDetailResponse.dto";
+import { EventDetailResponseDto, slotReponseDto } from "../../dto/eventDetailResponse.dto";
 import { EventSlot } from "./entity/EventSlot.entity";
 
 export class EventService {
     private eventRepository: Repository<Events>;
     private eventSlotRepository: Repository<EventSlot>;
+    private slotRepository: Repository<EventSlot>;
     constructor(
         private dataSource: DataSource,
         private categorySerivce: CategoryService,
     ) {
         this.eventRepository = dataSource.getRepository(Events);
-        this.eventSlotRepository = dataSource.getRepository(EventSlot)
+        this.eventSlotRepository = dataSource.getRepository(EventSlot);
+        this.slotRepository = dataSource.getRepository(EventSlot);
     }
 
     async getEvent(params: EventQueryParams) {
@@ -137,6 +139,7 @@ export class EventService {
                 title: createEventInput.title,
                 description: createEventInput.description,
                 language: createEventInput.language,
+                venue: createEventInput.venue,
                 user: { id: userId },
                 categories: categoriesDatabase,
                 isCancelled: false,
@@ -178,7 +181,9 @@ export class EventService {
                 description: true,
                 language: true,
                 categories: { id: true, name: true },
+                venue: true,
                 isCancelled: true,
+                created_by: true,
                 user: {
                     firstName: true,
                     lastName: true,
@@ -207,8 +212,10 @@ export class EventService {
         eventDto.title = event.title;
         eventDto.description = event.description;
         eventDto.language = event.language;
+        eventDto.venue = event.venue;
         eventDto.isCancelled = event.isCancelled;
         eventDto.categories = event.categories.map((category) => category.name);
+        eventDto.created_by = event.created_by;
         eventDto.users = {
             firstName: event.user.firstName,
             lastName: event.user.lastName
@@ -244,11 +251,39 @@ export class EventService {
         });
     }
 
+    async getEventSlots(eventId: number): Promise<slotReponseDto[]> {
+        const event = await this.eventRepository.findOne({ where: { id: eventId } })
+        if (!event) {
+            throw new NotFoundException("Event not found!")
+        }
+        const slots = await this.slotRepository.find({ where: { event: { id: eventId } } })
+        return slots;
+    }
+
     async cancelEventSlot(slotId: number): Promise<void> {
         const updateResult = await this.eventSlotRepository.update({ id: slotId }, { is_cancelled: true })
         if (updateResult.affected === 0) {
             throw new NotFoundException("Event slot not found")
         }
+    }
+
+    async deleteSlot(slotId: number, userId: number): Promise<void> {
+        const slotsToDelete = await this.eventSlotRepository.findOne
+            ({
+                where: { id: slotId },
+                relations: ['event', 'event.user'],
+            })
+        if (!slotsToDelete) {
+            throw new NotFoundException('Event slot not found.')
+        }
+        if (slotsToDelete.event.user.id !== userId) {
+            throw new UnauthorizedException('You are not authorized to delete this event slot.');
+        }
+        const now = new Date();
+        if (slotsToDelete.start_date < now) {
+            throw new BadRequestException('Cannot delete an event slot that has already started.');
+        }
+        await this.eventSlotRepository.softRemove(slotsToDelete);
     }
 
     async cancelEvent(eventId: number): Promise<void> {
@@ -267,38 +302,73 @@ export class EventService {
         return;
     }
 
-    async updateEvent(userId: number, eventId: number, updateEventInput: UpdateEventInput): Promise<Events> {
-        const eventToUpdate = await this.eventRepository.findOne(
-            {
+    async updateEvent(userId: number, eventId: number, updateEventInput: UpdateEventInput) {
+
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            const eventToUpdate = await this.eventRepository.findOne({
                 where: { id: eventId },
-                relations: ['user', 'categories']
+                relations: ['slots']
             })
-        if (!eventToUpdate) {
-            throw new NotFoundException(`Event with ID "${eventId} do not exist`)
-        }
 
-        if (eventToUpdate.user.id !== userId) {
-            throw new UnauthorizedException(`You don't permission to access this event`)
-        }
-
-        if (updateEventInput.CategoryIds !== undefined) {
-            if (updateEventInput.CategoryIds.length === 0) {
-                throw new BadRequestException('An event must have at least one category. You cannot remove all categories.');
+            console.log("Details", eventToUpdate)
+            if (!eventToUpdate) {
+                throw new NotFoundException("Event doesn't exists");
+            }
+            console.log(eventToUpdate.created_by, userId)
+            if (eventToUpdate.created_by !== userId) {
+                throw new UnauthorizedException("Not allowed to edit these")
             }
 
-            const newCategories = await this.categorySerivce.findCategoryListByIds(updateEventInput.CategoryIds as number[]);
-            const uniqueCategoriesDatabase = new Set(newCategories.map(cat => cat.id));
-            const uniqueReqCategories = new Set(updateEventInput.CategoryIds as number[]);
+            const { slots, ...eventData } = updateEventInput;
+            Object.assign(eventToUpdate, eventData);
+            await queryRunner.manager.save(eventToUpdate);
 
-            const missingIds = [...uniqueReqCategories].filter(id => !uniqueCategoriesDatabase.has(id));
-            if (missingIds.length > 0) {
-                throw new NotFoundException(`Category with ID(s) ${missingIds.join(', ')} do not exist in the database`);
+
+            if (slots && slots.length > 0) {
+                const slotIdsInRequest = slots.filter(s => s.id).map(s => s.id);
+                const existingSlotIds = eventToUpdate.slots.map(s => s.id);
+
+                const slotsToDelete = existingSlotIds.filter(id => !slotIdsInRequest.includes(id));
+                if (slotsToDelete.length > 0) {
+                    await queryRunner.manager.delete(EventSlot, { id: In(slotsToDelete) })
+                }
+
+                for (const slot of slots) {
+                    if (slot.id) {
+                        const slotToUpdate = eventToUpdate.slots.find(s => slot.id === s.id);
+                        if (slotToUpdate) {
+                            Object.assign(slotToUpdate, slot)
+                            await queryRunner.manager.save(slotToUpdate);
+                        } else {
+                            throw new NotFoundException(`Event slot with ID ${slot.id} not found`)
+                        }
+                    } else {
+                        const newSlot = this.eventSlotRepository.create({
+                            ...slot,
+                            event: eventToUpdate,
+                        })
+                        await queryRunner.manager.save(newSlot);
+                    }
+                }
             }
-            eventToUpdate.categories = newCategories;
+
+            await queryRunner.commitTransaction();
+            return await this.eventRepository.findOne({
+                where: { id: eventId },
+                relations: ['slots']
+            });
+
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release()
+
+
         }
-        Object.assign(eventToUpdate, updateEventInput)
-        const res = await this.eventRepository.save(eventToUpdate);
-        return res;
     }
 
     async softRemoveAndCancelled(eventId: number): Promise<{ message: string }> {
