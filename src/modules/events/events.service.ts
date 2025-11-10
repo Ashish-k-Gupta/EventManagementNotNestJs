@@ -10,14 +10,12 @@ import { EventSlot } from "./entity/EventSlot.entity";
 export class EventService {
     private eventRepository: Repository<Events>;
     private eventSlotRepository: Repository<EventSlot>;
-    private slotRepository: Repository<EventSlot>;
     constructor(
         private dataSource: DataSource,
         private categorySerivce: CategoryService,
     ) {
         this.eventRepository = dataSource.getRepository(Events);
         this.eventSlotRepository = dataSource.getRepository(EventSlot);
-        this.slotRepository = dataSource.getRepository(EventSlot);
     }
 
     async getEvent(params: EventQueryParams) {
@@ -256,8 +254,18 @@ export class EventService {
         if (!event) {
             throw new NotFoundException("Event not found!")
         }
-        const slots = await this.slotRepository.find({ where: { event: { id: eventId } } })
+        const slots = await this.eventSlotRepository.find({ where: { event: { id: eventId } } })
         return slots;
+    }
+
+    async getSlotById(slotId: number): Promise<slotReponseDto> {
+        console.log("getSlotByid", slotId)
+        const slot = await this.eventSlotRepository.findOne({ where: { id: slotId } })
+        if (!slot) {
+            throw new NotFoundException('Slot not found!')
+        }
+        console.log(slot);
+        return slot;
     }
 
     async cancelEventSlot(slotId: number): Promise<void> {

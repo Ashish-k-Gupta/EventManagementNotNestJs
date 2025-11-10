@@ -14,6 +14,7 @@ export const eventRouter = (eventController: EventController): Router => {
     router.get('/', eventController.getEvents as RequestHandler);
     router.get('/quick-list', eventController.quickListEvent);
     router.get('/:id', eventController.findEventById);
+    router.get('/event-slot/:slotId', eventController.getSlot);
     router.get('/event-slots/:id', eventController.getSlots);
     router.put('/cancel-event/:id', eventController.cancelEvent);
     router.put('/cancel-slot/:id', eventController.cancelSlot);

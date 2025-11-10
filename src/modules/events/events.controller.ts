@@ -57,6 +57,16 @@ export class EventController {
         }
     }
 
+    getSlot = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const slotId = parseInt(req.params.slotId, 10);
+            const slot = await this.eventService.getSlotById(slotId);
+            res.status(StatusCodes.OK).json(slot);
+            console.log(slot);
+        } catch (err) {
+            next(err);
+        }
+    }
     // findAllEvents = async (req: Request, res: Response, next: NextFunction) =>{
     //     try{
     //         const allEvents =await this.eventService.findAllEvents();
