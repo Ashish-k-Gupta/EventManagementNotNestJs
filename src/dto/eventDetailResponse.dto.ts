@@ -32,4 +32,26 @@ export class slotReponseDto {
     ticket_price!: number;
     is_cancelled!: boolean;
     is_sold_out!: boolean;
+    event!: {
+        id: number,
+        title: string,
+        venue: string
+    }
+}
+
+export class EventSlotListResponseDto {
+    id!: number;
+    title!: string;
+    venue!: string;
+    isCancelled!: boolean;
+    slots!: {
+        id: number;
+        start_date: Date;
+        end_date: Date;
+        total_seats: number;
+        available_seats: number;
+        ticket_price: number;
+        is_cancelled: boolean;
+        is_sold_out: boolean;
+    }[];
 }

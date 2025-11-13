@@ -4,7 +4,7 @@ import { CreateEventInput, UpdateEventInput } from "./validators/event.validator
 import { CategoryService } from "../category/category.service";
 import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 import { EventQueryParams } from "../../common/validation/eventQuerySchema";
-import { EventDetailResponseDto, slotReponseDto } from "../../dto/eventDetailResponse.dto";
+import { EventDetailResponseDto, EventSlotListResponseDto, slotReponseDto } from "../../dto/eventDetailResponse.dto";
 import { EventSlot } from "./entity/EventSlot.entity";
 
 export class EventService {
@@ -249,18 +249,37 @@ export class EventService {
         });
     }
 
-    async getEventSlots(eventId: number): Promise<slotReponseDto[]> {
-        const event = await this.eventRepository.findOne({ where: { id: eventId } })
+    async getEventSlots(eventId: number): Promise<EventSlotListResponseDto> {
+        const event = await this.eventRepository.findOne({
+            where: { id: eventId },
+            select: {
+                id: true,
+                title: true,
+                venue: true,
+            },
+            relations: ['slots']
+        });
+
         if (!event) {
             throw new NotFoundException("Event not found!")
         }
-        const slots = await this.eventSlotRepository.find({ where: { event: { id: eventId } } })
-        return slots;
+        return event;
     }
 
     async getSlotById(slotId: number): Promise<slotReponseDto> {
         console.log("getSlotByid", slotId)
-        const slot = await this.eventSlotRepository.findOne({ where: { id: slotId } })
+        const slot = await this.eventSlotRepository.findOne(
+            {
+                where: { id: slotId },
+                relations: ['event'],
+                select: {
+                    event: {
+                        id: true,
+                        title: true,
+                        venue: true,
+                    }
+                }
+            })
         if (!slot) {
             throw new NotFoundException('Slot not found!')
         }
