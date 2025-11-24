@@ -1,4 +1,4 @@
-import { DataSource, Repository } from "typeorm";
+import { DataSource, EntityManager, Repository } from "typeorm";
 import { BadRequestException, ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import { z } from "zod";
@@ -34,22 +34,53 @@ export class UserService {
 
 
     async createUser(createUserData: CreateUserInput): Promise<Partial<Users>> {
-        const existingMail = await this.userRepository.findOne({ where: { email: createUserData.body.email } })
-        if (createUserData.body.role === "admin") {
+        return await this.dataSource.transaction(
+            async transactionEntityManger => {
+                const userRepo = transactionEntityManger.getRepository(Users);
+
+                const userData = createUserData.data;
+
+                const emailToUse = createUserData.data.email.toLowerCase();
+
+                const existingMail = await userRepo.findOne({ where: { email: userData.email } })
+
+                if (createUserData.data.role === 'admin') {
+                    throw new ForbiddenException("Admin role is not allowed")
+                }
+
+                if (existingMail) {
+                    throw new ConflictException('User already exists')
+                }
+
+                const hashPassword = await this.hashPassword(createUserData.data.password);
+                const newUser = userRepo.create({
+                    firstName: createUserData.data.firstName,
+                    lastName: createUserData.data.lastName,
+                    email: emailToUse,
+                    password: hashPassword,
+                    role: createUserData.data.role,
+                })
+                const savedUser = await userRepo.save(newUser);
+                const { password, deleted_at, updated_at, created_by, ...safeUser } = savedUser;
+                return safeUser;
+            }
+        )
+        const existingMail = await this.userRepository.findOne({ where: { email: createUserData.data.email } })
+        if (createUserData.data.role === "admin") {
             throw new ForbiddenException("Admin role is not allowed")
         }
         if (existingMail) {
             throw new ConflictException(`Email already exists.`)
         }
 
-        const hashPassword = await this.hashPassword(createUserData.body.password)
+        const hashPassword = await this.hashPassword(createUserData.data.password)
 
         const newUser = this.userRepository.create({
-            firstName: createUserData.body.firstName,
-            lastName: createUserData.body.lastName,
-            email: createUserData.body.email.toLowerCase(),
+            firstName: createUserData.data.firstName,
+            lastName: createUserData.data.lastName,
+            email: createUserData.data.email.toLowerCase(),
             password: hashPassword,
-            role: createUserData.body.role,
+            role: createUserData.data.role,
         })
         const savedUser = await this.userRepository.save(newUser);
         const { password, deleted_at, updated_at, created_by, ...safeUser } = savedUser;

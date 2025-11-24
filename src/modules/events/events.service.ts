@@ -267,7 +267,6 @@ export class EventService {
     }
 
     async getSlotById(slotId: number): Promise<slotReponseDto> {
-        console.log("getSlotByid", slotId)
         const slot = await this.eventSlotRepository.findOne(
             {
                 where: { id: slotId },
@@ -283,7 +282,6 @@ export class EventService {
         if (!slot) {
             throw new NotFoundException('Slot not found!')
         }
-        console.log(slot);
         return slot;
     }
 
@@ -340,11 +338,9 @@ export class EventService {
                 relations: ['slots']
             })
 
-            console.log("Details", eventToUpdate)
             if (!eventToUpdate) {
                 throw new NotFoundException("Event doesn't exists");
             }
-            console.log(eventToUpdate.created_by, userId)
             if (eventToUpdate.created_by !== userId) {
                 throw new UnauthorizedException("Not allowed to edit these")
             }

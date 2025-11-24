@@ -50,7 +50,6 @@ export class EventController {
         try {
             const eventId = parseInt(req.params.id, 10);
             const eventSlots = await this.eventService.getEventSlots(eventId);
-            console.log("slots here", eventSlots)
             res.status(StatusCodes.OK).json(eventSlots)
         } catch (err) {
             next(err)
@@ -62,7 +61,6 @@ export class EventController {
             const slotId = parseInt(req.params.slotId, 10);
             const slot = await this.eventService.getSlotById(slotId);
             res.status(StatusCodes.OK).json(slot);
-            console.log(slot);
         } catch (err) {
             next(err);
         }

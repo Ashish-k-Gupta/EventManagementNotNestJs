@@ -11,7 +11,7 @@ export const createUserBodySchema = z.object({
 })
 
 export const createUserSchema = z.object({
-    body: createUserBodySchema,
+    data: createUserBodySchema,
     query: z.object({}).optional(),
     params: z.object({}).optional(),
 })
