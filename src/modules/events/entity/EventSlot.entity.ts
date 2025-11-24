@@ -1,9 +1,10 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Events } from "./Events.entity";
 import { Ticket } from "../../tickets/models/Ticket.entity";
+import UserTracking from "../../common/models/UserTracking.entity";
 
 @Entity()
-export class EventSlot {
+export class EventSlot extends UserTracking {
     @PrimaryGeneratedColumn()
     id!: number;
 

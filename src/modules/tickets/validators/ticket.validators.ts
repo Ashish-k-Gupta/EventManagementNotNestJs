@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 export const createTicketSchema = z.object({
-    eventId: z.number().int().positive(),
+    slotId: z.number().int().positive(),
     numberOfTickets: z.number().int().positive().default(1),
     totalPrice: z.number().int().min(0, "Ticket price cannot be negative"),
 })
