@@ -5,6 +5,8 @@ import { StatusCodes } from "http-status-codes";
 export class AuthController {
     constructor(private authService: AuthService) { };
     register = async (req: Request, res: Response, next: NextFunction) => {
+        console.log("MUSTARDDDDDDDD", req);
+
         try {
             const registerUser = await this.authService.registerUser(req.body);
             res.status(StatusCodes.CREATED).json(registerUser)

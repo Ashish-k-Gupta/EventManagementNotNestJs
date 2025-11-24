@@ -44,6 +44,11 @@ app.use(cors({
 async function bootstrap() {
     try {
         const dataSource: DataSource = await createAndInitializeDataSource();
+
+        app.use(express.json());
+        app.use(express.urlencoded({ extended: true }));
+
+
         const emailService = new EmailService();
 
         const userService = new UserService(dataSource);
@@ -61,8 +66,7 @@ async function bootstrap() {
 
         console.log('Database initialized successfully')
 
-        app.use(express.json());
-        app.use(express.urlencoded({ extended: true }));
+
 
         app.get('/', (req, res) => {
             res.send('Hello World!');

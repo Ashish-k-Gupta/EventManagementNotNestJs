@@ -28,6 +28,7 @@ export class AuthService {
 
     async registerUser(createUserInput: CreateUserInput): Promise<{ token: string, user: Partial<Users> }> {
         const user = await this.userService.createUser({ body: createUserInput });
+        console.log(user)
         const payload = {
             id: user.id,
             email: user.email,

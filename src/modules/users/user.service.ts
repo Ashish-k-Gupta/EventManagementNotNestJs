@@ -39,7 +39,7 @@ export class UserService {
             throw new ForbiddenException("Admin role is not allowed")
         }
         if (existingMail) {
-            throw new ConflictException(`Eamil already exists.`)
+            throw new ConflictException(`Email already exists.`)
         }
 
         const hashPassword = await this.hashPassword(createUserData.body.password)
