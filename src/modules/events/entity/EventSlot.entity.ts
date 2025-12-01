@@ -24,7 +24,7 @@ export class EventSlot extends UserTracking {
     @JoinColumn({ name: 'event_id' })
     event!: Events;
 
-    @OneToMany(() => Ticket, (ticket) => ticket.event)
+    @OneToMany(() => Ticket, (ticket) => ticket.eventSlot)
     ticket!: Ticket[];
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })

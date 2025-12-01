@@ -2,7 +2,7 @@ import { DataSource, In, Repository } from "typeorm";
 import { Events } from "../events/entity/Events.entity";
 import { Ticket } from "./models/Ticket.entity";
 import { CreateTicketInput, UpdateTicketInput } from "./validators/ticket.validators";
-import { BadRequestException, NotFoundException } from "../common/errors/http.exceptions";
+import { BadRequestException, ForbiddenException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
 import { Users } from "../users/models/Users.entity";
 import { EmailService } from "../../common/service/email.service";
 import { EventSlot } from "../events/entity/EventSlot.entity";
@@ -94,14 +94,14 @@ export class TicketService {
                 const tickets: Ticket[] = [];
                 for (let i = 0; i < createTicketInput.numberOfTickets; i++) {
                     const ticket = new Ticket();
-                    ticket.userId = userId;
+                    // ticket.userId = userId;
                     ticket.eventSlotId = createTicketInput.slotId;
                     ticket.totalPrice = slot.ticket_price;
                     tickets.push(ticket)
                 }
                 const savedTickets = await ticketRepo.save(tickets)
                 slot.available_seats -= createTicketInput.numberOfTickets;
-                await eventRepo.save(event);
+                await this.slotRepo.save(slot);
 
                 const user = await userRepo.findOne({ where: { id: userId } });
                 console.log("USERRRRRRRRRRRRRRRRRRRRRRRRR", user);
@@ -118,92 +118,163 @@ export class TicketService {
         )
     }
 
-    //     async cancelTickets(userId: number, updateTicketInput: UpdateTicketInput): Promise<CancellationResult> {
+    // async cancelTickets(userId: number, updateTicketInput: UpdateTicketInput): Promise<CancellationResult> {
 
-    //         if (!updateTicketInput.ticketId || updateTicketInput.ticketId.length === 0) {
-    //             throw new BadRequestException('No ticket IDs provided for cancellation');
+    //     if (!updateTicketInput.ticketId || updateTicketInput.ticketId.length === 0) {
+    //         throw new BadRequestException('No ticket IDs provided for cancellation');
+    //     }
+
+    //     return this.dataSource.transaction(async transactionEntityManger => {
+    //         const ticketRepo: Repository<Ticket> = transactionEntityManger.getRepository(Ticket);
+    //         const eventRepo: Repository<Events> = transactionEntityManger.getRepository(Events);
+    //         const slotRepo: Repository<EventSlot> = transactionEntityManger.getRepository(EventSlot);
+
+    //         const ticketToProcess = await ticketRepo.find({
+    //             where: {
+    //                 id: In(updateTicketInput.ticketId)
+    //             },
+    //             select: {
+
+    //             },
+    //             relations: ['user', 'event']
+    //         })
+
+    //         console.log("TICKET", ticketToProcess)
+    //         const failedCancellation: { ticketId: number, reason: string }[] = [];
+    //         const successfulCancellation: Ticket[] = [];
+
+
+    //         const foundTicketIds = new Set(ticketToProcess.map(t => t.id));
+    //         updateTicketInput.ticketId.forEach(inputId => {
+    //             if (!foundTicketIds.has(inputId)) {
+    //                 failedCancellation.push({ ticketId: inputId, reason: 'Ticket not found' })
+    //             }
+    //         })
+
+    //         const now = new Date().getTime();
+
+    //         for (const ticket of ticketToProcess) {
+    //             let reasonForFailure: string | null = null;
+
+    //             if (ticket.userId !== userId) {
+    //                 reasonForFailure = "You are not authorized to cancel this ticket."
+    //             } else if (ticket.isCancelled) {
+    //                 reasonForFailure = 'Ticket is already cancelled.'
+    //             } else {
+    //                 const eventStartDateTime = new Date(ticket.event.start_date).getTime()
+    //                 const oneHourBeforeEvent = (eventStartDateTime - 60 * 60 * 1000)
+
+    //                 if (now > oneHourBeforeEvent) {
+    //                     reasonForFailure = 'Event is about to start. Cannot cancel ticket now.';
+    //                 }
+    //             }
+
+    //             if (reasonForFailure) {
+    //                 failedCancellation.push({ ticketId: ticket.id, reason: reasonForFailure })
+    //             } else {
+    //                 ticket.isCancelled = true;
+    //                 successfulCancellation.push(ticket)
+    //                 if (ticket.event) {
+    //                     ticket.event.available_seats = (ticket.event.available_seats || 0) + 1;
+    //                 }
+    //                 { }
+    //             }
     //         }
 
-    //         return this.dataSource.transaction(async transactionEntityManger => {
-    //             const ticketRepo: Repository<Ticket> = transactionEntityManger.getRepository(Ticket);
-    //             const eventRepo: Repository<Events> = transactionEntityManger.getRepository(Events)
-
-    //             const ticketToProcess = await ticketRepo.find({
-    //                 where: {
-    //                     id: In(updateTicketInput.ticketId)
-    //                 },
-    //                 relations: ['event', 'user', 'event.user']
-    //             })
-    //             const failedCancellation: { ticketId: number, reason: string }[] = [];
-    //             const successfulCancellation: Ticket[] = [];
-
-
-    //             const foundTicketIds = new Set(ticketToProcess.map(t => t.id));
-    //             updateTicketInput.ticketId.forEach(inputId => {
-    //                 if (!foundTicketIds.has(inputId)) {
-    //                     failedCancellation.push({ ticketId: inputId, reason: 'Ticket not found' })
-    //                 }
-    //             })
-
-    //             const now = new Date().getTime();
-
-    //             for (const ticket of ticketToProcess) {
-    //                 let reasonForFailure: string | null = null;
-
-    //                 if (ticket.userId !== userId) {
-    //                     reasonForFailure = "You are not authorized to cancel this ticket."
-    //                 } else if (ticket.isCancelled) {
-    //                     reasonForFailure = 'Ticket is already cancelled.'
-    //                 } else {
-    //                     const eventStartDateTime = new Date(ticket.event.startDate).getTime()
-    //                     const oneHourBeforeEvent = (eventStartDateTime - 60 * 60 * 1000)
-
-    //                     if (now > oneHourBeforeEvent) {
-    //                         reasonForFailure = 'Event is about to start. Cannot cancel ticket now.';
-    //                     }
-    //                 }
-
-    //                 if (reasonForFailure) {
-    //                     failedCancellation.push({ ticketId: ticket.id, reason: reasonForFailure })
-    //                 } else {
-    //                     ticket.isCancelled = true;
-    //                     successfulCancellation.push(ticket)
-    //                     if (ticket.event) {
-    //                         ticket.event.availableSeats = (ticket.event.availableSeats || 0) + 1;
-    //                     }
-    //                     { }
-    //                 }
+    //         const eventToSave = new Map<number, Events>();
+    //         for (const ticket of successfulCancellation) {
+    //             if (ticket.event) {
+    //                 eventToSave.set(ticket.eventSlotId, ticket.event)
     //             }
+    //         }
 
-    //             const eventToSave = new Map<number, Events>();
+    //         if (successfulCancellation.length > 0) {
+    //             await ticketRepo.save(successfulCancellation)
+    //         }
+
+    //         if (eventToSave.size > 0) {
+    //             await eventRepo.save(Array.from(eventToSave.values()));
+    //         }
+    //         const user = await this.userRepo.findOne({ where: { id: userId } })
+    //         if (user && user.email) {
     //             for (const ticket of successfulCancellation) {
-    //                 if (ticket.event) {
-    //                     eventToSave.set(ticket.event.id,)
-    //                 }
-    //             }
+    //                 await this.emailService.sendTicketCancelEmail(user.email, ticket, ticket.eventSlotId), this.emailService.ticketCancellationAlert(ticket.event.user.email, ticket, ticket.event, ticket.user)
 
-    //             if (successfulCancellation.length > 0) {
-    //                 await ticketRepo.save(successfulCancellation)
     //             }
+    //         }
 
-    //             if (eventToSave.size > 0) {
-    //                 await eventRepo.save(Array.from(eventToSave.values()));
-    //             }
-    //             const user = await this.userRepo.findOne({ where: { id: userId } })
-    //             if (user && user.email) {
-    //                 for (const ticket of successfulCancellation) {
-    //                     await this.emailService.sendTicketCancelEmail(user.email, ticket, ticket.event), this.emailService.ticketCancellationAlert(ticket.event.user.email, ticket, ticket.event, ticket.user)
+    //         return {
+    //             success: failedCancellation.length === 0,
+    //             cancelledTickets: successfulCancellation.map(t => t.id),
+    //             failedTickets: failedCancellation
+    //         }
 
-    //                 }
-    //             }
+    //     })
+    // }
 
-    //             return {
-    //                 success: failedCancellation.length === 0,
-    //                 cancelledTickets: successfulCancellation.map(t => t.id),
-    //                 failedTickets: failedCancellation
-    //             }
+    async cancelTicket(userId: string, ticketId: string): Promise<CancellationResult> {
+        if (!userId || !ticketId) {
+            throw new BadRequestException('Ticket ID and User ID are required')
+        }
 
-    //         })
-    //     }
+        const ticket = await this.ticketRepo.findOne({
+            where: {
+                userId: userId,
+                id: ticketId
+            }
+        })
+        if (!ticket) {
+            throw new ForbiddenException('Resource Access Denied or Not Found')
+        }
+
+        if (ticket.isCancelled) {
+            throw new BadRequestException('Ticket already cancelled')
+        }
+
+        const today = new Date();
+
+        if (ticket.eventSlot.start_date > today) {
+            throw new BadRequestException("Can't Cancel ticket, Event has begin")
+        }
+
+
+    }
+
+    async getTicketDetail(userId: string, ticketId: string) {
+``
+        if (!userId || !ticketId) {
+            throw new BadRequestException('Ticket ID and User ID are required.');
+        }
+        const ticket = await this.ticketRepo.findOne({
+            where: { id: ticketId, userId: userId },
+            relations: ['eventSlot', 'eventSlot.event'],
+            select: {
+                eventSlot: {
+                    id: true,
+                    created_by: true,
+                    start_date: true,
+                    end_date: true,
+                    ticket_price: true,
+                    is_cancelled: true,
+                    event: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        language: true,
+                        venue: true,
+                        isCancelled: true
+                    }
+                },
+
+            }
+        })
+
+        if (!ticket) {
+            throw new ForbiddenException('Resource access denied or not found.');
+        }
+
+        console.log(ticket);
+        return ticket;
+    }
 
 }

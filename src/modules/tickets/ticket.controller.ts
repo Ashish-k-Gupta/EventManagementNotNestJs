@@ -26,14 +26,25 @@ export class TicketController {
         }
     }
 
-    // cancelTicket = async(req: AuthenticatedRequest, res: Response, next: NextFunction) =>{
-    //     try{
-    //         const userId = req.user.id;
-    //         const ticketToCancel = await this.ticketService.cancelTickets(userId, req.body);
-    //         res.status(StatusCodes.OK).json(ticketToCancel);
-    //     }catch(error){
-    //         next(error)
-    //     }
-    // }
+    cancelTicket = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            // const ticketToCancel = await this.ticketService.cancelTickets(userId, req.body);
+            // res.status(StatusCodes.OK).json(ticketToCancel);
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    ticketDetails = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user?.id.toString()!;
+            const ticketId = req.params.ticketId!;
+            const ticket = await this.ticketService.getTicketDetail(userId, ticketId)
+            res.status(200).json(ticket);
+        } catch (error) {
+            next(error);
+        }
+    }
 
 }
