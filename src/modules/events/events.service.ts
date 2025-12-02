@@ -120,8 +120,9 @@ export class EventService {
 
 
         try {
-            const existingEvent = await queryRunner.manager.findOne(Events, { where: { title: createEventInput.title } });
-
+            const existingEvent = await queryRunner.manager.findOne(Events, {
+                where: { title: createEventInput.title },
+            });
             if (existingEvent) {
                 throw new ConflictException(`An event named "${createEventInput.title}" already exists. Please choose a different title.`);
             }

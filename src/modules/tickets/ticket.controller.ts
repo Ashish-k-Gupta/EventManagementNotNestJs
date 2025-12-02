@@ -28,9 +28,11 @@ export class TicketController {
 
     cancelTicket = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         try {
-            const userId = req.user.id;
-            // const ticketToCancel = await this.ticketService.cancelTickets(userId, req.body);
-            // res.status(StatusCodes.OK).json(ticketToCancel);
+            const userId = (req.user.id).toString();
+            const ticketId = req.params.ticketId;
+            console.log(userId, ticketId);
+            const ticketToCancel = await this.ticketService.cancelTicket(userId, ticketId);
+            res.status(StatusCodes.OK).json(ticketToCancel);
         } catch (error) {
             next(error)
         }

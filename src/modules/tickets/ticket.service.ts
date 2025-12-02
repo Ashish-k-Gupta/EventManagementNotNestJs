@@ -6,12 +6,9 @@ import { BadRequestException, ForbiddenException, NotFoundException, Unauthorize
 import { Users } from "../users/models/Users.entity";
 import { EmailService } from "../../common/service/email.service";
 import { EventSlot } from "../events/entity/EventSlot.entity";
+import { error } from "console";
 
-interface CancellationResult {
-    success: boolean;
-    cancelledTickets: number[];
-    failedTickets: { ticketId: number; reason: string }[];
-}
+
 export class TicketService {
     private ticketRepo: Repository<Ticket>
     private eventRepo: Repository<Events>
@@ -53,7 +50,6 @@ export class TicketService {
                 const slotsRepo = transactionEntityManger.getRepository(EventSlot);
 
                 const slot = await slotsRepo.findOne({ where: { id: createTicketInput.slotId }, relations: ['event', 'event.user'] })
-                console.log("SLOTTTTTTTTTTTTT", slot);
                 if (!slot) {
                     throw new NotFoundException('Slot not found')
                 }
@@ -212,7 +208,7 @@ export class TicketService {
     //     })
     // }
 
-    async cancelTicket(userId: string, ticketId: string): Promise<CancellationResult> {
+    async cancelTicket(userId: string, ticketId: string): Promise<Ticket> {
         if (!userId || !ticketId) {
             throw new BadRequestException('Ticket ID and User ID are required')
         }
@@ -221,7 +217,8 @@ export class TicketService {
             where: {
                 userId: userId,
                 id: ticketId
-            }
+            },
+            relations: ['eventSlot', 'eventSlot.event', 'user', 'eventSlot.event.user']
         })
         if (!ticket) {
             throw new ForbiddenException('Resource Access Denied or Not Found')
@@ -231,17 +228,39 @@ export class TicketService {
             throw new BadRequestException('Ticket already cancelled')
         }
 
-        const today = new Date();
+        const currentTime = new Date();
 
-        if (ticket.eventSlot.start_date > today) {
-            throw new BadRequestException("Can't Cancel ticket, Event has begin")
+        if (ticket.eventSlot.start_date < currentTime) {
+            throw new BadRequestException("Can't Cancel ticket, Event has begun")
         }
 
+        const ticketToCancel = await this.dataSource.transaction(async (transactionManager) => {
+            ticket.isCancelled = true;
+            ticket.eventSlot.available_seats += ticket.numberOfTickets;
 
+            await transactionManager.save(ticket);
+            await transactionManager.save(ticket.eventSlot);
+            return ticket;
+
+        })
+
+        try {
+            const userEmail = ticket.user.email;
+            const organizerEmail = ticket.eventSlot.event.user.email;
+
+            await Promise.all([
+                this.emailService.sendTicketCancelEmail(userEmail, ticket, ticket.eventSlot.event),
+                this.emailService.ticketCancellationAlert(ticket.eventSlot.event.user.email, ticket, ticket.eventSlot.event, ticket.user)
+            ])
+
+        } catch {
+            console.error("Failed to send cancellation emails", error)
+        }
+        return ticketToCancel;
     }
 
     async getTicketDetail(userId: string, ticketId: string) {
-``
+        ``
         if (!userId || !ticketId) {
             throw new BadRequestException('Ticket ID and User ID are required.');
         }

@@ -8,6 +8,6 @@ export const ticketRouter = (ticketController: TicketController): Router => {
     router.get('/', ticketController.allTickets as RequestHandler)
     router.get('/detail/:ticketId', ticketController.ticketDetails)
     router.post('/', validateSchema({ body: createTicketSchema }), ticketController.createTicket as RequestHandler)
-    router.post('/cancel-ticket', validateSchema({ body: updateTicketSchema }), ticketController.cancelTicket as RequestHandler)
+    router.post('/cancel-ticket/:ticketId', ticketController.cancelTicket as RequestHandler)
     return router;
 }
