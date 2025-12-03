@@ -5,21 +5,21 @@ import { Users } from "./Users.entity";
 
 
 @Entity()
-export class PasswordResetToken extends UserTracking{
+export class PasswordResetToken extends UserTracking {
 
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: string;
 
-    @Column({unique: true, nullable: false})
+    @Column({ unique: true, nullable: false })
     token!: string;
 
-    @Column({type: 'enum', nullable: false, enum: ResetTokenStatusArray, default: RESET_TOKEN_STATUS.IS_VALID})
+    @Column({ type: 'enum', nullable: false, enum: ResetTokenStatusArray, default: RESET_TOKEN_STATUS.IS_VALID })
     tokenStatus!: typeof ResetTokenStatusArray[number];
 
     @ManyToOne(() => Users, (users) => users.resetTokens)
     user!: Users;
 
-    @Column({type: 'timestamp', nullable: false})
+    @Column({ type: 'timestamp', nullable: false })
     expiry_time!: Date;
 
 }   

@@ -8,7 +8,7 @@ import { EventSlot } from "./EventSlot.entity";
 @Entity()
 export class Events extends UserTracking {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: string;
 
     @Column({ nullable: false, unique: true })
     title!: string;

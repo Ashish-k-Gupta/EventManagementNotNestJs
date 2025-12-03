@@ -34,13 +34,13 @@ export const CreateEventSchema = z.object({
     description: z.string().min(50, "Event description must be at least 50 characters long"),
     language: z.string().min(2, "Language must be at least 2 characters long"),
     slots: z.array(CreateSlotSchema).min(1, "An event must have at least one time slot."),
-    categoryIds: z.array(z.number().int().positive("category ID must be a positive integer")).min(1, "Event must have at least 1 category"),
+    categoryIds: z.array(z.string()),
     venue: z.string().min(1).max(250)
 })
 
 
 export const UpdateSlotSchema = BaseSlotSchema.partial().extend({
-    id: z.number().int().positive("Slot ID must be a positive integer").optional()
+    id: z.string().min(1).optional()
 });
 
 

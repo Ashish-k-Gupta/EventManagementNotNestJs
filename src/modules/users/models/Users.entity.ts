@@ -7,27 +7,27 @@ import { Ticket } from "../../tickets/models/Ticket.entity";
 import { PasswordResetToken } from "./PasswordResetToken.entity";
 
 @Entity()
-export class Users extends UserTracking{
+export class Users extends UserTracking {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: string;
 
-    @Column({nullable: false})
+    @Column({ nullable: false })
     firstName!: string;
-    
-    @Column({nullable: false})
+
+    @Column({ nullable: false })
     lastName!: string;
 
-    @Column({nullable: false, unique: true})
-    email!: string;    
+    @Column({ nullable: false, unique: true })
+    email!: string;
 
-    @Column({nullable: false, length: 100, select: false})
+    @Column({ nullable: false, length: 100, select: false })
     password!: string;
 
     @Column({
         type: 'enum',
         enum: UserRolesArray,
         default: 'attendee'
-        })
+    })
     role!: typeof UserRolesArray[number];
 
     @OneToMany(() => Events, (events) => events.user)

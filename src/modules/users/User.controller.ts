@@ -38,7 +38,7 @@ export class UserController {
     findOneById = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const user = await this.userService.findOneById(parseInt(id));
+            const user = await this.userService.findOneById(id);
             res.status(StatusCodes.OK).json(user)
         } catch (err) {
             next(err);
@@ -49,7 +49,7 @@ export class UserController {
     updateUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const user = await this.userService.updateUser(parseInt(id), req.body)
+            const user = await this.userService.updateUser(id, req.body)
             res.status(StatusCodes.OK).json(user)
         } catch (err) {
             next(err);
@@ -73,7 +73,7 @@ export class UserController {
     softRemove = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            await this.userService.softRemove(parseInt(id));
+            await this.userService.softRemove(id);
             res.status(StatusCodes.OK).json({ message: "User removed" });
         } catch (err) {
             next(err);

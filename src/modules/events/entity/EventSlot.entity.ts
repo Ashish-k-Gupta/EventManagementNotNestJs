@@ -6,7 +6,7 @@ import UserTracking from "../../common/models/UserTracking.entity";
 @Entity()
 export class EventSlot extends UserTracking {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: string;
 
     @Column({ type: 'timestamp' })
     start_date!: Date;

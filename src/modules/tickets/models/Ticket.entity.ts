@@ -19,7 +19,7 @@ export class Ticket {
     eventSlot!: EventSlot;
 
     @Column({ name: 'event_slot_id' })
-    eventSlotId!: number;
+    eventSlotid!: string;
 
     @Column({ type: 'int', default: 1, nullable: false })
     numberOfTickets!: number;

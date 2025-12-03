@@ -1,9 +1,9 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class SeederLog  {
+export class SeederLog {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: string;
 
     @Column({ type: 'varchar', length: 255 })
     seederName!: string;

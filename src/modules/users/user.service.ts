@@ -96,7 +96,7 @@ export class UserService {
         return user || null;
     }
 
-    async findOneById(id: number): Promise<Users> {
+    async findOneById(id: string): Promise<Users> {
         const user = await this.userRepository.findOne({ where: { id } })
         if (!user) {
             throw new NotFoundException(`User with ID "${id}" not found`);
@@ -108,7 +108,7 @@ export class UserService {
         return await this.userRepository.find();
     }
 
-    async softRemove(id: number): Promise<void> {
+    async softRemove(id: string): Promise<void> {
         const existingUser = await this.userRepository.findOne({ where: { id } })
         if (!existingUser) {
             throw new NotFoundException('User not found')
@@ -116,7 +116,7 @@ export class UserService {
         await this.userRepository.softRemove(existingUser)
     }
 
-    async updateUser(id: number, updateUserData: UpdateUserInput): Promise<Users> {
+    async updateUser(id: string, updateUserData: UpdateUserInput): Promise<Users> {
 
         const user = await this.findOneById(id);
         if (updateUserData.body.email && updateUserData.body.email !== user.email) {

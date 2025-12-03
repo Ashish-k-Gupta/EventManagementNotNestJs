@@ -1,18 +1,18 @@
 export class EventDetailResponseDto {
-    id!: number;
+    id!: string;
     title!: string;
     description!: string;
     language!: string;
     venue!: string;
     isCancelled!: boolean;
     categories!: string[];
-    created_by!: number;
+    created_by!: string;
     users!: {
         firstName: string,
         lastName: string,
     }
     slots!: {
-        id: number;
+        id: string;
         start_date: Date;
         end_date: Date;
         total_seats: number;
@@ -24,7 +24,7 @@ export class EventDetailResponseDto {
 }
 
 export class slotReponseDto {
-    id!: number;
+    id!: string;
     start_date!: Date;
     end_date!: Date;
     total_seats!: number;
@@ -33,19 +33,19 @@ export class slotReponseDto {
     is_cancelled!: boolean;
     is_sold_out!: boolean;
     event!: {
-        id: number,
+        id: string,
         title: string,
         venue: string
     }
 }
 
 export class EventSlotListResponseDto {
-    id!: number;
+    id!: string;
     title!: string;
     venue!: string;
     isCancelled!: boolean;
     slots!: {
-        id: number;
+        id: string;
         start_date: Date;
         end_date: Date;
         total_seats: number;

@@ -53,17 +53,9 @@ export const checkOwnerShipOrAdmin = (req: Request, res: Response, next: NextFun
         if (!req.user || req.user.id === null || req.user.id === undefined || !req.user.role) {
             throw new UnauthorizedException("Authentication required. No valid token provided.")
         }
-
-        const resourceId = parseInt(req.params.id, 10);
-        if (isNaN(resourceId)) {
-            throw new ForbiddenException('Invalid resource ID in the URL')
-        }
-
-        const authenticatedUserId = req.user.id;
+        const resourceId = req.params.id;
         const userRole = req.user.role;
-
-
-        if (resourceId === authenticatedUserId || userRole === USER_ROLE.ADMIN) {
+        if (resourceId === req.user.id || userRole === USER_ROLE.ADMIN) {
             next();
         } else {
             throw new ForbiddenException("You do not have permission to access this resource.")
@@ -73,42 +65,43 @@ export const checkOwnerShipOrAdmin = (req: Request, res: Response, next: NextFun
     }
 }
 
-export const authorize = (requireRole: (typeof USER_ROLE)[keyof typeof USER_ROLE]) => (req: Request, res: Response, next: NextFunction) => {
+export const authorize = (
+    requiredRoles: (typeof USER_ROLE)[keyof typeof USER_ROLE] | Array<(typeof USER_ROLE)[keyof typeof USER_ROLE]>
+) => (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
             throw new UnauthorizedException("Authentication required. No valid token provided.")
         }
         const userRole: (typeof USER_ROLE)[keyof typeof USER_ROLE] = req.user.role;
-        if (requireRole.includes(userRole)) {
+
+        const allowed = Array.isArray(requiredRoles)
+            ? requiredRoles.includes(userRole)
+            : requiredRoles === userRole;
+
+        if (allowed) {
             next();
         } else {
             throw new ForbiddenException("You do not have permission to access this resource.");
         }
     } catch (err) {
-        next(err);
+        next(err)
     }
 }
 
 export const checkOwnership = (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.user || !req.user.id) {
+        if (!req.user || req.user.id === null || req.user.id === undefined) {
             throw new UnauthorizedException("Authentication required. User ID not found in token.");
         }
+        const resourceId = req.params.id;
+        const authenticatedUserRaw = req.user.id;
 
-        const resourceId = parseInt(req.params.id, 10);
-        if (isNaN(resourceId)) {
-            throw new ForbiddenException("Invalid resource ID in URL.");
-        }
-        const authenticatedUserId = req.user.id;
-
-
-        if (resourceId === authenticatedUserId) {
-            next()
+        if (String(resourceId) === String(authenticatedUserRaw)) {
+            next();
         } else {
-            throw new ForbiddenException("Access denied. You are not authorzide to access this.");
+            throw new ForbiddenException("Access denied. You are not authorized to access this.");
         }
-
-    } catch(err){
+    } catch (err) {
         next(err)
     }
 }

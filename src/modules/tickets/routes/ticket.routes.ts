@@ -6,8 +6,8 @@ import { createTicketSchema, updateTicketSchema } from "../validators/ticket.val
 export const ticketRouter = (ticketController: TicketController): Router => {
     const router = Router();
     router.get('/', ticketController.allTickets as RequestHandler)
-    router.get('/detail/:ticketId', ticketController.ticketDetails)
     router.post('/', validateSchema({ body: createTicketSchema }), ticketController.createTicket as RequestHandler)
+    router.get('/detail/:ticketId', ticketController.ticketDetails)
     router.post('/cancel-ticket/:ticketId', ticketController.cancelTicket as RequestHandler)
     return router;
 }

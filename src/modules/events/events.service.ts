@@ -113,7 +113,7 @@ export class EventService {
         };
     }
 
-    async createEvent(userId: number, createEventInput: CreateEventInput): Promise<Events> {
+    async createEvent(userId: string, createEventInput: CreateEventInput): Promise<Events> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -169,7 +169,7 @@ export class EventService {
         }
     }
 
-    async findEventById(eventId: number): Promise<EventDetailResponseDto> {
+    async findEventById(eventId: string): Promise<EventDetailResponseDto> {
         const event = await this.eventRepository.findOne({
             where: { id: eventId },
             relations: ['categories', 'slots', 'user'],
@@ -250,7 +250,7 @@ export class EventService {
         });
     }
 
-    async getEventSlots(eventId: number): Promise<EventSlotListResponseDto> {
+    async getEventSlots(eventId: string): Promise<EventSlotListResponseDto> {
         const event = await this.eventRepository.findOne({
             where: { id: eventId },
             select: {
@@ -267,7 +267,7 @@ export class EventService {
         return event;
     }
 
-    async getSlotById(slotId: number): Promise<slotReponseDto> {
+    async getSlotById(slotId: string): Promise<slotReponseDto> {
         const slot = await this.eventSlotRepository.findOne(
             {
                 where: { id: slotId },
@@ -286,14 +286,14 @@ export class EventService {
         return slot;
     }
 
-    async cancelEventSlot(slotId: number): Promise<void> {
+    async cancelEventSlot(slotId: string): Promise<void> {
         const updateResult = await this.eventSlotRepository.update({ id: slotId }, { is_cancelled: true })
         if (updateResult.affected === 0) {
             throw new NotFoundException("Event slot not found")
         }
     }
 
-    async deleteSlot(slotId: number, userId: number): Promise<void> {
+    async deleteSlot(slotId: string, userId: string): Promise<void> {
         const slotsToDelete = await this.eventSlotRepository.findOne
             ({
                 where: { id: slotId },
@@ -312,7 +312,7 @@ export class EventService {
         await this.eventSlotRepository.softRemove(slotsToDelete);
     }
 
-    async cancelEvent(eventId: number): Promise<void> {
+    async cancelEvent(eventId: string): Promise<void> {
         await this.eventRepository.update(eventId, { isCancelled: true })
         await this.eventSlotRepository
             .createQueryBuilder()
@@ -328,7 +328,7 @@ export class EventService {
         return;
     }
 
-    async updateEvent(userId: number, eventId: number, updateEventInput: UpdateEventInput) {
+    async updateEvent(userId: string, eventId: string, updateEventInput: UpdateEventInput) {
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -395,7 +395,7 @@ export class EventService {
         }
     }
 
-    async softRemoveAndCancelled(eventId: number): Promise<{ message: string }> {
+    async softRemoveAndCancelled(eventId: string): Promise<{ message: string }> {
 
         const eventToDelete = await this.eventRepository.findOne({ where: { id: eventId } });
 

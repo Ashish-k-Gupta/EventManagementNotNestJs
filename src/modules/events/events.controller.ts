@@ -38,7 +38,7 @@ export class EventController {
 
     findEventById = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const eventId = parseInt(req.params.id, 10);
+            const eventId = req.params.id;
             const event = await this.eventService.findEventById(eventId);
             res.status(StatusCodes.OK).json(event)
         } catch (err) {
@@ -49,7 +49,7 @@ export class EventController {
     getSlots = async (req: Request, res: Response, next: NextFunction) => {
         try {
             console.log("REQ.PARAMS.ID", req.params.id);
-            const eventId = parseInt(req.params.id, 10);
+            const eventId = req.params.id;
             const eventSlots = await this.eventService.getEventSlots(eventId);
             res.status(StatusCodes.OK).json(eventSlots)
         } catch (err) {
@@ -59,7 +59,7 @@ export class EventController {
 
     getSlot = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const slotId = parseInt(req.params.slotId, 10);
+            const slotId = req.params.id;
             const slot = await this.eventService.getSlotById(slotId);
             res.status(StatusCodes.OK).json(slot);
         } catch (err) {
@@ -87,7 +87,7 @@ export class EventController {
     updateEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId = (req as any).user.id;
-            const eventId = parseInt(req.params.id, 10);
+            const eventId = req.params.id;
             const updatedEvent = await this.eventService.updateEvent(userId, eventId, req.body);
             res.status(StatusCodes.OK).json(updatedEvent);
         } catch (err) {
@@ -97,7 +97,7 @@ export class EventController {
 
     cancelEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const eventId = parseInt(req.params.id);
+            const eventId = req.params.id;
             const cancelEvent = await this.eventService.cancelEvent(eventId)
             res.status(StatusCodes.OK).json(cancelEvent)
         } catch (err) {
@@ -107,7 +107,7 @@ export class EventController {
 
     cancelSlot = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const slotId = parseInt(req.params.id)
+            const slotId = req.params.id
             const cancelSlot = await this.eventService.cancelEventSlot(slotId)
             res.status(StatusCodes.OK).json(cancelSlot)
         } catch (err) {
@@ -117,7 +117,7 @@ export class EventController {
 
     softRemove = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const eventId = parseInt(req.params.id);
+            const eventId = req.params.id;
             const removeEvent = await this.eventService.softRemoveAndCancelled(eventId);
             res.status(StatusCodes.OK).json({ message: removeEvent.message });
         } catch (err) {

@@ -1,8 +1,8 @@
-import {z} from 'zod';
+import { z } from 'zod';
 import { UserRolesArray } from '../../users/enums/UserRole.enum';
 
 export const tokenPayloadSchema = z.object({
-    id: z.number(),
+    id: z.string(),
     email: z.string().email("Invalid email format"),
     firstName: z.string(),
     lastName: z.string(),

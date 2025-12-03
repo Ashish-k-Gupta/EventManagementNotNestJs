@@ -22,7 +22,7 @@ export class TicketService {
         this.slotRepo = dataSource.getRepository(EventSlot);
     }
 
-    async findTickets(userId: number) {
+    async findTickets(userId: string) {
         const [tickets, count] = await this.ticketRepo
             .createQueryBuilder('ticket')
             .leftJoinAndSelect('ticket.event', 'event', 'slots')
@@ -40,7 +40,7 @@ export class TicketService {
         return [tickets, count];
     }
 
-    async createTicket(userId: number, createTicketInput: CreateTicketInput): Promise<Ticket[]> {
+    async createTicket(userId: string, createTicketInput: CreateTicketInput): Promise<Ticket[]> {
         console.log(createTicketInput);
         return await this.dataSource.transaction(
             async transactionEntityManger => {
@@ -90,8 +90,8 @@ export class TicketService {
                 const tickets: Ticket[] = [];
                 for (let i = 0; i < createTicketInput.numberOfTickets; i++) {
                     const ticket = new Ticket();
-                    // ticket.userId = userId;
-                    ticket.eventSlotId = createTicketInput.slotId;
+                    ticket.userId = userId;
+                    ticket.eventSlotid = createTicketInput.slotId;
                     ticket.totalPrice = slot.ticket_price;
                     tickets.push(ticket)
                 }

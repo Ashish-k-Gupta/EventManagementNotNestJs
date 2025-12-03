@@ -4,16 +4,16 @@ import { currentSession } from "../../../helper/sessions";
 @Entity()
 export default class UserTracking {
    @PrimaryGeneratedColumn()
-   id!: number;
+   id!: string;
 
-   @Column({ type: 'integer', name: 'created_by', nullable: true, })
-   created_by!: number;
+   @Column({ name: 'created_by', nullable: true, })
+   created_by!: string;
 
-   @Column({ type: 'integer', name: 'updated_by', nullable: true })
-   updated_by!: number;
+   @Column({ name: 'updated_by', nullable: true })
+   updated_by!: string;
 
-   @Column({ type: 'integer', name: 'deleted_by', nullable: true, default: null })
-   deleted_by!: number;
+   @Column({ name: 'deleted_by', nullable: true, default: null })
+   deleted_by!: string;
 
    @CreateDateColumn({ type: 'timestamp', nullable: true, default: null })
    created_at!: Date;
