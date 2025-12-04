@@ -100,7 +100,6 @@ export class TicketService {
                 await this.slotRepo.save(slot);
 
                 const user = await userRepo.findOne({ where: { id: userId } });
-                console.log("USERRRRRRRRRRRRRRRRRRRRRRRRR", user);
                 if (user && user.email) {
                     for (const ticket of savedTickets) {
                         await this.emailService.sendTicketConfirmationEmail(user.email, ticket, event),
@@ -241,8 +240,9 @@ export class TicketService {
             await transactionManager.save(ticket);
             await transactionManager.save(ticket.eventSlot);
             return ticket;
-
         })
+
+        console.log(ticketToCancel);
 
         try {
             const userEmail = ticket.user.email;
