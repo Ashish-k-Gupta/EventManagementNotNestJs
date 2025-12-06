@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn,  ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Events } from "./Events.entity";
 import { Ticket } from "../../tickets/models/Ticket.entity";
 import UserTracking from "../../common/models/UserTracking.entity";
+import { CartItem } from "../../cart/entity/CartItem.entity";
 
 @Entity()
 export class EventSlot extends UserTracking {
@@ -26,6 +27,10 @@ export class EventSlot extends UserTracking {
 
     @OneToMany(() => Ticket, (ticket) => ticket.eventSlot)
     ticket!: Ticket[];
+
+    @OneToMany(() => CartItem, cartItem => cartItem.eventSlot)
+    cart_items!: CartItem[];
+
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     ticket_price!: number;

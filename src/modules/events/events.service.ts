@@ -396,9 +396,7 @@ export class EventService {
     }
 
     async softRemoveAndCancelled(eventId: string): Promise<{ message: string }> {
-
         const eventToDelete = await this.eventRepository.findOne({ where: { id: eventId } });
-
         if (!eventToDelete) {
             throw new NotFoundException('Event not found')
         }
