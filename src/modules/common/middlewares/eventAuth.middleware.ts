@@ -5,7 +5,7 @@
 //     try {
 //         if (!req.user || req.user.id === undefined || req.user.id === null || !req.user.role) {
 //             throw new UnauthorizedException("Authentication required. User data not found in token.");
-//             const eventId = parseInt(req.params.id, 10);
+//             const eventId = req.params.id;
 //             if (isNaN(eventId)) {
 //                 throw new ForbiddenException("Invalid event Id in URL.")
 //             }

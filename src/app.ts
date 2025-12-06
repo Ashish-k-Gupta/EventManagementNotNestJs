@@ -17,9 +17,10 @@ import { CatergoryController } from './modules/category/category.controller';
 import { EventController } from './modules/events/events.controller';
 import { EventService } from './modules/events/events.service';
 import { ticketRouter } from './modules/tickets/routes/ticket.routes';
-import { TicketService } from './modules/tickets/ticket.service';
+// import { TicketService } from './modules/tickets/ticket.service';
 import { TicketController } from './modules/tickets/ticket.controller';
 import { EmailService } from './common/service/email.service';
+import { TicketService } from './modules/tickets/ticket.service';
 
 
 const app = express();
@@ -43,6 +44,11 @@ app.use(cors({
 async function bootstrap() {
     try {
         const dataSource: DataSource = await createAndInitializeDataSource();
+
+        app.use(express.json());
+        app.use(express.urlencoded({ extended: true }));
+
+
         const emailService = new EmailService();
 
         const userService = new UserService(dataSource);
@@ -60,8 +66,7 @@ async function bootstrap() {
 
         console.log('Database initialized successfully')
 
-        app.use(express.json());
-        app.use(express.urlencoded({ extended: true }));
+
 
         app.get('/', (req, res) => {
             res.send('Hello World!');

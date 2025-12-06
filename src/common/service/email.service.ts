@@ -70,8 +70,6 @@ export class EmailService {
                                                 <h3 style="color: #555; margin-top: 0; font-size: 20px;">Event Details:</h3>
                                                 <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #4CAF50; font-weight: bold;">${event.title}</span></p>
                                                 <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
-                                                <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(event.startDate).toLocaleDateString()}</p>
-                                                <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date(event.startDate).toLocaleTimeString()} - ${new Date(event.endDate).toLocaleTimeString()}</p>
                                                 <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
                                             </div>
 
@@ -143,8 +141,6 @@ export class EmailService {
                                                 <h3 style="color: #555; margin-top: 0; font-size: 20px;">Cancellation Details:</h3>
                                                 <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #DC3545; font-weight: bold;">${event.title}</span></p>
                                                 <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
-                                                <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(event.startDate).toLocaleDateString()}</p>
-                                                <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date(event.startDate).toLocaleTimeString()} - ${new Date(event.endDate).toLocaleTimeString()}</p>
                                                 <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
                                             </div>
 
@@ -206,7 +202,6 @@ export class EmailService {
                                                 <p style="margin: 5px 0;"><strong>Attendee Email:</strong> ${attendeeUser.email || 'N/A'}</p>
                                                 <p style="margin: 5px 0;"><strong>Booking Date:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
                                                 <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
-                                                <p style="margin: 5px 0;"><strong>Tickets Left:</strong> ${event.availableSeats}</p>
 
                                             </div>
 
@@ -269,7 +264,6 @@ export class EmailService {
                                                 <p style="margin: 5px 0;"><strong>Attendee Email:</strong> ${attendeeUser.email || 'N/A'}</p>
                                                 <p style="margin: 5px 0;"><strong>Cancellation Date:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
                                                 <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
-                                                <p style="margin: 5px 0;"><strong>Tickets Left:</strong> ${event.availableSeats}</p>
                                             </div>
 
                                             <p style="font-size: 16px;">The seat for this ticket has been re-added to your event's available capacity.</p>
@@ -303,7 +297,7 @@ export class EmailService {
 
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM ||'noreply@your-application.com', 
+            from: process.env.EMAIL_FROM || 'noreply@your-application.com',
             to: resetPasswordEmail,
             subject: 'Password Reset Request for Your Account',
             html: `
@@ -352,7 +346,7 @@ export class EmailService {
             `
         }
 
-         try {
+        try {
             await transporter.sendMail(mailOptions);
             console.log(`Password reset email sent to ${resetPasswordEmail}`);
         } catch (error) {

@@ -2,37 +2,37 @@ import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, DeleteDateColumn,
 import { currentSession } from "../../../helper/sessions";
 
 @Entity()
-export default class UserTracking{
- @PrimaryGeneratedColumn()
- id!: number;
+export default class UserTracking {
+   @PrimaryGeneratedColumn()
+   id!: string;
 
- @Column({type: 'integer', name: 'created_by', nullable: true, select: false})
- created_by!: number;
+   @Column({ name: 'created_by', nullable: true, })
+   created_by!: string;
 
- @Column({type: 'integer', name: 'updated_by', nullable: true})
- updated_by!: number;
+   @Column({ name: 'updated_by', nullable: true })
+   updated_by!: string;
 
- @Column({type: 'integer', name: 'deleted_by', nullable: true, default: null})
- deleted_by!: number;
+   @Column({ name: 'deleted_by', nullable: true, default: null })
+   deleted_by!: string;
 
- @CreateDateColumn({type: 'timestamp', nullable: true, default: null})
- created_at!: Date; 
+   @CreateDateColumn({ type: 'timestamp', nullable: true, default: null })
+   created_at!: Date;
 
- @UpdateDateColumn({type: 'timestamp', nullable: true, default: null})
- updated_at!: Date;
+   @UpdateDateColumn({ type: 'timestamp', nullable: true, default: null })
+   updated_at!: Date;
 
- @DeleteDateColumn({type: 'timestamp', nullable: true, default: null})
- deleted_at!: Date;
+   @DeleteDateColumn({ type: 'timestamp', nullable: true, default: null })
+   deleted_at!: Date;
 
- @BeforeInsert()
- setCreatedBy(){
-    const currentUser = currentSession.get('user');
-    this.created_by =currentUser?.id;
- }
+   @BeforeInsert()
+   setCreatedBy() {
+      const currentUser = currentSession.get('user');
+      this.created_by = currentUser?.id;
+   }
 
- @BeforeUpdate()
- setUpdatedBy(){
-    const currentUser = currentSession.get('user');
-    this.updated_by = currentUser?.id;
- }
+   @BeforeUpdate()
+   setUpdatedBy() {
+      const currentUser = currentSession.get('user');
+      this.updated_by = currentUser?.id;
+   }
 }

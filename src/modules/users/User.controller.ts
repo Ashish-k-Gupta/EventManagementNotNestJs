@@ -38,7 +38,7 @@ export class UserController {
     findOneById = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const user = await this.userService.findOneById(parseInt(id));
+            const user = await this.userService.findOneById(id);
             res.status(StatusCodes.OK).json(user)
         } catch (err) {
             next(err);
@@ -49,7 +49,7 @@ export class UserController {
     updateUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const user = await this.userService.updateUser(parseInt(id), req.body)
+            const user = await this.userService.updateUser(id, req.body)
             res.status(StatusCodes.OK).json(user)
         } catch (err) {
             next(err);
@@ -73,33 +73,30 @@ export class UserController {
     softRemove = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            await this.userService.softRemove(parseInt(id));
+            await this.userService.softRemove(id);
             res.status(StatusCodes.OK).json({ message: "User removed" });
         } catch (err) {
             next(err);
         }
     }
 
-    resetPassword = async(req: Request, res: Response, next: NextFunction) =>{
-        try{
-            console.log(req.body)
-            const {email} = req.body;
-            console.log(email)
+    resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email } = req.body;
             await this.userService.resetPassword(email, this.emailService);
-            res.status(StatusCodes.OK).json({message:"Reset password link sent."});
-        }catch(err){
+            res.status(StatusCodes.OK).json({ message: "Reset password link sent." });
+        } catch (err) {
             next(err)
         }
     }
 
-    confirmResetPassword = async(req: Request, res: Response, next: NextFunction) =>{
-        try{
-            console.log(req)
-            const token = req.query.token as  string;
-            const {newPassword} = req.body;
+    confirmResetPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const token = req.query.token as string;
+            const { newPassword } = req.body;
             await this.userService.confirmResetPassword(token, newPassword);
-            res.status(StatusCodes.OK).json({message: "Password changed successfully"});
-        }catch(err){
+            res.status(StatusCodes.OK).json({ message: "Password changed successfully" });
+        } catch (err) {
             next(err)
         }
     }

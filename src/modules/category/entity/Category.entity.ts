@@ -1,14 +1,14 @@
-import { Column, Entity,  ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import UserTracking from "../../common/models/UserTracking.entity";
 import { Events } from "../../events/entity/Events.entity";
 
 @Entity()
-export class Category extends UserTracking{
+export class Category extends UserTracking {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: string;
 
-    @Column({nullable: false, unique: true})
-    name!:string;
+    @Column({ nullable: false, unique: true })
+    name!: string;
 
     @ManyToMany(() => Events, (event) => event.categories)
     events!: Event[];

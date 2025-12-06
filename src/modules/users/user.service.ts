@@ -1,20 +1,20 @@
-import { DataSource, Repository } from "typeorm";
+import { DataSource, EntityManager, Repository } from "typeorm";
 import { BadRequestException, ConflictException, ForbiddenException, InvalidCredentialsException, NotFoundException } from "../common/errors/http.exceptions";
 import * as bcrypt from 'bcrypt'
 import { z } from "zod";
 import { createUserSchema, updateUserSchema, updatePasswordSchema } from "./validators/user.validators";
-import { loginSchemaNew } from "../auth/validator/login.validator";
 import { Users } from "./models/Users.entity";
 import * as crypto from 'node:crypto'
 import { PasswordResetToken } from "./models/PasswordResetToken.entity";
 import { RESET_TOKEN_STATUS } from "./enums/ResetTokenStatus.enum";
 import { EmailService } from "../../common/service/email.service";
+import { loginSchema } from "../auth/validator/login.validator";
 
 
 type CreateUserInput = z.infer<typeof createUserSchema>
 type UpdateUserInput = z.infer<typeof updateUserSchema>
 type updatePasswordInput = z.infer<typeof updatePasswordSchema>
-type LoginUserInput = z.infer<typeof loginSchemaNew>
+type LoginUserInput = z.infer<typeof loginSchema>
 
 
 export class UserService {
@@ -34,22 +34,53 @@ export class UserService {
 
 
     async createUser(createUserData: CreateUserInput): Promise<Partial<Users>> {
-        const existingMail = await this.userRepository.findOne({ where: { email: createUserData.body.email } })
-        if (createUserData.body.role === "admin") {
+        return await this.dataSource.transaction(
+            async transactionEntityManger => {
+                const userRepo = transactionEntityManger.getRepository(Users);
+
+                const userData = createUserData.data;
+
+                const emailToUse = createUserData.data.email.toLowerCase();
+
+                const existingMail = await userRepo.findOne({ where: { email: userData.email } })
+
+                if (createUserData.data.role === 'admin') {
+                    throw new ForbiddenException("Admin role is not allowed")
+                }
+
+                if (existingMail) {
+                    throw new ConflictException('User already exists')
+                }
+
+                const hashPassword = await this.hashPassword(createUserData.data.password);
+                const newUser = userRepo.create({
+                    firstName: createUserData.data.firstName,
+                    lastName: createUserData.data.lastName,
+                    email: emailToUse,
+                    password: hashPassword,
+                    role: createUserData.data.role,
+                })
+                const savedUser = await userRepo.save(newUser);
+                const { password, deleted_at, updated_at, created_by, ...safeUser } = savedUser;
+                return safeUser;
+            }
+        )
+        const existingMail = await this.userRepository.findOne({ where: { email: createUserData.data.email } })
+        if (createUserData.data.role === "admin") {
             throw new ForbiddenException("Admin role is not allowed")
         }
         if (existingMail) {
-            throw new ConflictException(`Eamil already exists.`)
+            throw new ConflictException(`Email already exists.`)
         }
 
-        const hashPassword = await this.hashPassword(createUserData.body.password)
+        const hashPassword = await this.hashPassword(createUserData.data.password)
 
         const newUser = this.userRepository.create({
-            firstName: createUserData.body.firstName,
-            lastName: createUserData.body.lastName,
-            email: createUserData.body.email.toLowerCase(),
+            firstName: createUserData.data.firstName,
+            lastName: createUserData.data.lastName,
+            email: createUserData.data.email.toLowerCase(),
             password: hashPassword,
-            role: createUserData.body.role,
+            role: createUserData.data.role,
         })
         const savedUser = await this.userRepository.save(newUser);
         const { password, deleted_at, updated_at, created_by, ...safeUser } = savedUser;
@@ -62,11 +93,10 @@ export class UserService {
             .addSelect('user.password')
             .where('user.email = :email', { email })
             .getOne()
-        console.log("EMAILLLLLLLLLLLLLLL", user)
         return user || null;
     }
 
-    async findOneById(id: number): Promise<Users> {
+    async findOneById(id: string): Promise<Users> {
         const user = await this.userRepository.findOne({ where: { id } })
         if (!user) {
             throw new NotFoundException(`User with ID "${id}" not found`);
@@ -78,7 +108,7 @@ export class UserService {
         return await this.userRepository.find();
     }
 
-    async softRemove(id: number): Promise<void> {
+    async softRemove(id: string): Promise<void> {
         const existingUser = await this.userRepository.findOne({ where: { id } })
         if (!existingUser) {
             throw new NotFoundException('User not found')
@@ -86,7 +116,7 @@ export class UserService {
         await this.userRepository.softRemove(existingUser)
     }
 
-    async updateUser(id: number, updateUserData: UpdateUserInput): Promise<Users> {
+    async updateUser(id: string, updateUserData: UpdateUserInput): Promise<Users> {
 
         const user = await this.findOneById(id);
         if (updateUserData.body.email && updateUserData.body.email !== user.email) {
@@ -123,7 +153,7 @@ export class UserService {
     }
 
     async validateUser(loginUserInput: LoginUserInput): Promise<Users> {
-        const { email, password } = loginUserInput.body;
+        const { email, password } = loginUserInput;
         const user = await this.userRepository.findOne({
             where: { email: email },
             select: ["id", "firstName", "lastName", "email", "role", "password"]
