@@ -5,9 +5,38 @@ import { CartItem } from "./entity/CartItem.entity";
 import { Cart } from "./entity/Cart.entity";
 
 export class CartService {
+
     constructor(
         private dataSource: DataSource
     ) { }
+
+    async getCartItems(userId: string) {
+        const cartRepo = this.dataSource.getRepository(Cart)
+        const cart = cartRepo.findOne({
+            where: {
+                user_id: userId,
+            },
+            relations: ['items', 'items.eventSlot'],
+            select: {
+                id: true,
+                user_id: true,
+                items: {
+                    id: true,
+                    event_slot_id: true,
+                    quantity: true,
+                    price_snapshot: true,
+                    reserved_until: true,
+                    eventSlot: {
+                        id: true,
+                        start_date: true,
+                        ticket_price: true
+                    }
+
+                },
+            }
+        })
+        return cart;
+    }
 
     async addCartItem(userId: string, itemDetails: AddCartItem) {
         const { eventSlotId, numberOfTickets } = itemDetails;
