@@ -1,126 +1,127 @@
 import { DataSource, Repository } from "typeorm";
+import { AddCartItem } from "./validator/cart.validator";
 import { EventSlot } from "../events/entity/EventSlot.entity";
 import { CartItem } from "./entity/CartItem.entity";
 import { Cart } from "./entity/Cart.entity";
-import { AddCartItem } from "./validator/cart.validator";
-import { NotFoundException } from "../common/errors/http.exceptions";
 
 export class CartService {
-    eventSlotRepository: Repository<EventSlot>;
-    cartRepository: Repository<Cart>;
-    cartItemRepository: Repository<CartItem>;
-    constructor(private dataSource: DataSource) {
-        this.eventSlotRepository = dataSource.getRepository(EventSlot);
-        this.cartRepository = dataSource.getRepository(Cart);
-        this.cartItemRepository = dataSource.getRepository(CartItem);
+    constructor(
+        private dataSource: DataSource
+    ) { }
+
+    async addCartItem(userId: string, itemDetails: AddCartItem) {
+        const { eventSlotId, numberOfTickets } = itemDetails;
+
+        return this.dataSource.transaction(async (manager) => {
+            const evetSlotRepo = manager.getRepository(EventSlot);
+            const cartItemRepo = manager.getRepository(CartItem);
+            const cartRepo = manager.getRepository(Cart);
+
+            const eventSlot = await evetSlotRepo.findOne({
+                where: { id: eventSlotId },
+                relations: ['events']
+            })
+
+            if (!eventSlot) throw new Error('Slot not found!')
+            if (eventSlot.event.isCancelled) throw new Error('Event is cancelled');
+            if (eventSlot.is_cancelled) throw new Error('Slot is cancelled');
+            if (eventSlot.is_sold_out) throw new Error('Slot is sold out')
+
+            const now = new Date();
+            if (eventSlot.start_date < now) throw new Error('Event has already started');
+
+            if (eventSlot.available_seats < numberOfTickets) throw new Error('Insufficient Sets')
+
+            let cart = await cartRepo.findOne({ where: { user_id: userId } })
+
+            if (!cart) {
+                cart = cartRepo.create({
+                    user_id: userId
+                })
+                cart = await cartRepo.save(cart)
+            }
+
+            let exisitingCartItem = await cartItemRepo.findOne({
+                where: {
+                    cart: {
+                        id: cart.id
+                    },
+                    eventSlot: { id: eventSlot.id }
+                }
+            })
+
+            if (exisitingCartItem) {
+                exisitingCartItem.quantity += numberOfTickets;
+                await cartItemRepo.save(exisitingCartItem);
+            } else {
+                const newCartItem = cartItemRepo.create({
+                    eventSlot: eventSlot,
+                    cart: cart,
+                    quantity: numberOfTickets,
+                    price_snapshot: eventSlot.ticket_price,
+                    reserved_until: new Date(Date.now() + 15 * 60 * 1000)
+                })
+
+                await cartItemRepo.save(newCartItem);
+            }
+            eventSlot.available_seats -= numberOfTickets;
+            await evetSlotRepo.save(eventSlot);
+
+
+        })
+
     }
 
 
-    async addItemToCart(userId: string, itemData: AddCartItem) {
-        try {
-
-            const { eventSlotId, numberOfTickets } = itemData;
-
-            const event = await this.eventSlotRepository.findOne(
-                {
-                    where: { id: eventSlotId },
-                    relations: ['eventSlots']
-                },
-            )
-            if (!event) {
-                throw new NotFoundException('Event slot not found')
-            }
-
-            if (event.available_seats < numberOfTickets) {
-                const availableSeats = numberOfTickets - event.available_seats;
-                throw new Error(`Only ${availableSeats} are available`)
-            }
-
-            return await this.dataSource.transaction(
-                async (manager) => {
-                    const cartRepo = manager.getRepository(Cart);
-                    const cartItemRepo = manager.getRepository(CartItem)
-                    const eventSlotRepo = manager.getRepository(EventSlot);
-
-                    const eventSlot = await eventSlotRepo.findOne({
-                        where: {
-                            id: eventSlotId
-                        },
-                        relations: ['event']
-                    })
-
-                    if (!eventSlot) {
-                        throw new NotFoundException('Event is not found!')
-                    }
-
-                    if (eventSlot.is_cancelled) {
-                        throw new Error('This slot is cancelled')
-                    }
-                    if (eventSlot.event.isCancelled) {
-                        throw new Error('This event is cancelled')
-                    }
-
-                    const now = Date.now();
-                    const oneWeekBefore = now - (1000 * 60 * 60 * 24 * 7);
-                    const eventStart = new Date(event.start_date).getTime();
-                    if (eventStart > oneWeekBefore) {
-                        throw new Error('Booking has not started yet');
-                    }
-
-                    if (now > eventStart) {
-                        throw new Error('Event has been already started')
-                    }
-                    if (event.available_seats < numberOfTickets) {
-
-                        throw new Error(`Only ${event.available_seats} are available to book`)
-                    }
-
-                    let cart = await this.cartRepository.findOne({
-                        where: {
-                            user_id: userId
-                        }
-                    })
-
-                    if (!cart) {
-                        cart = cartRepo.create({
-                            user_id: userId
-                        })
-                        cart = await cartRepo.save(cart);
-                    }
-
-                    let cartItem = await cartItemRepo.findOne({
-                        where: {
-                            cart: {
-                                id: cart.id
-                            },
-                            eventSlot: { id: eventSlot.id }
-                        }
-                    })
-
-                    if (cartItem) {
-                        cartItem.quantity += numberOfTickets;
-                    } else {
-                        cartItem = cartItemRepo.create({
-                            cart: cart,
-                            eventSlot: eventSlot,
-                            quantity: numberOfTickets,
-                            price_snapshot: eventSlot.ticket_price,
-                            reserved_until: new Date(Date.now() + 15 * 60 * 1000)
-                        })
-                    }
-
-                    eventSlot.available_seats -= numberOfTickets;
-                    await eventSlotRepo.save(eventSlot);
-                    await cartItemRepo.save(cartItem);
-                    return cartItem;
-                }
-            )
-        } catch (err) {
-            throw (err)
+    async removeItemFromCart(userId: string, itemId: string) {
+        if (!userId || !itemId) {
+            throw new Error('Invalid Input: userId and ItemId are required');
         }
 
+        return this.dataSource.transaction(async (manager) => {
+            const cartItemRepo = manager.getRepository(CartItem);
+            const eventSlotRepo = manager.getRepository(EventSlot);
+            const cartItem = await cartItemRepo.findOne({
+                where: {
+                    id: itemId,
+                    cart: {
+                        user_id: userId
+                    }
+                }
+            })
+            if (!cartItem) throw new Error('Cart item not found or unauthorized');
+            if (cartItem.cart.user_id !== userId) throw new Error('Unauthoized error')
+
+            const eventSlot = cartItem.eventSlot;
+
+            if (cartItem.quantity > 0) {
+                cartItem.quantity -= 1;
+                eventSlot.available_seats += 1;
+                await eventSlotRepo.save(eventSlot);
+                await cartItemRepo.save(cartItem);
+                return {
+                    success: true,
+                    message: 'Item is removed'
+                }
+            } else {
+                await cartItemRepo.remove(cartItem);
+                await eventSlotRepo.save(eventSlot);
+
+                return {
+                    success: true,
+                    message: 'Item fully remove from cart.'
+                }
+            }
+
+
+
+        })
+
     }
 
-
-
 }
+
+
+
+
+

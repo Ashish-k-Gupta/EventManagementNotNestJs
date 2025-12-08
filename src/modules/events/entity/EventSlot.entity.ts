@@ -41,3 +41,4 @@ export class EventSlot extends UserTracking {
     @Column({ type: 'boolean', default: false })
     is_cancelled!: boolean;
 }
+
