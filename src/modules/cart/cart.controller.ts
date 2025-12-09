@@ -44,4 +44,13 @@ export class CartController {
             message: 'Item remove from cart successfully'
         })
     }
+
+    getCartTotal = async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user!.id;
+        const total = await this.cartService.getCartTotal(userId)
+        res.status(200).json({
+            success: true,
+            message: total
+        })
+    }
 }

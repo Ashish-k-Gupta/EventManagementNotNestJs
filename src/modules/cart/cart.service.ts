@@ -142,12 +142,56 @@ export class CartService {
                 }
             }
 
-
-
         })
-
     }
 
+
+    async getCartTotal(userId: string): Promise<number> {
+        const totalValue = await this.dataSource.getRepository(CartItem)
+            .createQueryBuilder('item')
+            .innerJoin('item.cart', 'cart')
+            .where('cart.user_id = :userId', { userId })
+            .select('SUM(item.quantity * item.price_snapshot)', 'total')
+            .getRawOne()
+
+        const total = parseFloat(totalValue?.total) || 0;
+        return total;
+    }
+
+    async clearCart(userId: string): Promise<void> {
+        const cartRepo = await this.dataSource.transaction(async (manager) => {
+            const cartRepo = manager.getRepository(Cart)
+            const userCart = await cartRepo.findOne({
+                where: { user_id: userId },
+                relations: ['items', 'items.eventSlot'],
+                select: {
+                    items: {
+                        id: true,
+                        quantity: true,
+                        event_slot_id: true,
+                        eventSlot: {
+                            id: true,
+                            available_seats: true
+                        }
+                    }
+                }
+            })
+
+            if (!userCart) {
+                return;
+            }
+
+            let quantity: number;
+            for (let item of userCart.items) {
+                quantity = item.quantity;
+                let eventSlotSeats = item.eventSlot.available_seats;
+                eventSlotSeats += quantity;
+            }
+
+        }
+            
+
+    }
 }
 
 
