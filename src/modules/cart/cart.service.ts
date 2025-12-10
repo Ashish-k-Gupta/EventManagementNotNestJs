@@ -163,13 +163,13 @@ export class CartService {
         return this.dataSource.transaction(async (manager: EntityManager) => {
             const cartRepo = manager.getRepository(Cart);
             const cartItemRepo = manager.getRepository(CartItem);
-            const eventSlotRepo = manager.getRepository(EventSlot);
+            const EventSlotRepo = manager.getRepository(EventSlot);
 
             const userCart = await cartRepo.findOne({
                 where: {
                     user_id: userId
                 },
-                relations: ['items', 'items.eventSlotId'],
+                relations: ['items', 'items.eventSlot'],
                 select: {
                     id: true,
                     items: {
@@ -182,43 +182,41 @@ export class CartService {
                     }
                 }
             })
+
             if (!userCart || userCart.items.length === 0) {
-                return { succes: true, message: 'Cart is already empty' }
+                return { success: true, message: 'Cart is already empty' }
             }
 
-            const totalSeatsToRelease = new Map<string, number>();
+            const seatToRelease = new Map<string, number>();
 
             for (const item of userCart.items) {
                 const slotId = item.eventSlot.id;
-                const quantityToRelease = item.quantity;
+                const totalSeats = item.quantity;
 
-                const currentTotal = totalSeatsToRelease.get(slotId) || 0;
-                totalSeatsToRelease.set(slotId, currentTotal + quantityToRelease)
+                const currentTotal = seatToRelease.get(slotId) || 0;
+                seatToRelease.set(slotId, currentTotal + totalSeats);
             }
 
-            for (const [slotId, totalRelease] of totalSeatsToRelease.entries()) {
-                const eventSlot = userCart.items.find(i => i.id === slotId)?.eventSlot;
+            for (const [slotId, totalSeats] of seatToRelease.entries()) {
+                const eventSlot = userCart.items.find(i => i.eventSlot.id === slotId)?.eventSlot;
+
                 if (eventSlot) {
-                    eventSlot.available_seats += totalRelease;
-                    await eventSlotRepo.save(eventSlot);
+                    eventSlot.available_seats += totalSeats
+                    await EventSlotRepo.save(eventSlot);
                 }
             }
+
             await cartItemRepo.createQueryBuilder()
                 .delete()
                 .from(CartItem)
                 .where("cart_id = :cartId", { cartId: userCart.id })
-                .execute();
+                .execute()
 
-            await cartRepo.save(userCart);
+            cartItemRepo.save(userCart);
 
-            return { succes: true, message: "Cart Cleared" }
-
+            return { success: true, message: 'All cart items are removed' }
         })
-
-
     }
-
-
 
 }
 
