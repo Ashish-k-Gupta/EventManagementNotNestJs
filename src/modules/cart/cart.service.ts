@@ -1,4 +1,4 @@
-import { DataSource, Repository } from "typeorm";
+import { DataSource, EntityManager, Repository } from "typeorm";
 import { AddCartItem } from "./validator/cart.validator";
 import { EventSlot } from "../events/entity/EventSlot.entity";
 import { CartItem } from "./entity/CartItem.entity";
@@ -158,40 +158,68 @@ export class CartService {
         return total;
     }
 
-    async clearCart(userId: string): Promise<void> {
-        const cartRepo = await this.dataSource.transaction(async (manager) => {
-            const cartRepo = manager.getRepository(Cart)
+
+    async clearCartItems(userId: string): Promise<{ success: boolean, message: string }> {
+        return this.dataSource.transaction(async (manager: EntityManager) => {
+            const cartRepo = manager.getRepository(Cart);
+            const cartItemRepo = manager.getRepository(CartItem);
+            const eventSlotRepo = manager.getRepository(EventSlot);
+
             const userCart = await cartRepo.findOne({
-                where: { user_id: userId },
-                relations: ['items', 'items.eventSlot'],
+                where: {
+                    user_id: userId
+                },
+                relations: ['items', 'items.eventSlotId'],
                 select: {
+                    id: true,
                     items: {
                         id: true,
                         quantity: true,
-                        event_slot_id: true,
                         eventSlot: {
                             id: true,
-                            available_seats: true
+                            available_seats: true,
                         }
                     }
                 }
             })
-
-            if (!userCart) {
-                return;
+            if (!userCart || userCart.items.length === 0) {
+                return { succes: true, message: 'Cart is already empty' }
             }
 
-            let quantity: number;
-            for (let item of userCart.items) {
-                quantity = item.quantity;
-                let eventSlotSeats = item.eventSlot.available_seats;
-                eventSlotSeats += quantity;
+            const totalSeatsToRelease = new Map<string, number>();
+
+            for (const item of userCart.items) {
+                const slotId = item.eventSlot.id;
+                const quantityToRelease = item.quantity;
+
+                const currentTotal = totalSeatsToRelease.get(slotId) || 0;
+                totalSeatsToRelease.set(slotId, currentTotal + quantityToRelease)
             }
 
-        }
-            
+            for (const [slotId, totalRelease] of totalSeatsToRelease.entries()) {
+                const eventSlot = userCart.items.find(i => i.id === slotId)?.eventSlot;
+                if (eventSlot) {
+                    eventSlot.available_seats += totalRelease;
+                    await eventSlotRepo.save(eventSlot);
+                }
+            }
+            await cartItemRepo.createQueryBuilder()
+                .delete()
+                .from(CartItem)
+                .where("cart_id = :cartId", { cartId: userCart.id })
+                .execute();
+
+            await cartRepo.save(userCart);
+
+            return { succes: true, message: "Cart Cleared" }
+
+        })
+
 
     }
+
+
+
 }
 
 
