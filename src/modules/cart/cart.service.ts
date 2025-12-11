@@ -10,7 +10,7 @@ export class CartService {
         private dataSource: DataSource
     ) { }
 
-    async getCartItems(userId: string) {
+    async getCartItems(userId: string): Promise<Cart | null> {
         const cartRepo = this.dataSource.getRepository(Cart)
         const cart = cartRepo.findOne({
             where: {
@@ -35,6 +35,7 @@ export class CartService {
                 },
             }
         })
+
         return cart;
     }
 
@@ -158,18 +159,17 @@ export class CartService {
         return total;
     }
 
-
-    async clearCartItems(userId: string): Promise<{ success: boolean, message: string }> {
-        return this.dataSource.transaction(async (manager: EntityManager) => {
+    async clearCart(userId: string): Promise<void> {
+        this.dataSource.transaction(async (manager: EntityManager) => {
             const cartRepo = manager.getRepository(Cart);
             const cartItemRepo = manager.getRepository(CartItem);
-            const EventSlotRepo = manager.getRepository(EventSlot);
+            const eventSlotRepo = manager.getRepository(EventSlot);
 
             const userCart = await cartRepo.findOne({
                 where: {
                     user_id: userId
                 },
-                relations: ['items', 'items.eventSlot'],
+                relations: ['items', 'items.evenSlotId'],
                 select: {
                     id: true,
                     items: {
@@ -182,45 +182,38 @@ export class CartService {
                     }
                 }
             })
-
             if (!userCart || userCart.items.length === 0) {
-                return { success: true, message: 'Cart is already empty' }
+                throw new Error('Cart is already empty')
             }
 
-            const seatToRelease = new Map<string, number>();
+            const seatsToReleaseMap = new Map<string, number>();
 
             for (const item of userCart.items) {
                 const slotId = item.eventSlot.id;
-                const totalSeats = item.quantity;
+                const totalSets = item.quantity;
 
-                const currentTotal = seatToRelease.get(slotId) || 0;
-                seatToRelease.set(slotId, currentTotal + totalSeats);
+                const currentTotal = seatsToReleaseMap.get(slotId) || 0;
+                seatsToReleaseMap.set(slotId, currentTotal + totalSets);
             }
 
-            for (const [slotId, totalSeats] of seatToRelease.entries()) {
-                const eventSlot = userCart.items.find(i => i.eventSlot.id === slotId)?.eventSlot;
-
+            for (const [slotId, totalSeats] of seatsToReleaseMap.entries()) {
+                const eventSlot = userCart.items.find(i => i.id === slotId)?.eventSlot;
                 if (eventSlot) {
-                    eventSlot.available_seats += totalSeats
-                    await EventSlotRepo.save(eventSlot);
+                    eventSlot.available_seats += totalSeats;
+                    eventSlotRepo.save(eventSlot);
                 }
             }
 
-            await cartItemRepo.createQueryBuilder()
+            cartItemRepo.createQueryBuilder()
                 .delete()
                 .from(CartItem)
                 .where("cart_id = :cartId", { cartId: userCart.id })
                 .execute()
 
-            cartItemRepo.save(userCart);
-
-            return { success: true, message: 'All cart items are removed' }
+            await cartItemRepo.save(userCart);
+            return;
         })
+
     }
 
 }
-
-
-
-
-

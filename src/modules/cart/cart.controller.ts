@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AddCartItem } from "./validator/cart.validator";
 import { CartService } from "./cart.service";
+import { error } from "node:console";
 
 interface AddCartItemDetails {
     itemId: string,
@@ -53,4 +54,14 @@ export class CartController {
             message: total
         })
     }
+
+    clearCart = async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user!.id;
+        await this.cartService.clearCart(userId);
+        res.status(200).json({
+            success: true,
+            message: 'All items were successfully removed from the cart'
+        })
+    }
+
 }
