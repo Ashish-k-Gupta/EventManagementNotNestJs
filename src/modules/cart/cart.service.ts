@@ -3,13 +3,6 @@ import { AddCartItem } from "./validator/cart.validator";
 import { CartItem } from "./entity/CartItem.entity";
 import { Cart } from "./entity/Cart.entity";
 import { EventSlot } from "../events/entity/EventSlot.entity";
-import { BadRequestException } from "../common/errors/http.exceptions";
-
-interface CartDetailsDTO {
-    items: string[];
-    total: number;
-    count: number;
-}
 
 export class CartService {
 
@@ -47,40 +40,7 @@ export class CartService {
         return { userCart, cartTotal };
     }
 
-    async getCartDetails(userId: string) {
-        const cartRepo = this.dataSource.getRepository(Cart)
-        const userCart = await cartRepo.findOne({
-            where: { user_id: userId },
-            relations: ['items', 'items.eventSlot'],
-            select: {
-                id: true,
-                items: {
-                    id: true,
-                    quantity: true,
-                    eventSlot: {
-                        id: true,
-                        start_date: true,
-                        ticket_price: true,
-                        event: {
-                            id: true,
-                            title: true,
-                        }
-                    }
-                }
-            }
-        })
-        if (!userCart || userCart.items.length === 0) {
-            throw new Error('Cart is empty')
-        }
-
-        let totalCartValue = 0;
-        for (const item of userCart.items) {
-            totalCartValue += (item.quantity * item.price_snapshot);
-            return totalCartValue;
-        }
-    }
-
-
+    
     async addCartItem(userId: string, itemDetails: AddCartItem) {
         const { eventSlotId, numberOfTickets } = itemDetails;
 
@@ -182,18 +142,6 @@ export class CartService {
         })
     }
 
-
-    async getCartTotal(userId: string): Promise<number> {
-        const totalValue = await this.dataSource.getRepository(CartItem)
-            .createQueryBuilder('item')
-            .innerJoin('item.cart', 'cart')
-            .where('cart.user_id = :userId', { userId })
-            .select('SUM(item.quantity * item.price_snapshot)', 'total')
-            .getRawOne()
-
-        const total = parseFloat(totalValue?.total) || 0;
-        return total;
-    }
 
     async clearCart(userId: string): Promise<void> {
         this.dataSource.transaction(async (manager) => {

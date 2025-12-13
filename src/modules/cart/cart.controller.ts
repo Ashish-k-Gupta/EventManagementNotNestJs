@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AddCartItem } from "./validator/cart.validator";
 import { CartService } from "./cart.service";
-import { error } from "node:console";
 
 
 export class CartController {
@@ -10,18 +9,10 @@ export class CartController {
     getCart = async (req: Request, res: Response, next: NextFunction) => {
         const userId = req.user!.id;
         const cart = await this.cartService.getCart(userId);
+        console.log('CARTITEMS FROM CONTORLLER', cart)
         res.status(200).json({
             success: true,
             message: cart
-        })
-    }
-
-    getCartItem = async (req: Request, res: Response, next: NextFunction) => {
-        const userId = req.user!.id;
-        const cartItems = await this.cartService.getCartDetails(userId)
-        res.status(200).json({
-            success: true,
-            message: 'Success'
         })
     }
 
@@ -33,7 +24,6 @@ export class CartController {
             eventSlotId: req.body.eventSlotId,
             numberOfTickets: req.body.numberOfTickets,
         }
-        console.log('FROM CONTROLLER', itemDetails.eventSlotId, itemDetails.numberOfTickets)
 
         await this.cartService.addCartItem(userId, itemDetails);
         res.status(200).json({
@@ -55,14 +45,6 @@ export class CartController {
         })
     }
 
-    getCartTotal = async (req: Request, res: Response, next: NextFunction) => {
-        const userId = req.user!.id;
-        const total = await this.cartService.getCartDetails(userId)
-        res.status(200).json({
-            success: true,
-            message: total
-        })
-    }
 
     clearCart = async (req: Request, res: Response, next: NextFunction) => {
         const userId = req.user!.id;
