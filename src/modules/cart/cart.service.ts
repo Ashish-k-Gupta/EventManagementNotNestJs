@@ -1,8 +1,8 @@
 import { DataSource, EntityManager, Repository } from "typeorm";
 import { AddCartItem } from "./validator/cart.validator";
-import { EventSlot } from "../events/entity/EventSlot.entity";
 import { CartItem } from "./entity/CartItem.entity";
 import { Cart } from "./entity/Cart.entity";
+import { EventSlot } from "../events/entity/EventSlot.entity";
 
 interface CartDetailsDTO {
     items: string[];
@@ -19,8 +19,8 @@ export class CartService {
     async getDetailedCart(userId: string): Promise<CartDetailsDTO> {
         const cartRepo = this.dataSource.getRepository(Cart);
         const cart = await cartRepo.findOne({
-            where: { user_id: userId }, 
-            relations: ['items', 'items.eventSlot'], 
+            where: { user_id: userId },
+            relations: ['items', 'items.eventSlot'],
         });
 
 
@@ -167,61 +167,57 @@ export class CartService {
     }
 
     async clearCart(userId: string): Promise<void> {
-        this.dataSource.transaction(async (manager: EntityManager) => {
-            const cartRepo = manager.getRepository(Cart);
-            const cartItemRepo = manager.getRepository(CartItem);
-            const eventSlotRepo = manager.getRepository(EventSlot);
+        this.dataSource.transaction(async (manager) => {
+            const CartRepo = manager.getRepository(Cart);
+            const CartItemRepo = manager.getRepository(CartItem);
+            const EventSlotRepo = manager.getRepository(EventSlot);
 
-            const userCart = await cartRepo.findOne({
-                where: {
-                    user_id: userId
-                },
-                relations: ['items', 'items.evenSlotId'],
-                select: {
-                    id: true,
-                    items: {
+            const userCart = await CartRepo.findOne(
+                {
+                    where: { id: userId },
+                    relations: ['items', 'items.eventSlot'],
+                    select: {
                         id: true,
-                        quantity: true,
-                        eventSlot: {
+                        user: {
                             id: true,
-                            available_seats: true,
+                        },
+                        items: {
+                            id: true,
+                            quantity: true,
+                            eventSlot: {
+                                id: true,
+                                available_seats: true
+                            }
                         }
                     }
-                }
-            })
+                })
             if (!userCart || userCart.items.length === 0) {
                 throw new Error('Cart is already empty')
             }
-
             const seatsToReleaseMap = new Map<string, number>();
-
             for (const item of userCart.items) {
                 const slotId = item.eventSlot.id;
-                const totalSets = item.quantity;
-
-                const currentTotal = seatsToReleaseMap.get(slotId) || 0;
-                seatsToReleaseMap.set(slotId, currentTotal + totalSets);
+                const totalQuantity = item.quantity;
+                const currentTotalSeats = seatsToReleaseMap.get(slotId) || 0;
+                seatsToReleaseMap.set(slotId, currentTotalSeats + totalQuantity);
             }
 
             for (const [slotId, totalSeats] of seatsToReleaseMap.entries()) {
-                const eventSlot = userCart.items.find(i => i.id === slotId)?.eventSlot;
+                const eventSlot = userCart.items.find(i => i.id)?.eventSlot;
                 if (eventSlot) {
                     eventSlot.available_seats += totalSeats;
-                    eventSlotRepo.save(eventSlot);
+                    EventSlotRepo.save(eventSlot);
                 }
             }
 
-            cartItemRepo.createQueryBuilder()
+            CartItemRepo.createQueryBuilder()
                 .delete()
                 .from(CartItem)
                 .where("cart_id = :cartId", { cartId: userCart.id })
                 .execute()
 
-            await cartItemRepo.save(userCart);
+            await CartRepo.save(userCart);
             return;
         })
-
     }
-
-
 }
