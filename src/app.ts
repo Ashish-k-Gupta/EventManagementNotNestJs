@@ -21,6 +21,9 @@ import { ticketRouter } from './modules/tickets/routes/ticket.routes';
 import { TicketController } from './modules/tickets/ticket.controller';
 import { EmailService } from './common/service/email.service';
 import { TicketService } from './modules/tickets/ticket.service';
+import { CartController } from './modules/cart/cart.controller';
+import { CartService } from './modules/cart/cart.service';
+import { cartRouter } from './modules/cart/routes/cart.routes';
 
 
 const app = express();
@@ -64,6 +67,9 @@ async function bootstrap() {
         const ticketService = new TicketService(dataSource, emailService);
         const ticketController = new TicketController(ticketService);
 
+        const cartService = new CartService(dataSource);
+        const cartController = new CartController(cartService);
+
         console.log('Database initialized successfully')
 
 
@@ -78,6 +84,7 @@ async function bootstrap() {
         app.use('/category', catergoryRouter(catergoryController));
         app.use('/events', eventRouter(eventController));
         app.use('/tickets', ticketRouter(ticketController));
+        app.use('/cart', cartRouter(cartController));
 
 
         app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

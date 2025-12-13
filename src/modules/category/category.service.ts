@@ -28,7 +28,7 @@ export class CategoryService {
         return category;
     }
 
-    async findCategoryListByIds(ids: string[]): Promise<Category[]> {
+    async findCategoryListByIds(ids: number[]): Promise<Category[]> {
         if (ids.length === 0) {
             return [];
         }
@@ -38,7 +38,7 @@ export class CategoryService {
         })
 
         if (categories.length !== ids.length) {
-            const foundIds = new Set(categories.map(val => val.id));
+            const foundIds = new Set(categories.map(val => Number(val.id)));
             const missingIds = ids.filter(id => !foundIds.has(id));
             throw new NotFoundException(`One or more categories with ID(s) ${missingIds.join(', ')} do not exist.`);
         }

@@ -127,8 +127,8 @@ export class EventService {
                 throw new ConflictException(`An event named "${createEventInput.title}" already exists. Please choose a different title.`);
             }
 
-            const categoriesDatabase = await this.categorySerivce.findCategoryListByIds(createEventInput.categoryIds);
-            const uniqueReqCategoriesDatabase = new Set(categoriesDatabase.map(cat => cat.id));
+            const categoriesDatabase = await this.categorySerivce.findCategoryListByIds((createEventInput.categoryIds));
+            const uniqueReqCategoriesDatabase = new Set(categoriesDatabase.map(cat => Number(cat.id)));
             const uniqueReqCategories = new Set(createEventInput.categoryIds);
             const missingIds = [...uniqueReqCategories].filter(id => !uniqueReqCategoriesDatabase.has(id))
             if (missingIds.length > 0) {
@@ -168,6 +168,7 @@ export class EventService {
             await queryRunner.release();
         }
     }
+
 
     async findEventById(eventId: string): Promise<EventDetailResponseDto> {
         const event = await this.eventRepository.findOne({
@@ -214,7 +215,7 @@ export class EventService {
         eventDto.venue = event.venue;
         eventDto.isCancelled = event.isCancelled;
         eventDto.categories = event.categories.map((category) => category.name);
-        eventDto.created_by = event.created_by;
+        eventDto.created_by = Number(event.created_by);
         eventDto.users = {
             firstName: event.user.firstName,
             lastName: event.user.lastName

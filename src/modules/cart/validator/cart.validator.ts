@@ -1,10 +1,10 @@
 import z from 'zod';
 
-
 export const AddItemToCartSchema = z.object({
-    eventSlotId: z.string(),
-    numberOfTickets: z.number().int().positive("Quantity must be a positive number"),
-})
+    eventSlotId: z.coerce.number(),
+    numberOfTickets: z.coerce.number().int().positive(),
+});
+
 
 export const RemoveCartItemSchema = z.object({
     userId: z.string().min(1),

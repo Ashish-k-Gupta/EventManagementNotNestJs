@@ -56,10 +56,14 @@ export class CatergoryController {
             if (!idsQueryParam) {
                 throw new BadRequestException('Category IDs are required as a comma-separated list in query parameters (e.g., ?ids=1,2,3).');
             }
-            const ids: string[] = idsQueryParam.split(',').map(idStr => {
-                const parseId = idStr.trim();
-                return parseId;
-            })
+            const ids: number[] = idsQueryParam
+                .split(',').map(idStr => {
+                    const parseId = Number(idStr.trim());
+                    if (Number.isNaN(parseId)) {
+                        throw new BadRequestException(`Invalid category ID: ${idStr}`);
+                    }
+                    return parseId;
+                })
 
             const categoryList = await this.categoryService.findCategoryListByIds(ids);
             res.status(StatusCodes.OK).json(categoryList);

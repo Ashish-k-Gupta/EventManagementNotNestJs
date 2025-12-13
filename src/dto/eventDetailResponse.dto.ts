@@ -6,7 +6,7 @@ export class EventDetailResponseDto {
     venue!: string;
     isCancelled!: boolean;
     categories!: string[];
-    created_by!: string;
+    created_by!: string | number;
     users!: {
         firstName: string,
         lastName: string,

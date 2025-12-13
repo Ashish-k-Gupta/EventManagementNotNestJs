@@ -34,7 +34,7 @@ export const CreateEventSchema = z.object({
     description: z.string().min(50, "Event description must be at least 50 characters long"),
     language: z.string().min(2, "Language must be at least 2 characters long"),
     slots: z.array(CreateSlotSchema).min(1, "An event must have at least one time slot."),
-    categoryIds: z.array(z.string()),
+    categoryIds: z.array(z.number()),
     venue: z.string().min(1).max(250)
 })
 
