@@ -40,78 +40,84 @@ export class TicketService {
         return [tickets, count];
     }
 
-    async createTicket(userId: string, createTicketInput: CreateTicketInput): Promise<Ticket[]> {
-        console.log(createTicketInput);
-        return await this.dataSource.transaction(
-            async transactionEntityManger => {
-                const eventRepo = transactionEntityManger.getRepository(Events);
-                const ticketRepo = transactionEntityManger.getRepository(Ticket);
-                const userRepo = transactionEntityManger.getRepository(Users);
-                const slotsRepo = transactionEntityManger.getRepository(EventSlot);
-
-                const slot = await slotsRepo.findOne({ where: { id: createTicketInput.slotId }, relations: ['event', 'event.user'] })
-                if (!slot) {
-                    throw new NotFoundException('Slot not found')
-                }
-
-                if (slot.is_cancelled) {
-                    throw new BadRequestException('This slot has been cancelled');
-                }
-
-                if (slot.event.isCancelled) {
-                    throw new NotFoundException('This even has been cancelled')
-                }
-
-                const event = slot.event;
-
-                const now = new Date();
-                const registrationOpen = slot.start_date.getTime() - 15 * 14 * 60 * 60 * 1000
-                if (now.getTime() < registrationOpen) {
-                    throw new BadRequestException('Ticket sales have not opened yet for this event.');
-                }
-
-
-                const closeregistrations = slot.end_date.getTime() - 60 * 60 * 1000;
-                if (now.getTime() > closeregistrations) {
-                    throw new BadRequestException('Ticket sales have closed for this event.');
-                }
-
-                if (slot.available_seats < createTicketInput.numberOfTickets) {
-                    throw new BadRequestException(`Not enough tickets available. Only ${slot.available_seats} tickets remaining.`);
-                }
-
-                const expectedAmount = slot.ticket_price * createTicketInput.numberOfTickets;
-
-                if (createTicketInput.totalPrice !== expectedAmount) {
-                    throw new BadRequestException(`Provided total price does not match the calculated price. Payable amount is ${expectedAmount}`);
-                }
-
-
-                const tickets: Ticket[] = [];
-                for (let i = 0; i < createTicketInput.numberOfTickets; i++) {
-                    const ticket = new Ticket();
-                    ticket.userId = userId;
-                    ticket.eventSlotid = createTicketInput.slotId;
-                    ticket.totalPrice = slot.ticket_price;
-                    tickets.push(ticket)
-                }
-                const savedTickets = await ticketRepo.save(tickets)
-                slot.available_seats -= createTicketInput.numberOfTickets;
-                await this.slotRepo.save(slot);
-
-                const user = await userRepo.findOne({ where: { id: userId } });
-                if (user && user.email) {
-                    for (const ticket of savedTickets) {
-                        await this.emailService.sendTicketConfirmationEmail(user.email, ticket, event),
-                            this.emailService.newRegistrationAlert(event.user.email, ticket, event, user);
-                    }
-                } else {
-                    console.warn(`User with ID ${userId} not found or has no email. Skipping ticket confiramtion email`)
-                }
-                return savedTickets;
-            }
-        )
+    async issueTicketFromCart(userId: string) {
+        return this.dataSource.transaction(async (manager) => {
+            const 
+        })
     }
+
+    // async createTicket(userId: string, createTicketInput: CreateTicketInput): Promise<Ticket[]> {
+    //     console.log(createTicketInput);
+    //     return await this.dataSource.transaction(
+    //         async transactionEntityManger => {
+    //             const eventRepo = transactionEntityManger.getRepository(Events);
+    //             const ticketRepo = transactionEntityManger.getRepository(Ticket);
+    //             const userRepo = transactionEntityManger.getRepository(Users);
+    //             const slotsRepo = transactionEntityManger.getRepository(EventSlot);
+
+    //             const slot = await slotsRepo.findOne({ where: { id: createTicketInput.slotId }, relations: ['event', 'event.user'] })
+    //             if (!slot) {
+    //                 throw new NotFoundException('Slot not found')
+    //             }
+
+    //             if (slot.is_cancelled) {
+    //                 throw new BadRequestException('This slot has been cancelled');
+    //             }
+
+    //             if (slot.event.isCancelled) {
+    //                 throw new NotFoundException('This even has been cancelled')
+    //             }
+
+    //             const event = slot.event;
+
+    //             const now = new Date();
+    //             const registrationOpen = slot.start_date.getTime() - 15 * 14 * 60 * 60 * 1000
+    //             if (now.getTime() < registrationOpen) {
+    //                 throw new BadRequestException('Ticket sales have not opened yet for this event.');
+    //             }
+
+
+    //             const closeregistrations = slot.end_date.getTime() - 60 * 60 * 1000;
+    //             if (now.getTime() > closeregistrations) {
+    //                 throw new BadRequestException('Ticket sales have closed for this event.');
+    //             }
+
+    //             if (slot.available_seats < createTicketInput.numberOfTickets) {
+    //                 throw new BadRequestException(`Not enough tickets available. Only ${slot.available_seats} tickets remaining.`);
+    //             }
+
+    //             const expectedAmount = slot.ticket_price * createTicketInput.numberOfTickets;
+
+    //             if (createTicketInput.totalPrice !== expectedAmount) {
+    //                 throw new BadRequestException(`Provided total price does not match the calculated price. Payable amount is ${expectedAmount}`);
+    //             }
+
+
+    //             const tickets: Ticket[] = [];
+    //             for (let i = 0; i < createTicketInput.numberOfTickets; i++) {
+    //                 const ticket = new Ticket();
+    //                 ticket.userId = userId;
+    //                 ticket.eventSlotid = createTicketInput.slotId;
+    //                 ticket.totalPrice = slot.ticket_price;
+    //                 tickets.push(ticket)
+    //             }
+    //             const savedTickets = await ticketRepo.save(tickets)
+    //             slot.available_seats -= createTicketInput.numberOfTickets;
+    //             await this.slotRepo.save(slot);
+
+    //             const user = await userRepo.findOne({ where: { id: userId } });
+    //             if (user && user.email) {
+    //                 for (const ticket of savedTickets) {
+    //                     await this.emailService.sendTicketConfirmationEmail(user.email, ticket, event),
+    //                         this.emailService.newRegistrationAlert(event.user.email, ticket, event, user);
+    //                 }
+    //             } else {
+    //                 console.warn(`User with ID ${userId} not found or has no email. Skipping ticket confiramtion email`)
+    //             }
+    //             return savedTickets;
+    //         }
+    //     )
+    // }
 
     // async cancelTickets(userId: number, updateTicketInput: UpdateTicketInput): Promise<CancellationResult> {
 

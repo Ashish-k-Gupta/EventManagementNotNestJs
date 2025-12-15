@@ -3,6 +3,7 @@ import { AddCartItem } from "./validator/cart.validator";
 import { CartItem } from "./entity/CartItem.entity";
 import { Cart } from "./entity/Cart.entity";
 import { EventSlot } from "../events/entity/EventSlot.entity";
+import { BadRequestException } from "../common/errors/http.exceptions";
 
 export class CartService {
 
@@ -196,6 +197,49 @@ export class CartService {
 
             await CartRepo.save(userCart);
             return;
+        })
+    }
+    async checkoutCart(userId: string) {
+        return this.dataSource.transaction(async (manger: EntityManager) => {
+            const cartRepo = manger.getRepository(Cart);
+            const cartItemRepo = manger.getRepository(CartItem);
+            const evenSlotRepo = manger.getRepository(EventSlot)
+
+            const userCart = await cartRepo.findOne({
+                where: {
+                    user_id: userId
+                },
+                relations: ['items', 'items.eventSlot', 'items.eventSlot.event']
+            })
+
+            if (!userCart) {
+                throw new BadRequestException('Something went wrong please try again')
+            }
+
+            let restartCheckout = false;
+            const cartItems = [];
+            for (const item of userCart.items) {
+                const now = new Date();
+                if (item.reserved_until < now) {
+                    throw new Error('Session expired please review you cart again');
+                }
+                if (item.eventSlot.is_cancelled) {
+                    item.eventSlot.available_seats += item.quantity;
+                    await evenSlotRepo.save(item);
+                    await cartItemRepo.delete(item);
+                    throw new Error(`${item.eventSlot.event.title}'s slot is cancelled`)
+                }
+                if (item.eventSlot.event.isCancelled) {
+                    item.eventSlot.available_seats += item.quantity;
+                    await evenSlotRepo.save(item);
+                    await cartItemRepo.delete(item);
+                    throw new Error(`${item.eventSlot.event.title} is cancelled.`)
+                }
+
+
+
+            }
+
         })
     }
 }
