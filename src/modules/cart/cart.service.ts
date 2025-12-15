@@ -40,7 +40,7 @@ export class CartService {
         return { userCart, cartTotal };
     }
 
-    
+
     async addCartItem(userId: string, itemDetails: AddCartItem) {
         const { eventSlotId, numberOfTickets } = itemDetails;
 
@@ -52,7 +52,8 @@ export class CartService {
 
             const eventSlot = await eventSlotRepo.findOne({
                 where: { id: eventSlotId.toString() },
-                relations: ['event']
+                relations: ['event'],
+                lock: { mode: 'pessimistic_write' }
             });
 
             if (!eventSlot) throw new Error('Slot not found!');
