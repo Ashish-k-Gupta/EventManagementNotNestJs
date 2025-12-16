@@ -221,23 +221,31 @@ export class CartService {
             for (const item of userCart.items) {
                 const now = new Date();
                 if (item.reserved_until < now) {
-                    throw new Error('Session expired please review you cart again');
+                    item.eventSlot.available_seats += item.quantity;
+                    await evenSlotRepo.save(item.eventSlot)
+                    await cartItemRepo.delete(item);
+                    restartCheckout = true;
+                    continue;
                 }
                 if (item.eventSlot.is_cancelled) {
                     item.eventSlot.available_seats += item.quantity;
-                    await evenSlotRepo.save(item);
+                    await evenSlotRepo.save(item.eventSlot);
                     await cartItemRepo.delete(item);
-                    throw new Error(`${item.eventSlot.event.title}'s slot is cancelled`)
+                    restartCheckout = true;
+                    continue;
                 }
                 if (item.eventSlot.event.isCancelled) {
                     item.eventSlot.available_seats += item.quantity;
-                    await evenSlotRepo.save(item);
+                    await evenSlotRepo.save(item.eventSlot);
                     await cartItemRepo.delete(item);
-                    throw new Error(`${item.eventSlot.event.title} is cancelled.`)
+                    restartCheckout = true;
+                    continue;
+                }
+                if (restartCheckout) {
+                    throw new BadRequestException('Cart items expired or were removed. Please review')
                 }
 
-
-
+                
             }
 
         })

@@ -21,11 +21,11 @@ export class Ticket {
     @Column({ name: 'event_slot_id' })
     eventSlotid!: string;
 
-    @Column({ type: 'int', default: 1, nullable: false })
-    numberOfTickets!: number;
-
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
-    totalPrice!: number;
+    price!: number;
+
+    @Column({ type: 'varchar', nullable: true })
+    transactionId?: string;
 
     @Column({ type: 'boolean', default: false, nullable: false })
     isCancelled!: boolean;

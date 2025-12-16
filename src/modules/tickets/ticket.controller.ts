@@ -15,15 +15,15 @@ export class TicketController {
         }
     }
 
-    createTicket = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-        try {
-            const usreId = req.user.id.toString();
-            const tickets = await this.ticketService.createTicket(usreId, req.body);
-            res.status(StatusCodes.CREATED).json(tickets)
-        } catch (error) {
-            next(error);
-        }
-    }
+    /*     createTicket = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+            try {
+                const usreId = req.user.id.toString();
+                const tickets = await this.ticketService.createTicket(usreId, req.body);
+                res.status(StatusCodes.CREATED).json(tickets)
+            } catch (error) {
+                next(error);
+            }
+        } */
 
     cancelTicket = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         try {

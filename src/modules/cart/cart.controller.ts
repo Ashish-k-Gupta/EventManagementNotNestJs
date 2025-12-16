@@ -55,4 +55,12 @@ export class CartController {
         })
     }
 
+    checkoutCart = async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user!.id;
+        await this.cartService.checkoutCart(userId);
+        res.status(200).json({
+            success: true,
+            message: 'You are tickets are booked, please check tickets on registered email'
+        })
+    }
 }
