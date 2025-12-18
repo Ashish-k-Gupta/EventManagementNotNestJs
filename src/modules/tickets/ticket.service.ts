@@ -63,6 +63,8 @@ export class TicketService {
         }
         return await ticketRepo.save(ticketsToSave);
     }
+
+
     async sendConfirmationEmails(tickets: Ticket[]) {
         try {
             for (const ticket of tickets) {
@@ -78,58 +80,6 @@ export class TicketService {
     }
 
 
-
-    // async cancelTicket(userId: string, ticketId: string) {
-    //     if (!userId || !ticketId) {
-    //         throw new BadRequestException('Ticket ID and User ID are required')
-
-    //         const ticket = await this.ticketRepo.findOne({
-    //             where: {
-    //                 userId: userId,
-    //                 id: ticketId
-    //             },
-    //             relations: ['eventSlot', 'eventSlot.event', 'user', 'eventSlot.event.user']
-    //         })
-    //         if (!ticket) {
-    //             throw new ForbiddenException('Resource Access Denied or Not Found')
-    //         }
-
-    //         if (ticket.isCancelled) {
-    //             throw new BadRequestException('Ticket already cancelled')
-    //         }
-
-    //         const currentTime = new Date();
-
-    //         if (ticket.eventSlot.start_date < currentTime) {
-    //             throw new BadRequestException("Can't Cancel ticket, Event has begun")
-    //         }
-
-    //         const ticketToCancel = await this.dataSource.transaction(async (transactionManager) => {
-    //             ticket.isCancelled = true;
-    //             ticket.eventSlot.available_seats += ticket.numberOfTickets;
-
-    //             await transactionManager.save(ticket);
-    //             await transactionManager.save(ticket.eventSlot);
-    //             return ticket;
-    //         })
-
-    //         console.log(ticketToCancel);
-
-    //         try {
-    //             const userEmail = ticket.user.email;
-    //             const organizerEmail = ticket.eventSlot.event.user.email;
-
-    //             await Promise.all([
-    //                 this.emailService.sendTicketCancelEmail(userEmail, ticket, ticket.eventSlot.event),
-    //                 this.emailService.ticketCancellationAlert(ticket.eventSlot.event.user.email, ticket, ticket.eventSlot.event, ticket.user)
-    //             ])
-
-    //         } catch {
-    //             console.error("Failed to send cancellation emails", error)
-    //         }
-    //         return ticketToCancel;
-    //     }
-    // }
 
     async getTicketDetail(userId: string, ticketId: string) {
         if (!userId || !ticketId) {

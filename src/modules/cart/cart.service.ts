@@ -1,10 +1,11 @@
-import { DataSource, EntityManager, Repository } from "typeorm";
+import { DataSource, EntityManager, In, Repository } from "typeorm";
 import { AddCartItem } from "./validator/cart.validator";
 import { CartItem } from "./entity/CartItem.entity";
 import { Cart } from "./entity/Cart.entity";
 import { EventSlot } from "../events/entity/EventSlot.entity";
 import { BadRequestException } from "../common/errors/http.exceptions";
 import { TicketService } from "../tickets/ticket.service";
+import { Ticket } from "../tickets/models/Ticket.entity";
 
 export class CartService {
 
@@ -117,7 +118,8 @@ export class CartService {
                         user_id: userId
                     }
                 },
-                relations: ['cart', 'cart.user', 'eventSlot']
+                relations: ['cart', 'cart.user', 'eventSlot'],
+
             })
 
             if (!cartItem) throw new Error('Cart item not found or unauthorized');
@@ -132,7 +134,7 @@ export class CartService {
                 await cartItemRepo.save(cartItem);
                 return {
                     success: true,
-                    message: cartItem.cart.items
+                    message: cartItem
                 }
             } else {
                 await eventSlotRepo.save(eventSlot);
@@ -207,20 +209,18 @@ export class CartService {
 
 
     async checkoutCart(userId: string) {
-        return this.dataSource.transaction(async (manager: EntityManager) => {
+        const result = await this.dataSource.transaction(async (manager: EntityManager) => {
             const cartRepo = manager.getRepository(Cart);
             const cartItemRepo = manager.getRepository(CartItem);
-            const evenSlotRepo = manager.getRepository(EventSlot)
+            const evenSlotRepo = manager.getRepository(EventSlot);
 
             const userCart = await cartRepo.findOne({
-                where: {
-                    user_id: userId
-                },
+                where: { user_id: userId },
                 relations: ['items', 'items.eventSlot', 'items.eventSlot.event']
-            })
+            });
 
             if (!userCart) {
-                throw new BadRequestException('Something went wrong please try again')
+                throw new BadRequestException('Something went wrong please try again');
             }
 
             let restartCheckout = false;
@@ -228,44 +228,35 @@ export class CartService {
 
             for (const item of userCart.items) {
                 const now = new Date();
-                if (item.reserved_until < now) {
-                    item.eventSlot.available_seats += item.quantity;
-                    await evenSlotRepo.save(item.eventSlot)
-                    await cartItemRepo.delete(item);
-                    restartCheckout = true;
-                    continue;
-                }
-                if (item.eventSlot.is_cancelled) {
+                // Validation logic...
+                if (item.reserved_until < now || item.eventSlot.is_cancelled || item.eventSlot.event.isCancelled) {
                     item.eventSlot.available_seats += item.quantity;
                     await evenSlotRepo.save(item.eventSlot);
                     await cartItemRepo.delete(item);
                     restartCheckout = true;
                     continue;
                 }
-                if (item.eventSlot.event.isCancelled) {
-                    item.eventSlot.available_seats += item.quantity;
-                    await evenSlotRepo.save(item.eventSlot);
-                    await cartItemRepo.delete(item);
-                    restartCheckout = true;
-                    continue;
-                }
-
                 validItem.push(item);
             }
 
-            if (restartCheckout) {
-                return { status: "RESTART_REQUIRED" }
-            }
-
-            if (validItem.length === 0) {
-                return { status: "EMPTY_CART" }
-            }
+            if (restartCheckout) return { status: "RESTART_REQUIRED" };
+            if (validItem.length === 0) return { status: "EMPTY_CART" };
 
             const tickets = await this.ticketService.issueTicketFromCart(userId, manager, validItem);
             await cartItemRepo.remove(validItem);
 
-            return { status: 'SUCCESS', tickets }
+            return { status: 'SUCCESS', tickets };
+        });
 
-        })
+        if (result.status === 'SUCCESS' && result.tickets) {
+            const ticketIds = result.tickets.map((t: any) => t.id);
+            const fullTickets = await this.dataSource.getRepository(Ticket).find({
+                where: { id: In(ticketIds) },
+                relations: ['user', 'eventSlot', 'eventSlot.event']
+            });
+
+            this.ticketService.sendConfirmationEmails(fullTickets);
+        }
+        return result;
     }
 }
