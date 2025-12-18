@@ -48,7 +48,6 @@ export class EventController {
 
     getSlots = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log("REQ.PARAMS.ID", req.params.id);
             const eventId = req.params.id;
             const eventSlots = await this.eventService.getEventSlots(eventId);
             res.status(StatusCodes.OK).json(eventSlots)

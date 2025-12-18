@@ -67,7 +67,7 @@ async function bootstrap() {
         const ticketService = new TicketService(dataSource, emailService);
         const ticketController = new TicketController(ticketService);
 
-        const cartService = new CartService(dataSource);
+        const cartService = new CartService(dataSource, ticketService);
         const cartController = new CartController(cartService);
 
         console.log('Database initialized successfully')

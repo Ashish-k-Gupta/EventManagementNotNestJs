@@ -29,9 +29,8 @@ export class TicketController {
         try {
             const userId = (req.user.id).toString();
             const ticketId = req.params.ticketId;
-            console.log(userId, ticketId);
-            const ticketToCancel = await this.ticketService.cancelTicket(userId, ticketId);
-            res.status(StatusCodes.OK).json(ticketToCancel);
+
+            res.status(StatusCodes.OK).json();
         } catch (error) {
             next(error)
         }

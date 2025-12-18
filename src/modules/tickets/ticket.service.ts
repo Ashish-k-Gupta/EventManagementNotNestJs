@@ -41,77 +41,95 @@ export class TicketService {
         return [tickets, count];
     }
 
-    async issueTicketFromCart(userId: string, nanager: EntityManager, cartItem: CartItem[]) {
-        this.dataSource.transaction(async (manager) => {
-            const ticketRepo = manager.getRepository(Ticket);
-            const ticketsToSave: Ticket[] = [];
-            for (const item of cartItem) {
-                for (let i = 0; i < item.quantity; i++) {
-                    const newTicket = ticketRepo.create({
-                        userId: userId,
-                        eventSlotid: item.eventSlot.id,
-                        price: item.price_snapshot
-                    })
-                    ticketsToSave.push(newTicket)
-                }
-            }
-            return await ticketRepo.save(ticketsToSave);
-        })
-    }
+    async issueTicketFromCart(userId: string, manager: EntityManager, cartItem: CartItem[]) {
+        const ticketRepo = manager.getRepository(Ticket);
+        const ticketsToSave: Ticket[] = [];
+        const user = await this.userRepo.findOne({ where: { id: userId } })
+        const userEmail = user?.email;
 
 
+        const transactionId = crypto.randomUUID();
 
-    async cancelTicket(userId: string, ticketId: string) {
-        if (!userId || !ticketId) {
-            throw new BadRequestException('Ticket ID and User ID are required')
-
-            const ticket = await this.ticketRepo.findOne({
-                where: {
+        for (const item of cartItem) {
+            for (let i = 0; i < item.quantity; i++) {
+                const newTicket = ticketRepo.create({
                     userId: userId,
-                    id: ticketId
-                },
-                relations: ['eventSlot', 'eventSlot.event', 'user', 'eventSlot.event.user']
-            })
-            if (!ticket) {
-                throw new ForbiddenException('Resource Access Denied or Not Found')
+                    eventSlotid: item.eventSlot.id,
+                    price: item.price_snapshot,
+                    transactionId: transactionId
+                })
+                ticketsToSave.push(newTicket)
             }
-
-            if (ticket.isCancelled) {
-                throw new BadRequestException('Ticket already cancelled')
+        }
+        return await ticketRepo.save(ticketsToSave);
+    }
+    async sendConfirmationEmails(tickets: Ticket[]) {
+        try {
+            for (const ticket of tickets) {
+                await this.emailService.sendTicketConfirmationEmail(
+                    ticket.user.email,
+                    ticket,
+                    ticket.eventSlot.event
+                );
             }
-
-            const currentTime = new Date();
-
-            if (ticket.eventSlot.start_date < currentTime) {
-                throw new BadRequestException("Can't Cancel ticket, Event has begun")
-            }
-
-            const ticketToCancel = await this.dataSource.transaction(async (transactionManager) => {
-                ticket.isCancelled = true;
-                ticket.eventSlot.available_seats += ticket.numberOfTickets;
-
-                await transactionManager.save(ticket);
-                await transactionManager.save(ticket.eventSlot);
-                return ticket;
-            })
-
-            console.log(ticketToCancel);
-
-            try {
-                const userEmail = ticket.user.email;
-                const organizerEmail = ticket.eventSlot.event.user.email;
-
-                await Promise.all([
-                    this.emailService.sendTicketCancelEmail(userEmail, ticket, ticket.eventSlot.event),
-                    this.emailService.ticketCancellationAlert(ticket.eventSlot.event.user.email, ticket, ticket.eventSlot.event, ticket.user)
-                ])
-
-            } catch {
-                console.error("Failed to send cancellation emails", error)
-            }
-            return ticketToCancel;
+        } catch (error) {
+            console.error("Post-checkout email failed:", error);
         }
     }
+
+
+
+    // async cancelTicket(userId: string, ticketId: string) {
+    //     if (!userId || !ticketId) {
+    //         throw new BadRequestException('Ticket ID and User ID are required')
+
+    //         const ticket = await this.ticketRepo.findOne({
+    //             where: {
+    //                 userId: userId,
+    //                 id: ticketId
+    //             },
+    //             relations: ['eventSlot', 'eventSlot.event', 'user', 'eventSlot.event.user']
+    //         })
+    //         if (!ticket) {
+    //             throw new ForbiddenException('Resource Access Denied or Not Found')
+    //         }
+
+    //         if (ticket.isCancelled) {
+    //             throw new BadRequestException('Ticket already cancelled')
+    //         }
+
+    //         const currentTime = new Date();
+
+    //         if (ticket.eventSlot.start_date < currentTime) {
+    //             throw new BadRequestException("Can't Cancel ticket, Event has begun")
+    //         }
+
+    //         const ticketToCancel = await this.dataSource.transaction(async (transactionManager) => {
+    //             ticket.isCancelled = true;
+    //             ticket.eventSlot.available_seats += ticket.numberOfTickets;
+
+    //             await transactionManager.save(ticket);
+    //             await transactionManager.save(ticket.eventSlot);
+    //             return ticket;
+    //         })
+
+    //         console.log(ticketToCancel);
+
+    //         try {
+    //             const userEmail = ticket.user.email;
+    //             const organizerEmail = ticket.eventSlot.event.user.email;
+
+    //             await Promise.all([
+    //                 this.emailService.sendTicketCancelEmail(userEmail, ticket, ticket.eventSlot.event),
+    //                 this.emailService.ticketCancellationAlert(ticket.eventSlot.event.user.email, ticket, ticket.eventSlot.event, ticket.user)
+    //             ])
+
+    //         } catch {
+    //             console.error("Failed to send cancellation emails", error)
+    //         }
+    //         return ticketToCancel;
+    //     }
+    // }
 
     async getTicketDetail(userId: string, ticketId: string) {
         if (!userId || !ticketId) {
@@ -145,7 +163,6 @@ export class TicketService {
             throw new ForbiddenException('Resource access denied or not found.');
         }
 
-        console.log(ticket);
         return ticket;
     }
 }

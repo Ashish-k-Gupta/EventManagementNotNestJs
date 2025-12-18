@@ -70,7 +70,7 @@ export class EmailService {
                                                 <h3 style="color: #555; margin-top: 0; font-size: 20px;">Event Details:</h3>
                                                 <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #4CAF50; font-weight: bold;">${event.title}</span></p>
                                                 <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
-                                                <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                                <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.price).toFixed(2)}</p>
                                             </div>
 
                                             <p style="font-size: 16px;">Please present the QR code below at the event entry point for scanning.</p>
@@ -141,7 +141,7 @@ export class EmailService {
                                                 <h3 style="color: #555; margin-top: 0; font-size: 20px;">Cancellation Details:</h3>
                                                 <p style="margin: 5px 0;"><strong>Event Name:</strong> <span style="color: #DC3545; font-weight: bold;">${event.title}</span></p>
                                                 <p style="margin: 5px 0;"><strong>Ticket ID:</strong> ${ticket.id}</p>
-                                                <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                                <p style="margin: 5px 0;"><strong>Price:</strong> $${Number(ticket.price).toFixed(2)}</p>
                                             </div>
 
                                             <p style="font-size: 16px;">If you have any questions, please contact our support team.</p>
@@ -201,7 +201,7 @@ export class EmailService {
                                                 <p style="margin: 5px 0;"><strong>Attendee Name:</strong> ${attendeeUser.firstName} ${attendeeUser.lastName}</p>
                                                 <p style="margin: 5px 0;"><strong>Attendee Email:</strong> ${attendeeUser.email || 'N/A'}</p>
                                                 <p style="margin: 5px 0;"><strong>Booking Date:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
-                                                <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                                <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.price).toFixed(2)}</p>
 
                                             </div>
 
@@ -263,7 +263,7 @@ export class EmailService {
                                                 <p style="margin: 5px 0;"><strong>Attendee Name:</strong> ${attendeeUser.firstName || ''} ${attendeeUser.lastName || ''}</p>
                                                 <p style="margin: 5px 0;"><strong>Attendee Email:</strong> ${attendeeUser.email || 'N/A'}</p>
                                                 <p style="margin: 5px 0;"><strong>Cancellation Date:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
-                                                <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.totalPrice).toFixed(2)}</p>
+                                                <p style="margin: 5px 0;"><strong>Ticket Price:</strong> $${Number(ticket.price).toFixed(2)}</p>
                                             </div>
 
                                             <p style="font-size: 16px;">The seat for this ticket has been re-added to your event's available capacity.</p>

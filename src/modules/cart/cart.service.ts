@@ -4,11 +4,13 @@ import { CartItem } from "./entity/CartItem.entity";
 import { Cart } from "./entity/Cart.entity";
 import { EventSlot } from "../events/entity/EventSlot.entity";
 import { BadRequestException } from "../common/errors/http.exceptions";
+import { TicketService } from "../tickets/ticket.service";
 
 export class CartService {
 
     constructor(
-        private dataSource: DataSource
+        private dataSource: DataSource,
+        private ticketService: TicketService
     ) { }
 
     async getCart(userId: string) {
@@ -51,11 +53,12 @@ export class CartService {
             const cartRepo = manager.getRepository(Cart);
 
 
-            const eventSlot = await eventSlotRepo.findOne({
-                where: { id: eventSlotId.toString() },
-                relations: ['event'],
-                lock: { mode: 'pessimistic_write' }
-            });
+            const eventSlot = await manager.getRepository(EventSlot)
+                .createQueryBuilder("eventSlot")
+                .setLock("pessimistic_write")
+                .innerJoinAndSelect("eventSlot.event", "event")
+                .where("eventSlot.id = :id", { id: eventSlotId })
+                .getOne();
 
             if (!eventSlot) throw new Error('Slot not found!');
             if (eventSlot.event.isCancelled) throw new Error('Event is cancelled');
@@ -129,15 +132,15 @@ export class CartService {
                 await cartItemRepo.save(cartItem);
                 return {
                     success: true,
-                    message: 'Item is removed'
+                    message: cartItem.cart.items
                 }
             } else {
-                await cartItemRepo.remove(cartItem);
                 await eventSlotRepo.save(eventSlot);
+                await cartItemRepo.remove(cartItem);
 
                 return {
                     success: true,
-                    message: 'Item fully remove from cart.'
+                    message: cartItem
                 }
             }
 
@@ -199,11 +202,15 @@ export class CartService {
             return;
         })
     }
+
+
+
+
     async checkoutCart(userId: string) {
-        return this.dataSource.transaction(async (manger: EntityManager) => {
-            const cartRepo = manger.getRepository(Cart);
-            const cartItemRepo = manger.getRepository(CartItem);
-            const evenSlotRepo = manger.getRepository(EventSlot)
+        return this.dataSource.transaction(async (manager: EntityManager) => {
+            const cartRepo = manager.getRepository(Cart);
+            const cartItemRepo = manager.getRepository(CartItem);
+            const evenSlotRepo = manager.getRepository(EventSlot)
 
             const userCart = await cartRepo.findOne({
                 where: {
@@ -217,7 +224,8 @@ export class CartService {
             }
 
             let restartCheckout = false;
-            const cartItems = [];
+            const validItem: CartItem[] = [];
+
             for (const item of userCart.items) {
                 const now = new Date();
                 if (item.reserved_until < now) {
@@ -241,12 +249,22 @@ export class CartService {
                     restartCheckout = true;
                     continue;
                 }
-                if (restartCheckout) {
-                    throw new BadRequestException('Cart items expired or were removed. Please review')
-                }
 
-                
+                validItem.push(item);
             }
+
+            if (restartCheckout) {
+                return { status: "RESTART_REQUIRED" }
+            }
+
+            if (validItem.length === 0) {
+                return { status: "EMPTY_CART" }
+            }
+
+            const tickets = await this.ticketService.issueTicketFromCart(userId, manager, validItem);
+            await cartItemRepo.remove(validItem);
+
+            return { status: 'SUCCESS', tickets }
 
         })
     }
