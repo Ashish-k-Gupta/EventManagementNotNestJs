@@ -158,7 +158,7 @@ export class EventService {
 
                 })
             })
-            await queryRunner.manager.save(newEvent);
+            await queryRunner.manager.save(newEventSlot);
             await queryRunner.commitTransaction();
             return { savedEvent, newEventSlot };
         } catch (error) {
