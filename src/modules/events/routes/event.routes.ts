@@ -8,14 +8,12 @@ import { USER_ROLE } from "../../users/enums/UserRole.enum";
 export const eventRouter = (eventController: EventController): Router => {
     const router = Router();
 
-    // Corrected: Pass the schema within a { body: ... } object
     router.post('/create-event', validateSchema({ body: CreateEventSchema }), eventController.createEvent as RequestHandler);
-
     router.get('/', eventController.getEvents as RequestHandler);
     router.get('/quick-list', eventController.quickListEvent);
     router.get('/:id', eventController.findEventById);
-    router.get('/event-slot/:slotId', eventController.getSlot);
-    router.get('/event-slots/:id', eventController.getSlots);
+    router.get('/event-slot/:slotId', eventController.getSlot); //for single slot by id
+    router.get('/event-slots/:id', eventController.getSlots); // for all the slots by eventId
     router.put('/cancel-event/:id', eventController.cancelEvent);
     router.put('/cancel-slot/:id', eventController.cancelSlot);
     router.put('/update/:id', checkOwnerShipOrAdmin, validateSchema({ body: updateEventSchema }), eventController.updateEvent);

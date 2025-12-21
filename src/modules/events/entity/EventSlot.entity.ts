@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn,  ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Events } from "./Events.entity";
 import { Ticket } from "../../tickets/models/Ticket.entity";
 import UserTracking from "../../common/models/UserTracking.entity";

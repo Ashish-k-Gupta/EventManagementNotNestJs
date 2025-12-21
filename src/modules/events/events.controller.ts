@@ -58,21 +58,14 @@ export class EventController {
 
     getSlot = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const slotId = req.params.id;
+            const slotId = req.params.slotId;
+            console.log('This function is working', slotId)
             const slot = await this.eventService.getSlotById(slotId);
             res.status(StatusCodes.OK).json(slot);
         } catch (err) {
             next(err);
         }
     }
-    // findAllEvents = async (req: Request, res: Response, next: NextFunction) =>{
-    //     try{
-    //         const allEvents =await this.eventService.findAllEvents();
-    //         res.status(StatusCodes.OK).json(allEvents);
-    //     }catch(err){
-    //         next(err)
-    //     }
-    // }
 
     quickListEvent = async (req: Request, res: Response, next: NextFunction) => {
         try {
