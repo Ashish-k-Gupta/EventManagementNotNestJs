@@ -1,12 +1,10 @@
 import { DataSource, EntityManager, In, Repository } from "typeorm";
 import { Events } from "../events/entity/Events.entity";
 import { Ticket } from "./models/Ticket.entity";
-import { CreateTicketInput, UpdateTicketInput } from "./validators/ticket.validators";
-import { BadRequestException, ForbiddenException, NotFoundException, UnauthorizedException } from "../common/errors/http.exceptions";
+import { BadRequestException, ForbiddenException, UnauthorizedException } from "../common/errors/http.exceptions";
 import { Users } from "../users/models/Users.entity";
 import { EmailService } from "../../common/service/email.service";
 import { EventSlot } from "../events/entity/EventSlot.entity";
-import { error } from "console";
 import { CartItem } from "../cart/entity/CartItem.entity";
 
 
@@ -24,21 +22,19 @@ export class TicketService {
     }
 
     async findTickets(userId: string) {
-        const [tickets, count] = await this.ticketRepo
-            .createQueryBuilder('ticket')
-            .leftJoinAndSelect('ticket.event', 'event', 'slots')
-            .where('ticket.userId = :userId', { userId })
-            .select([
-                'ticket',
-                'event.id',
-                'event.title',
-                'event.description',
-                'event.startDate',
-                'event.endDate',
-                'event.ticketPrice'
-            ])
-            .getManyAndCount()
-        return [tickets, count];
+        const allTickets = await this.dataSource.getRepository(Ticket).find({
+            where:
+                { userId: userId }
+        })
+
+        if (!allTickets) {
+            return { status: "Success", message: "No Tickets Are Available" }
+        }
+        return {
+            message: "Success",
+
+            list: allTickets
+        };
     }
 
     async issueTicketFromCart(userId: string, manager: EntityManager, cartItem: CartItem[]) {
@@ -114,5 +110,78 @@ export class TicketService {
         }
 
         return ticket;
+    }
+
+
+    cancelTicket(userId: string, ticketId: string) {
+        console.log("hello, world")
+        return this.dataSource.transaction(async (manager: EntityManager) => {
+            const ticketRepo = manager.getRepository(Ticket);
+            const eventSlotRepo = manager.getRepository(EventSlot);
+
+            const ticket = await ticketRepo.findOne({
+                where: {
+                    userId: userId,
+                    id: ticketId
+                },
+                relations: ['eventSlot', 'eventSlot.event'],
+                select: {
+                    id: true,
+                    userId: true,
+                    price: true,
+                    isCancelled: true,
+                    registeredAt: true,
+                    eventSlot: {
+                        id: true,
+                        created_at: true,
+                        start_date: true,
+                        end_date: true,
+                        total_seats: true,
+                        available_seats: true,
+                        is_sold_out: true,
+                        is_cancelled: true,
+                        event: {
+                            id: true,
+                            title: true,
+                            description: true,
+                            language: true,
+                            venue: true,
+                            isCancelled: true
+                        }
+                    }
+                }
+            })
+
+            if (!ticket) {
+                throw new UnauthorizedException('Invalid Input')
+            }
+
+
+            const now = new Date().getTime();
+            const startDate = new Date(ticket.eventSlot.start_date).getTime();
+            const endDate = new Date(ticket.eventSlot.end_date).getTime();
+
+            if (ticket.eventSlot.event.isCancelled || ticket.eventSlot.is_cancelled) {
+                throw new BadRequestException('This event has already been cancelled.');
+            }
+
+            if (endDate < now) {
+                throw new BadRequestException('Cannot cancel a ticket for a past event.');
+            }
+
+            const bufferInMs = 15 * 60 * 1000;
+            if (now > (startDate - bufferInMs)) {
+                const message = now > startDate
+                    ? 'Cannot cancel a ticket once the show has started.'
+                    : 'Tickets cannot be cancelled within 15 minutes of the start time.';
+                throw new BadRequestException(message);
+            }
+
+            ticket.eventSlot.available_seats += 1;
+            ticket.isCancelled = true;
+            eventSlotRepo.save(ticket.eventSlot);
+            ticketRepo.save(ticket);
+            return ticket;
+        })
     }
 }

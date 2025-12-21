@@ -113,7 +113,7 @@ export class EventService {
         };
     }
 
-    async createEvent(userId: string, createEventInput: CreateEventInput): Promise<Events> {
+    async createEvent(userId: string, createEventInput: CreateEventInput) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -144,8 +144,8 @@ export class EventService {
                 isCancelled: false,
                 created_by: userId
             })
-
             const savedEvent = await queryRunner.manager.save(newEvent);
+
 
             const newEventSlot = createEventInput.slots.map(slotDto => {
                 return this.eventSlotRepository.create({
@@ -158,9 +158,9 @@ export class EventService {
 
                 })
             })
-            await queryRunner.manager.save(newEventSlot);
+            await queryRunner.manager.save(newEvent);
             await queryRunner.commitTransaction();
-            return savedEvent;
+            return { savedEvent, newEventSlot };
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
