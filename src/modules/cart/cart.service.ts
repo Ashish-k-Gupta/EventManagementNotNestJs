@@ -22,7 +22,34 @@ export class CartService {
                     id: userId
                 }
             },
-            relations: ['items']
+            relations: ['items', 'items.eventSlot', 'items.eventSlot.event'],
+            select: {
+                items: {
+                    id: true,
+                    cart_id: true,
+                    cart: true,
+                    price_snapshot: true,
+                    reserved_until: true,
+                    event_slot_id: true,
+                    eventSlot: {
+                        id: true,
+                        start_date: true,
+                        is_cancelled: true,
+                        is_sold_out: true,
+                        ticket_price: true,
+                        event: {
+                            id: true,
+                            title: true,
+                            description: true,
+                            isCancelled: true,
+                            categories: true,
+                            language: true,
+                            venue: true,
+
+                        }
+                    }
+                }
+            }
         })
 
         if (!userCart) {

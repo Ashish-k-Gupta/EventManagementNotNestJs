@@ -17,10 +17,6 @@ export const eventRouter = (eventController: EventController): Router => {
     router.put('/cancel-event/:id', eventController.cancelEvent);
     router.put('/cancel-slot/:id', eventController.cancelSlot);
     router.put('/update/:id', checkOwnerShipOrAdmin, validateSchema({ body: updateEventSchema }), eventController.updateEvent);
-
-    // Corrected: Pass the schema within a { body: ... } object
-
     router.delete('/delete/:id', authorize(USER_ROLE.ADMIN), eventController.softRemove)
-
     return router;
 };
