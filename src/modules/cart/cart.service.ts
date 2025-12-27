@@ -28,6 +28,7 @@ export class CartService {
                     id: true,
                     cart_id: true,
                     cart: true,
+                    quantity: true,
                     price_snapshot: true,
                     reserved_until: true,
                     event_slot_id: true,
