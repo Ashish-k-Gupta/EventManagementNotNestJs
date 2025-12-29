@@ -74,7 +74,12 @@ export class CartService {
 
 
     async addCartItem(userId: string, itemDetails: AddCartItem) {
-        const { eventSlotId, numberOfTickets } = itemDetails;
+        const { eventSlotId } = itemDetails;
+        const numberOfTickets = Number(itemDetails.numberOfTickets);
+
+        if (isNaN(numberOfTickets)) {
+            throw new Error('Number of tickets must be a valid number');
+        }
 
         return this.dataSource.transaction(async (manager) => {
             const eventSlotRepo = manager.getRepository(EventSlot);
@@ -82,7 +87,7 @@ export class CartService {
             const cartRepo = manager.getRepository(Cart);
 
 
-            const eventSlot = await manager.getRepository(EventSlot)
+            const eventSlot = await eventSlotRepo
                 .createQueryBuilder("eventSlot")
                 .setLock("pessimistic_write")
                 .innerJoinAndSelect("eventSlot.event", "event")
